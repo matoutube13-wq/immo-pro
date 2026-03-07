@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Immo Pro</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f7f5f2; min-height: 100vh; }
+
+    /* HEADER */
+    .header { background: #1a1a2e; padding: 22px 40px; display: flex; align-items: center; gap: 14px; }
+    .logo { width: 40px; height: 40px; background: #c9a84c; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .logo-text { color: #fff; font-weight: 700; font-size: 18px; }
+    .logo-sub { color: #c9a84c; font-size: 11px; letter-spacing: 1px; }
+
+    /* DASHBOARD */
+    #dashboard { display: block; }
+    .welcome { padding: 36px 40px 16px; }
+    .welcome h1 { font-size: 24px; font-weight: 700; color: #1a1a2e; }
+    .welcome p { color: #666; margin-top: 6px; font-size: 14px; }
+    .tools-grid { padding: 0 40px 60px; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
+    .tool-card { background: #fff; border-radius: 16px; padding: 26px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); cursor: pointer; border: 2px solid transparent; transition: all 0.2s; position: relative; }
+    .tool-card:hover.active { border-color: #c9a84c; }
+    .tool-card.disabled { opacity: 0.5; cursor: default; }
+    .tool-badge { position: absolute; top: 12px; right: 12px; background: #f0ece4; color: #999; font-size: 9px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+    .tool-icon { font-size: 32px; margin-bottom: 12px; }
+    .tool-title { font-weight: 700; font-size: 15px; color: #1a1a2e; margin-bottom: 4px; }
+    .tool-desc { font-size: 12px; color: #888; line-height: 1.5; }
+
+    /* SOCIAL TOOL */
+    #social-tool { display: none; }
+    .tool-header { background: #1a1a2e; padding: 18px 40px; display: flex; align-items: center; gap: 14px; }
+    .back-btn { background: none; border: none; color: #c9a84c; cursor: pointer; font-size: 20px; padding: 0; }
+    .tool-icon-sm { width: 34px; height: 34px; background: #c9a84c; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .tool-header-text { color: #fff; font-weight: 700; font-size: 16px; }
+    .tool-header-sub { color: #c9a84c; font-size: 10px; letter-spacing: 1px; }
+
+    .content { max-width: 700px; margin: 0 auto; padding: 36px 20px; }
+    .card { background: #fff; border-radius: 16px; padding: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); margin-bottom: 24px; }
+
+    label { display: block; font-weight: 600; color: #1a1a2e; margin-bottom: 8px; font-size: 14px; }
+    input[type=text] { width: 100%; padding: 13px 16px; border-radius: 10px; border: 1.5px solid #e0dbd2; font-size: 14px; outline: none; color: #333; background: #fafaf8; transition: border 0.2s; }
+    input[type=text]:focus { border-color: #c9a84c; }
+
+    .btn-primary { width: 100%; padding: 14px; background: #1a1a2e; color: #fff; border: none; border-radius: 10px; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 16px; transition: background 0.2s; }
+    .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+    .btn-primary:hover:not(:disabled) { background: #2d2d4e; }
+
+    .loading { margin-top: 14px; padding: 12px 16px; background: #f0ece4; border-radius: 10px; font-size: 13px; color: #1a1a2e; font-weight: 500; display: none; align-items: center; gap: 10px; }
+    .spinner { width: 14px; height: 14px; border: 2px solid #c9a84c; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error { background: #fff0f0; border: 1px solid #ffcccc; border-radius: 10px; padding: 10px 14px; margin-top: 10px; font-size: 13px; color: #c0392b; display: none; }
+
+    /* RESULT */
+    .result-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background: #1a1a2e; display: flex; align-items: center; justify-content: center; color: #c9a84c; font-weight: 700; font-size: 14px; }
+    .fb-badge { margin-left: auto; background: #1877f2; color: #fff; border-radius: 8px; padding: 3px 10px; font-size: 11px; font-weight: 600; }
+    .post-text { background: #f7f5f2; border-radius: 12px; padding: 18px; font-size: 14px; line-height: 1.8; color: #333; white-space: pre-wrap; border-left: 3px solid #c9a84c; }
+    .result-actions { display: flex; gap: 10px; margin-top: 16px; }
+    .btn-copy { flex: 1; padding: 12px; background: #c9a84c; color: #fff; border: none; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; transition: background 0.2s; }
+    .btn-copy.copied { background: #27ae60; }
+    .btn-regen { flex: 1; padding: 12px; background: #f0ece4; color: #1a1a2e; border: none; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="header">
+    <div class="logo">🏠</div>
+    <div>
+      <div class="logo-text">Immo Pro</div>
+      <div class="logo-sub">PLATEFORME COLLABORATEURS</div>
+    </div>
+  </div>
+  <div class="welcome">
+    <h1>Bonjour 👋</h1>
+    <p>Accédez à vos outils métiers en un clic.</p>
+  </div>
+  <div class="tools-grid">
+    <div class="tool-card active" onclick="showTool('social-tool')">
+      <div class="tool-icon">📱</div>
+      <div class="tool-title">Réseaux Sociaux</div>
+      <div class="tool-desc">Générez des posts Facebook à partir d'un lien d'annonce</div>
+    </div>
+    <div class="tool-card disabled">
+      <span class="tool-badge">BIENTÔT</span>
+      <div class="tool-icon">📄</div>
+      <div class="tool-title">Compromis de Vente</div>
+      <div class="tool-desc">Rédigez et exportez un compromis en Word automatiquement</div>
+    </div>
+    <div class="tool-card disabled">
+      <span class="tool-badge">BIENTÔT</span>
+      <div class="tool-icon">🎨</div>
+      <div class="tool-title">Créateur Canva</div>
+      <div class="tool-desc">Générez un visuel Canva depuis une annonce en ligne</div>
+    </div>
+    <div class="tool-card disabled">
+      <span class="tool-badge">BIENTÔT</span>
+      <div class="tool-icon">➕</div>
+      <div class="tool-title">Bientôt disponible</div>
+      <div class="tool-desc">D'autres outils arrivent prochainement</div>
+    </div>
+  </div>
+</div>
+
+<!-- SOCIAL TOOL -->
+<div id="social-tool">
+  <div class="tool-header">
+    <button class="back-btn" onclick="showDashboard()">←</button>
+    <div class="tool-icon-sm">📱</div>
+    <div>
+      <div class="tool-header-text">Générateur de Posts</div>
+      <div class="tool-header-sub">FACEBOOK · PROFESSIONNEL</div>
+    </div>
+  </div>
+  <div class="content">
+    <div class="card">
+      <label>🔗 Lien de l'annonce immobilière</label>
+      <input type="text" id="annonce-url" placeholder="https://www.trevi.be/fr/bien/..." onkeydown="if(event.key==='Enter') generate()"/>
+      <div class="error" id="error-box"></div>
+      <div class="loading" id="loading-box">
+        <div class="spinner"></div>
+        <span id="loading-text">Récupération de l'annonce...</span>
+      </div>
+      <button class="btn-primary" id="gen-btn" onclick="generate()">✨ Générer le post Facebook</button>
+    </div>
+
+    <div class="card" id="result-card" style="display:none">
+      <div class="result-header">
+        <div class="avatar">IP</div>
+        <div>
+          <div style="font-weight:700;font-size:13px;color:#1a1a2e">Immo Pro</div>
+          <div style="font-size:11px;color:#999">Publication Facebook · maintenant</div>
+        </div>
+        <div class="fb-badge">f</div>
+      </div>
+      <div class="post-text" id="post-output"></div>
+      <div class="result-actions">
+        <button class="btn-copy" id="copy-btn" onclick="copyPost()">📋 Copier le post</button>
+        <button class="btn-regen" onclick="generate()">🔄 Régénérer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showTool(id) {
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById(id).style.display = 'block';
+  }
+  function showDashboard() {
+    document.getElementById('social-tool').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('annonce-url').value = '';
+    document.getElementById('result-card').style.display = 'none';
+    document.getElementById('error-box').style.display = 'none';
+  }
+
+  async function generate() {
+    const url = document.getElementById('annonce-url').value.trim();
+    const errBox = document.getElementById('error-box');
+    const loadBox = document.getElementById('loading-box');
+    const genBtn = document.getElementById('gen-btn');
+    const resultCard = document.getElementById('result-card');
+
+    if (!url) { showError("Veuillez coller un lien d'annonce."); return; }
+
+    errBox.style.display = 'none';
+    resultCard.style.display = 'none';
+    loadBox.style.display = 'flex';
+    genBtn.disabled = true;
+    genBtn.textContent = 'Génération en cours...';
+
+    try {
+      document.getElementById('loading-text').textContent = '🔍 Récupération de l\'annonce...';
+      const res = await fetch(`/api/scrape?url=${encodeURIComponent(url)}`);
+      const data = await res.json();
+
+      if (!res.ok || data.error) throw new Error(data.error || 'Erreur serveur');
+      if (!data.post) throw new Error('Post vide reçu');
+
+      document.getElementById('post-output').textContent = data.post;
+      resultCard.style.display = 'block';
+
+    } catch(e) {
+      showError(e.message || 'Une erreur est survenue.');
+    } finally {
+      loadBox.style.display = 'none';
+      genBtn.disabled = false;
+      genBtn.textContent = '✨ Générer le post Facebook';
+    }
+  }
+
+  function showError(msg) {
+    const errBox = document.getElementById('error-box');
+    errBox.textContent = '⚠️ ' + msg;
+    errBox.style.display = 'block';
+  }
+
+  function copyPost() {
+    const text = document.getElementById('post-output').textContent;
+    navigator.clipboard.writeText(text);
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✅ Copié !';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 Copier le post'; btn.classList.remove('copied'); }, 2000);
+  }
+</script>
+</body>
+</html>
