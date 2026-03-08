@@ -1,16 +1,29 @@
 import Anthropic from "@anthropic-ai/sdk";
 
+function parseVal(val) {
+  if (val === null || val === undefined) return null;
+  if (typeof val === "object") return val;
+  let v = val;
+  try { v = JSON.parse(v); } catch {}
+  if (typeof v === "string") { try { v = JSON.parse(v); } catch {} }
+  return v;
+}
+
 export const config = {
+
+
   api: { bodyParser: { sizeLimit: "20mb" }, responseLimit: false },
   maxDuration: 60
 };
+
+
 
 async function kvGet(key) {
   const r = await fetch(`${process.env.KV_REST_API_URL}/get/${encodeURIComponent(key)}`, {
     headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` }
   });
   const d = await r.json();
-  return d.result ? (typeof d.result === 'string' ? JSON.parse(d.result) : d.result) : null;
+  return parseVal(d.result);
 }
 
 async function kvSet(key, value) {
