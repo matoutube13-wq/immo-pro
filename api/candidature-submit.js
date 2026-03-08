@@ -1,4 +1,13 @@
 export const config = {
+
+function parseVal(val) {
+  if (val === null || val === undefined) return null;
+  if (typeof val === "object") return val;
+  let v = val;
+  try { v = JSON.parse(v); } catch {}
+  if (typeof v === "string") { try { v = JSON.parse(v); } catch {} }
+  return v;
+}
   api: { bodyParser: { sizeLimit: "20mb" }, responseLimit: false },
   maxDuration: 60
 };
@@ -7,7 +16,7 @@ async function kvSet(key, value) {
   const r = await fetch(`${process.env.KV_REST_API_URL}/set/${encodeURIComponent(key)}`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(typeof value === 'string' ? value : JSON.stringify(value))
+    body: JSON.stringify(JSON.stringify(value))
   });
   return r.json();
 }
@@ -47,7 +56,7 @@ export default async function handler(req, res) {
       evaluation: null
     };
 
-    await kvSet(`candidature:${id}`, JSON.stringify(entry));
+    await kvSet(`candidature:${id}`, entry);
     await kvLPush(`candidatures:bien:${bienId}`, { id, nom: contact.nom, email: contact.email, createdAt: now, statut: "en_attente", score: null });
     await kvLPush(`candidatures:all`, { id, nom: contact.nom, email: contact.email, bienId, bienAdresse, createdAt: now, statut: "en_attente", score: null });
 
