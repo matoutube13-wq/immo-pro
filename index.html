@@ -267,17 +267,17 @@
         <div class="tool-title">Compromis de Vente</div>
         <div class="tool-desc">Importez les documents — l'IA remplit et génère le compromis Word</div>
       </div>
+      <div class="tool-card" onclick="showTool('candidatures-tool')">
+        <span class="tool-badge new">NOUVEAU</span>
+        <div class="tool-icon">🗂️</div>
+        <div class="tool-title">Candidatures Locatives</div>
+        <div class="tool-desc">Triez et évaluez automatiquement les dossiers de location avec l'IA</div>
+      </div>
       <div class="tool-card disabled">
         <span class="tool-badge">BIENTÔT</span>
         <div class="tool-icon">🎨</div>
         <div class="tool-title">Créateur Canva</div>
         <div class="tool-desc">Générez un visuel Canva depuis une annonce en ligne</div>
-      </div>
-      <div class="tool-card disabled">
-        <span class="tool-badge">BIENTÔT</span>
-        <div class="tool-icon">➕</div>
-        <div class="tool-title">Bientôt disponible</div>
-        <div class="tool-desc">D'autres outils arrivent prochainement</div>
       </div>
     </div>
   </div>
@@ -897,206 +897,332 @@ function confirmVerifyAndFill() {
   document.getElementById('btn-analyze').textContent = '✅ Analyse terminée — Vérifiez le formulaire';
 }
 
-// ── Remplir le formulaire avec données IA ─────────────────
-function fillForm(data) {
-  function setField(id, value) {
-    if (!value) return;
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.value = value;
-    el.classList.add('ai-filled');
-  }
+// ── CANDIDATURES ──────────────────────────────────────────
+let currentCandId = null;
+let allCandidatures = [];
+let allBiens = [];
 
-  function setSelect(id, value) {
-    if (!value) return;
-    const el = document.getElementById(id);
-    if (!el) return;
-    const opt = Array.from(el.options).find(o => o.value.toLowerCase() === value.toLowerCase() || o.text.toLowerCase() === value.toLowerCase());
-    if (opt) { el.value = opt.value; el.classList.add('ai-filled'); }
-  }
-
-  // Bien
-  setField('f_adresseBien', data.adresseBien);
-  setField('f_commune', data.commune);
-  setField('f_division', data.division);
-  setField('f_section', data.section);
-  setField('f_numero', data.numero);
-  setField('f_contenance', data.contenance);
-
-  // Prix
-  setField('f_prixLettres', data.prixLettres);
-  setField('f_prixChiffres', data.prixChiffres);
-
-  // Technique
-  setField('f_revenuCadastral', data.revenuCadastral);
-  setField('f_pebNumero', data.peb_numero);
-  setField('f_pebExpert', data.peb_expert);
-  setField('f_pebDate', data.peb_date);
-  setSelect('f_pebClasse', data.peb_classe);
-  setField('f_elecDate', data.elec_date);
-  setField('f_elecOrganisme', data.elec_organisme);
-  setSelect('f_elecConforme', data.elec_conforme);
-  setSelect('f_citiernePresent', data.citerne_present);
-  setSelect('f_citierneType', data.citerne_type);
-  setSelect('f_zoneInondable', data.zone_inondable);
-  setField('f_solDate', data.sol_date);
-  setField('f_urbanismeZone', data.urbanisme_zone);
-  setField('f_urbanismePermis', data.urbanisme_permis);
-  setField('f_urbanismeDate', data.urbanisme_date_permis);
-
-  // Vendeurs
-  if (data.vendeurs && data.vendeurs.length > 0) {
-    document.getElementById('vendeurs-container').innerHTML = '';
-    vendeurCount = 0;
-    data.vendeurs.forEach(v => {
-      addPersonBlock('vendeurs-container', 'vendeur');
-      const i = vendeurCount - 1;
-      const p = `vendeur_${i}`;
-      setSelect(`${p}_civilite`, v.civilite);
-      setField(`${p}_nom`, v.nom);
-      setField(`${p}_prenom`, v.prenom);
-      setField(`${p}_dateNaissance`, v.dateNaissance);
-      setField(`${p}_lieuNaissance`, v.lieuNaissance);
-      setField(`${p}_adresse`, v.adresse);
-      setField(`${p}_telephone`, v.telephone);
-      setField(`${p}_email`, v.email);
-    });
-  }
-
-  // Acquéreurs
-  if (data.acquereurs && data.acquereurs.length > 0) {
-    document.getElementById('acquereurs-container').innerHTML = '';
-    acquereurCount = 0;
-    data.acquereurs.forEach(a => {
-      addPersonBlock('acquereurs-container', 'acquereur');
-      const i = acquereurCount - 1;
-      const p = `acquereur_${i}`;
-      setSelect(`${p}_civilite`, a.civilite);
-      setField(`${p}_nom`, a.nom);
-      setField(`${p}_prenom`, a.prenom);
-      setField(`${p}_dateNaissance`, a.dateNaissance);
-      setField(`${p}_lieuNaissance`, a.lieuNaissance);
-      setField(`${p}_adresse`, a.adresse);
-      setSelect(`${p}_situation`, a.situationFamiliale);
-      setField(`${p}_telephone`, a.telephone);
-      setField(`${p}_email`, a.email);
-    });
-  }
-
-  // Scroll vers formulaire
-  document.getElementById('form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+function switchTab(tab) {
+  document.getElementById('tab-content-biens').style.display = tab==='biens'?'block':'none';
+  document.getElementById('tab-content-cands').style.display = tab==='cands'?'block':'none';
+  document.getElementById('tab-biens').style.borderBottomColor = tab==='biens'?'#c9a84c':'transparent';
+  document.getElementById('tab-biens').style.color = tab==='biens'?'#1a1a2e':'#888';
+  document.getElementById('tab-cands').style.borderBottomColor = tab==='cands'?'#c9a84c':'transparent';
+  document.getElementById('tab-cands').style.color = tab==='cands'?'#1a1a2e':'#888';
+  if (tab==='cands') loadAllCandidatures();
 }
 
-// ── Collecter les données du formulaire ───────────────────
-function collectFormData() {
-  const g = id => document.getElementById(id)?.value?.trim() || '';
-
-  const vendeurs = [];
-  document.querySelectorAll('#vendeurs-container .personne-block').forEach(block => {
-    const id = block.id.replace('block_vendeur_', '');
-    const p = `vendeur_${id}`;
-    vendeurs.push({
-      civilite: document.getElementById(`${p}_civilite`)?.value || 'Monsieur',
-      nom: document.getElementById(`${p}_nom`)?.value || '',
-      prenom: document.getElementById(`${p}_prenom`)?.value || '',
-      dateNaissance: document.getElementById(`${p}_dateNaissance`)?.value || '',
-      lieuNaissance: document.getElementById(`${p}_lieuNaissance`)?.value || '',
-      adresse: document.getElementById(`${p}_adresse`)?.value || '',
-      telephone: document.getElementById(`${p}_telephone`)?.value || '',
-      email: document.getElementById(`${p}_email`)?.value || ''
-    });
-  });
-
-  const acquereurs = [];
-  document.querySelectorAll('#acquereurs-container .personne-block').forEach(block => {
-    const id = block.id.replace('block_acquereur_', '');
-    const p = `acquereur_${id}`;
-    acquereurs.push({
-      civilite: document.getElementById(`${p}_civilite`)?.value || 'Monsieur',
-      nom: document.getElementById(`${p}_nom`)?.value || '',
-      prenom: document.getElementById(`${p}_prenom`)?.value || '',
-      dateNaissance: document.getElementById(`${p}_dateNaissance`)?.value || '',
-      lieuNaissance: document.getElementById(`${p}_lieuNaissance`)?.value || '',
-      adresse: document.getElementById(`${p}_adresse`)?.value || '',
-      situationFamiliale: document.getElementById(`${p}_situation`)?.value || 'célibataire',
-      telephone: document.getElementById(`${p}_telephone`)?.value || '',
-      email: document.getElementById(`${p}_email`)?.value || ''
-    });
-  });
-
-  return {
-    vendeurs, acquereurs,
-    adresseBien: g('f_adresseBien'), commune: g('f_commune'),
-    division: g('f_division'), section: g('f_section'),
-    numero: g('f_numero'), contenance: g('f_contenance'), inclus: g('f_inclus'),
-    prixLettres: g('f_prixLettres'), prixChiffres: g('f_prixChiffres'),
-    montantGarantie: g('f_montantGarantie'), ibanAcquereur: g('f_ibanAcquereur'),
-    ibanAgence: g('f_ibanAgence'),
-    conditionSuspensiveFinancement: g('f_conditionFinancement'),
-    notaireVendeur: g('f_notaireVendeur'), notaireAcquereur: g('f_notaireAcquereur'),
-    revenuCadastral: g('f_revenuCadastral'),
-    peb_numero: g('f_pebNumero'), peb_expert: g('f_pebExpert'),
-    peb_date: g('f_pebDate'), peb_classe: g('f_pebClasse'),
-    elec_date: g('f_elecDate'), elec_organisme: g('f_elecOrganisme'),
-    elec_conforme: g('f_elecConforme'),
-    citerne_present: g('f_citiernePresent'), citerne_type: g('f_citierneType'),
-    zone_inondable: g('f_zoneInondable'),
-    urbanisme_zone: g('f_urbanismeZone'), urbanisme_permis: g('f_urbanismePermis'),
-    urbanisme_date_permis: g('f_urbanismeDate'),
-    sol_date: g('f_solDate'),
-    dateSignature: g('f_dateSignature'), lieuSignature: g('f_lieuSignature')
-  };
-}
-
-// ── Générer le compromis ──────────────────────────────────
-async function generateCompromis() {
-  const btn = document.getElementById('btn-generate');
-  const loading = document.getElementById('gen-loading');
-  const errBox = document.getElementById('gen-error');
-  const successBox = document.getElementById('gen-success');
-
-  btn.disabled = true;
-  loading.style.display = 'flex';
-  errBox.style.display = 'none';
-  successBox.style.display = 'none';
-
+async function loadBiens() {
   try {
-    const formData = collectFormData();
-
-    const res = await fetch('/api/compromis', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ formData })
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      let msg = `Erreur serveur (${res.status})`;
-      try { msg = JSON.parse(text).error || msg; } catch {}
-      throw new Error(msg);
-    }
-
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Compromis_${formData.commune || 'Bien'}_${new Date().toISOString().slice(0,10)}.docx`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    successBox.style.display = 'block';
-
-  } catch (err) {
-    errBox.textContent = '❌ ' + err.message;
-    errBox.style.display = 'block';
-  } finally {
-    btn.disabled = false;
-    loading.style.display = 'none';
-  }
+    const r = await fetch('/api/bien-manage');
+    const d = await r.json();
+    allBiens = d.biens || [];
+    renderBiens(allBiens);
+    document.getElementById('biens-count').textContent = allBiens.length + ' bien' + (allBiens.length>1?'s':'') + ' enregistré' + (allBiens.length>1?'s':'');
+    const sel = document.getElementById('filter-bien');
+    if (sel) sel.innerHTML = '<option value="">Tous les biens</option>' + allBiens.map(b=>'<option value="'+b.id+'">'+b.adresse+' ('+b.loyer+'€)</option>').join('');
+  } catch(e) { document.getElementById('biens-list').innerHTML='<div style="color:#e74c3c;text-align:center;padding:40px">Erreur chargement</div>'; }
 }
+
+function renderBiens(biens) {
+  const el = document.getElementById('biens-list');
+  if (!biens.length) { el.innerHTML='<div style="text-align:center;padding:60px;color:#aaa;grid-column:1/-1"><div style="font-size:40px;margin-bottom:10px">🏘️</div>Aucun bien. Ajoutez votre premier bien.</div>'; return; }
+  el.innerHTML = biens.map(function(b) {
+    const sc = b.statut==='actif'?'#27ae60':'#aaa', sb = b.statut==='actif'?'#f0fff4':'#f7f5f2';
+    return '<div style="background:#fff;border-radius:14px;border:1px solid #e8e0d4;padding:20px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">'+
+      '<div style="font-size:13px;font-weight:700;color:#1a1a2e;flex:1;padding-right:8px">'+b.adresse+'</div>'+
+      '<span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:'+sb+';color:'+sc+';white-space:nowrap">'+(b.statut==='actif'?'● Actif':'○ Archivé')+'</span></div>'+
+      '<div style="font-size:22px;font-weight:800;color:#c9a84c;margin-bottom:6px">'+b.loyer+' €<span style="font-size:12px;font-weight:400;color:#aaa">/mois</span></div>'+
+      '<div style="font-size:12px;color:#888;margin-bottom:12px">'+(b.type||'')+(b.chambres?' · '+b.chambres+' ch.':'')+(b.surface?' · '+b.surface+' m²':'')+'</div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid #f0ece4">'+
+      '<div style="font-size:12px;color:#666"><strong style="color:#1a1a2e">'+(b.nbCandidatures||0)+'</strong> cand. · <strong style="color:#c9a84c">'+(b.nbEvalues||0)+'</strong> éval.</div>'+
+      '<div style="display:flex;gap:6px">'+
+      '<button onclick="voirCandidaturesBien(\''+b.id+'\')" style="padding:5px 10px;background:#1a1a2e;color:#fff;border:none;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600">👥 Voir</button>'+
+      '<button onclick="openBienModal(\''+b.id+'\')" style="padding:5px 10px;background:#f7f5f2;border:1px solid #e8e0d4;border-radius:6px;font-size:11px;cursor:pointer">✏️</button>'+
+      '</div></div></div>';
+  }).join('');
+}
+
+function voirCandidaturesBien(bienId) {
+  switchTab('cands');
+  const sel = document.getElementById('filter-bien');
+  if (sel) { sel.value = bienId; loadAllCandidatures(); }
+}
+
+function openBienModal(id) {
+  document.getElementById('bien-modal-error').style.display='none';
+  if (id) {
+    const b = allBiens.find(function(x){return x.id===id;});
+    if (!b) return;
+    document.getElementById('bien-modal-title').textContent='✏️ Modifier le bien';
+    document.getElementById('bien-modal-id').value=b.id;
+    document.getElementById('bien-adresse').value=b.adresse;
+    document.getElementById('bien-loyer').value=b.loyer;
+    document.getElementById('bien-type').value=b.type||'Appartement';
+    document.getElementById('bien-chambres').value=b.chambres||'';
+    document.getElementById('bien-surface').value=b.surface||'';
+    document.getElementById('bien-criteres').value=b.criteresSup||'';
+    document.getElementById('bien-statut').value=b.statut||'actif';
+  } else {
+    document.getElementById('bien-modal-title').textContent='🏠 Ajouter un bien';
+    ['bien-modal-id','bien-adresse','bien-loyer','bien-chambres','bien-surface','bien-criteres'].forEach(function(i){document.getElementById(i).value='';});
+    document.getElementById('bien-type').value='Appartement';
+    document.getElementById('bien-statut').value='actif';
+  }
+  document.getElementById('bien-modal').style.display='flex';
+}
+
+function closeBienModal() { document.getElementById('bien-modal').style.display='none'; }
+
+async function saveBien() {
+  const id = document.getElementById('bien-modal-id').value;
+  const adresse = document.getElementById('bien-adresse').value.trim();
+  const loyer = document.getElementById('bien-loyer').value.trim();
+  const errEl = document.getElementById('bien-modal-error');
+  if (!adresse||!loyer) { errEl.textContent='Adresse et loyer obligatoires'; errEl.style.display='block'; return; }
+  errEl.style.display='none';
+  const payload = { adresse, loyer, type:document.getElementById('bien-type').value, chambres:document.getElementById('bien-chambres').value||null, surface:document.getElementById('bien-surface').value||null, criteresSup:document.getElementById('bien-criteres').value, statut:document.getElementById('bien-statut').value };
+  if (id) payload.id = id;
+  try {
+    const r = await fetch('/api/bien-manage',{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+    closeBienModal(); await loadBiens();
+  } catch(e) { errEl.textContent='❌ '+e.message; errEl.style.display='block'; }
+}
+
+async function loadAllCandidatures() {
+  const bienId = document.getElementById('filter-bien') ? document.getElementById('filter-bien').value : '';
+  const list = document.getElementById('cand-list');
+  list.innerHTML = '<div style="text-align:center;padding:40px;color:#aaa">⏳ Chargement...</div>';
+  try {
+    const r = await fetch(bienId ? '/api/candidature-list?bienId='+bienId : '/api/candidature-list');
+    const d = await r.json();
+    allCandidatures = d.candidatures||[];
+    renderCandidatures(allCandidatures);
+    const n=allCandidatures.length, notes=allCandidatures.filter(function(c){return c.score!==null;}).length;
+    document.getElementById('cands-count').textContent = n+' dossier'+(n>1?'s':'')+' · '+notes+' évalué'+(notes>1?'s':'');
+  } catch(e) { list.innerHTML='<div style="text-align:center;padding:40px;color:#e74c3c">❌ Erreur</div>'; }
+}
+
+function filterCandidatures() { loadAllCandidatures(); }
+function scoreColor(s){if(s===null)return'#aaa';if(s>=75)return'#27ae60';if(s>=50)return'#f59e0b';return'#e74c3c';}
+function scoreBg(s){if(s===null)return'#f7f5f2';if(s>=75)return'#f0fff4';if(s>=50)return'#fffbeb';return'#fff5f5';}
+
+function renderCandidatures(list) {
+  const el = document.getElementById('cand-list');
+  if (!list.length) { el.innerHTML='<div style="text-align:center;padding:60px;color:#aaa"><div style="font-size:40px;margin-bottom:10px">📭</div>Aucune candidature reçue.</div>'; return; }
+  el.innerHTML = list.map(function(c,i){
+    const sc=c.score,col=scoreColor(sc),bg=scoreBg(sc);
+    const medal=i===0&&sc!==null?'🥇 ':i===1&&sc!==null?'🥈 ':i===2&&sc!==null?'🥉 ':'';
+    const date=new Date(c.createdAt).toLocaleDateString('fr-BE',{day:'2-digit',month:'short'});
+    const rc=c.recommandation==='À convoquer'?'#27ae60':c.recommandation==='À étudier'?'#f59e0b':c.recommandation==='À écarter'?'#e74c3c':'#aaa';
+    const bienLabel = (allBiens.find(function(b){return b.id===c.bienId;})||{adresse:c.bienAdresse||''}).adresse;
+    return '<div onclick="openCandDetail(\''+c.id+'\')" style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid #f0ece4;cursor:pointer;background:'+bg+'" onmouseover="this.style.filter=\'brightness(0.97)\'" onmouseout="this.style.filter=\'\'">'+
+      '<div style="text-align:center;min-width:48px"><div style="font-size:20px;font-weight:800;color:'+col+';line-height:1">'+(sc!==null?sc:'—')+'</div><div style="font-size:9px;color:'+col+';font-weight:700">'+(sc!==null?'/100':'—')+'</div></div>'+
+      '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14px;color:#1a1a2e">'+medal+c.nom+'</div><div style="font-size:11px;color:#888;margin-top:2px">'+c.email+' · '+date+(bienLabel?' · '+bienLabel:'')+'</div>'+(c.mention?'<div style="font-size:11px;color:'+col+';margin-top:3px;font-weight:600">'+c.mention+'</div>':'')+'</div>'+
+      (c.recommandation?'<div style="font-size:10px;font-weight:700;color:'+rc+';background:'+rc+'18;padding:3px 9px;border-radius:20px;white-space:nowrap">'+c.recommandation+'</div>':'')+
+      '<div style="color:#aaa;font-size:16px">›</div></div>';
+  }).join('');
+}
+
+async function openCandDetail(id) {
+  currentCandId=id;
+  const modal=document.getElementById('cand-detail-modal');
+  const body=document.getElementById('cand-detail-body');
+  const evalBtn=document.getElementById('btn-eval-single');
+  body.innerHTML='<div style="text-align:center;padding:40px;color:#aaa">⏳ Chargement...</div>';
+  modal.style.display='flex';
+  try {
+    const r=await fetch('/api/candidature-list?id='+id);
+    const c=await r.json();
+    const contact=c.contact||{}, ex=c.extracted||{}, ev=c.evaluation;
+    evalBtn.style.display=ev?'none':'block';
+    let html='<div style="margin-bottom:16px"><div style="font-size:18px;font-weight:700;color:#1a1a2e">'+(contact.prenom||'')+' '+(contact.nom||'')+'</div><div style="font-size:13px;color:#888;margin-top:3px">'+(contact.email||'')+' · '+(contact.telephone||'')+'</div><div style="font-size:12px;color:#c9a84c;margin-top:3px">📍 '+(c.bienAdresse||'')+'</div></div>';
+    if (ev) {
+      const col=scoreColor(ev.score);
+      html+='<div style="background:'+scoreBg(ev.score)+';border-radius:12px;padding:16px;margin-bottom:14px;display:flex;align-items:center;gap:16px"><div style="text-align:center"><div style="font-size:38px;font-weight:800;color:'+col+';line-height:1">'+ev.score+'</div><div style="font-size:10px;color:'+col+';font-weight:700">/100</div></div><div style="flex:1"><div style="font-weight:700;font-size:14px;color:#1a1a2e">'+(ev.mention||'')+'</div><div style="font-size:13px;color:#555;margin-top:3px;line-height:1.5">'+(ev.commentaire||'')+'</div>'+(ev.recommandation?'<div style="margin-top:5px;font-size:12px;font-weight:700;color:'+col+'">'+ev.recommandation+'</div>':'')+'</div></div>';
+      if (ev.details) {
+        const lbls={solvabilite:'💰 Solvabilité',stabilite:'💼 Stabilité',dossier:'📄 Dossier',adequation:'🏠 Adéquation'};
+        html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">';
+        for (var k in ev.details) {
+          var d=ev.details[k], pct=Math.round(d.note/d.max*100);
+          html+='<div style="background:#f7f5f2;border-radius:9px;padding:10px 12px"><div style="font-size:11px;font-weight:700;color:#1a1a2e;margin-bottom:4px">'+(lbls[k]||k)+' <span style="color:#aaa;font-weight:400">'+d.note+'/'+d.max+'</span></div><div style="background:#e8e0d4;border-radius:3px;height:4px;margin-bottom:4px"><div style="background:'+scoreColor(pct)+';height:4px;border-radius:3px;width:'+pct+'%"></div></div><div style="font-size:11px;color:#888">'+(d.commentaire||'')+'</div></div>';
+        }
+        html+='</div>';
+      }
+      if ((ev.pointsForts&&ev.pointsForts.length)||(ev.pointsFaibles&&ev.pointsFaibles.length)) {
+        html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">';
+        if (ev.pointsForts&&ev.pointsForts.length) html+='<div style="background:#f0fff4;border-radius:9px;padding:10px 12px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#27ae60;margin-bottom:6px">✅ Points forts</div>'+ev.pointsForts.map(function(p){return'<div style="font-size:11px;margin-bottom:3px">• '+p+'</div>';}).join('')+'</div>';
+        if (ev.pointsFaibles&&ev.pointsFaibles.length) html+='<div style="background:#fff5f5;border-radius:9px;padding:10px 12px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#e74c3c;margin-bottom:6px">⚠️ Points faibles</div>'+ev.pointsFaibles.map(function(p){return'<div style="font-size:11px;margin-bottom:3px">• '+p+'</div>';}).join('')+'</div>';
+        html+='</div>';
+      }
+    }
+    if (ex.personnes&&ex.personnes.length) {
+      html+='<div style="background:#f7f5f2;border-radius:10px;padding:12px;margin-bottom:12px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#aaa;margin-bottom:8px">📋 Formulaire TREVI</div>';
+      ex.personnes.forEach(function(p){
+        html+='<div style="margin-bottom:6px"><div style="font-size:12px;font-weight:700;color:#1a1a2e">'+(p.civilite||'')+' '+(p.prenoms||'')+' '+(p.nom||'')+'</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:3px;font-size:11px;color:#666">'+(p.situationFamiliale?'<span>👤 '+p.situationFamiliale+'</span>':'')+(p.revenusMensuelsNets?'<span>💶 <strong>'+p.revenusMensuelsNets+'€</strong>/mois</span>':'')+(p.dateEntreeSouhaitee?'<span>📅 '+p.dateEntreeSouhaitee+'</span>':'')+(p.fumeur?'<span>🚬 '+p.fumeur+'</span>':'')+'</div></div>';
+      });
+      if (ex.animaux) html+='<div style="font-size:11px;color:#555;padding-top:8px;border-top:1px solid #e8e0d4">🐾 Animaux : '+ex.animaux+(ex.animauxDetail?' ('+ex.animauxDetail+')':'')+'</div>';
+      if (ex.garante&&ex.garante.nom) html+='<div style="font-size:11px;color:#555;margin-top:4px">🛡️ Garant(e) : '+(ex.garante.prenoms||'')+' '+ex.garante.nom+' — '+(ex.garante.revenusMensuelsNets||'?')+'€/mois</div>';
+      html+='</div>';
+    }
+    const docs=c.documents||[];
+    if (docs.length) {
+      const cats={candidature:'📋 Formulaire',salaires:'💶 Salaires',contrat:'📑 Contrat'};
+      html+='<div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:6px">📎 Documents ('+docs.length+')</div><div style="display:flex;flex-wrap:wrap;gap:6px">';
+      docs.forEach(function(d){html+='<div style="background:#fff;border:1px solid #e8e0d4;border-radius:7px;padding:4px 10px;font-size:11px;color:#555">'+(cats[d.categorie]||'📄')+' '+d.nom+'</div>';});
+      html+='</div>';
+    }
+    body.innerHTML=html;
+  } catch(e) { body.innerHTML='<div style="color:#e74c3c;padding:20px">❌ '+e.message+'</div>'; }
+}
+
+function closeCandDetail() { document.getElementById('cand-detail-modal').style.display='none'; currentCandId=null; }
+
+async function evaluerCandidature(id) {
+  const btn=document.getElementById('btn-eval-single');
+  btn.disabled=true; btn.textContent='⏳ Évaluation...';
+  try {
+    const r=await fetch('/api/candidature-evaluate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id})});
+    const d=await r.json();
+    if (!r.ok) throw new Error(d.error);
+    await openCandDetail(id); await loadAllCandidatures();
+  } catch(e) { alert('Erreur : '+e.message); btn.disabled=false; btn.textContent='✨ Évaluer avec l\'IA'; }
+}
+
+async function evaluerTous() {
+  const btn=document.getElementById('btn-eval-tous');
+  const todo=allCandidatures.filter(function(c){return c.score===null;});
+  if (!todo.length) { alert('Tous les dossiers sont déjà évalués !'); return; }
+  btn.disabled=true;
+  for (var i=0;i<todo.length;i++) {
+    btn.textContent='⏳ '+(i+1)+'/'+todo.length+'...';
+    try { await fetch('/api/candidature-evaluate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:todo[i].id})}); }
+    catch(e) { console.warn(e); }
+  }
+  btn.textContent='✨ Tout évaluer'; btn.disabled=false; await loadAllCandidatures();
+}
+
+const _origShowTool2 = showTool;
+function showTool(id) {
+  _origShowTool2(id);
+  if (id==='candidatures-tool') { switchTab('biens'); loadBiens(); }
+}
+
 </script>
+
+  <!-- ── CANDIDATURES TOOL ────────────────────────────────── -->
+  <div id="candidatures-tool" style="display:none">
+    <div class="content">
+      <div class="content-header">
+        <button class="back-btn" onclick="showDashboard()">← Retour</button>
+        <div>
+          <h2 class="content-title">🗂️ Candidatures Locatives</h2>
+          <p class="content-sub">Gérez vos biens et évaluez les dossiers avec l'IA</p>
+        </div>
+      </div>
+
+      <!-- Onglets -->
+      <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:2px solid #e8e0d4">
+        <button id="tab-biens" onclick="switchTab('biens')" style="padding:12px 24px;background:none;border:none;border-bottom:2px solid #c9a84c;margin-bottom:-2px;font-weight:700;font-size:14px;color:#1a1a2e;cursor:pointer">🏠 Biens</button>
+        <button id="tab-cands" onclick="switchTab('cands')" style="padding:12px 24px;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-weight:600;font-size:14px;color:#888;cursor:pointer">👥 Candidatures</button>
+      </div>
+
+      <!-- ── ONGLET BIENS ── -->
+      <div id="tab-content-biens">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div style="font-size:12px;color:#aaa" id="biens-count"></div>
+          <button onclick="openBienModal()" style="padding:9px 18px;background:#c9a84c;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer">+ Ajouter un bien</button>
+        </div>
+        <div id="biens-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
+          <div style="text-align:center;padding:40px;color:#aaa;grid-column:1/-1">⏳ Chargement...</div>
+        </div>
+      </div>
+
+      <!-- ── ONGLET CANDIDATURES ── -->
+      <div id="tab-content-cands" style="display:none">
+        <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+          <select id="filter-bien" onchange="filterCandidatures()" style="padding:8px 12px;border:1.5px solid #e8e0d4;border-radius:8px;font-size:13px;outline:none;background:#fff">
+            <option value="">Tous les biens</option>
+          </select>
+          <div style="font-size:12px;color:#aaa;margin-left:4px" id="cands-count"></div>
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <button onclick="loadAllCandidatures()" style="padding:8px 14px;background:#f7f5f2;border:1px solid #e8e0d4;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600">🔄 Actualiser</button>
+            <button onclick="evaluerTous()" id="btn-eval-tous" style="padding:8px 14px;background:#c9a84c;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:700">✨ Tout évaluer</button>
+          </div>
+        </div>
+        <div id="cand-list" style="background:#fff;border-radius:16px;border:1px solid #e8e0d4;overflow:hidden;min-height:200px">
+          <div style="text-align:center;padding:60px;color:#aaa">Sélectionnez un bien ou chargez toutes les candidatures</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODALE AJOUT/EDIT BIEN ──────────────────────────────── -->
+  <div id="bien-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeBienModal()">
+    <div class="modal" style="max-width:500px">
+      <div class="modal-title" id="bien-modal-title">🏠 Ajouter un bien</div>
+      <div class="modal-subtitle">Les candidats pourront sélectionner ce bien dans le formulaire public</div>
+      <input type="hidden" id="bien-modal-id"/>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
+        <div>
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Adresse complète *</label>
+          <input id="bien-adresse" type="text" placeholder="Rue de la Paix 12, 4000 Liège" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none"/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Loyer mensuel (€) *</label>
+            <input id="bien-loyer" type="number" placeholder="900" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none"/>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Type de bien</label>
+            <select id="bien-type" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none;background:#fff">
+              <option>Appartement</option><option>Maison</option><option>Studio</option><option>Duplex</option><option>Penthouse</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Chambres</label>
+            <input id="bien-chambres" type="number" placeholder="2" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none"/>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Surface (m²)</label>
+            <input id="bien-surface" type="number" placeholder="75" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none"/>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Critères supplémentaires (optionnel)</label>
+          <textarea id="bien-criteres" placeholder="ex: Pas d'animaux, préférence non-fumeur, garant requis..." style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:13px;outline:none;resize:none;height:70px;font-family:inherit"></textarea>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Statut</label>
+          <select id="bien-statut" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none;background:#fff">
+            <option value="actif">Actif — visible dans le formulaire public</option>
+            <option value="archive">Archivé — masqué du formulaire public</option>
+          </select>
+        </div>
+        <div id="bien-modal-error" style="color:#e74c3c;font-size:13px;display:none"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" onclick="closeBienModal()">Annuler</button>
+        <button class="btn-modal-ok" onclick="saveBien()">💾 Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODALE DÉTAIL CANDIDATURE ──────────────────────────── -->
+  <div id="cand-detail-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeCandDetail()">
+    <div class="modal" style="max-width:720px">
+      <div id="cand-detail-body"></div>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" onclick="closeCandDetail()">← Fermer</button>
+        <button class="btn-modal-ok" id="btn-eval-single" onclick="evaluerCandidature(currentCandId)">✨ Évaluer avec l'IA</button>
+      </div>
+    </div>
+  </div>
 
 <!-- ── MODALE VÉRIFICATION ──────────────────────────────────────────────── -->
 <div id="verify-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this) closeVerifyModal()">
