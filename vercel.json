@@ -3,5 +3,15 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  ],
+  "functions": {
+    "api/compromis-extract.js": {
+      "memory": 1024,
+      "maxDuration": 60
+    },
+    "api/compromis.js": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  }
 }
