@@ -206,7 +206,7 @@ Réponds UNIQUEMENT avec ce JSON valide, sans markdown :
 
     // Sauvegarder
     const updated = { ...candidature, statut: 'note', score: evaluation.score || 0, extracted, evaluation };
-    await kvSet(`candidature:${id}`, JSON.stringify(updated));
+    await kvSet(`candidature:${id}`, updated);
 
     // Mettre à jour la liste du bien
     if (candidature.bienId) {
