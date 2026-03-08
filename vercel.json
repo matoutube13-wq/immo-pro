@@ -2,16 +2,15 @@
   "outputDirectory": ".",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/candidature", "destination": "/candidature.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "functions": {
-    "api/compromis-extract.js": {
-      "memory": 1024,
-      "maxDuration": 60
-    },
-    "api/compromis.js": {
-      "memory": 1024,
-      "maxDuration": 60
-    }
+    "api/compromis-extract.js":      { "memory": 1024, "maxDuration": 60 },
+    "api/compromis.js":              { "memory": 1024, "maxDuration": 60 },
+    "api/candidature-submit.js":     { "memory": 512,  "maxDuration": 60 },
+    "api/candidature-list.js":       { "memory": 256,  "maxDuration": 30 },
+    "api/candidature-evaluate.js":   { "memory": 1024, "maxDuration": 60 },
+    "api/bien-manage.js":            { "memory": 256,  "maxDuration": 30 }
   }
 }
