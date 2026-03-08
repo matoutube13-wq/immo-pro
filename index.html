@@ -667,20 +667,21 @@ async function analyzeDocuments() {
   errBox.style.display = 'none';
   progress.style.display = 'block';
 
-  function setStep(id, status) {
+  function setStep(id, status, label) {
     const el = document.getElementById(id);
     el.classList.remove('active', 'done', 'error');
     el.classList.add(status);
     if (status === 'active') el.querySelector('.ai-step-icon').textContent = '⏳';
-    if (status === 'done') el.querySelector('.ai-step-icon').textContent = '✅';
-    if (status === 'error') el.querySelector('.ai-step-icon').textContent = '❌';
+    if (status === 'done')   el.querySelector('.ai-step-icon').textContent = '✅';
+    if (status === 'error')  el.querySelector('.ai-step-icon').textContent = '❌';
+    if (label) el.childNodes[1].textContent = label;
   }
 
   try {
-    setStep('step-read', 'active');
+    setStep('step-read', 'active', 'Lecture des documents');
 
-    // Encoder fichiers en base64
-    const files = [];
+    // Encoder tous les fichiers en base64
+    const encodedFiles = [];
     for (const f of selectedFiles) {
       const b64 = await new Promise((res, rej) => {
         const r = new FileReader();
@@ -688,31 +689,53 @@ async function analyzeDocuments() {
         r.onerror = rej;
         r.readAsDataURL(f);
       });
-      files.push({ name: f.name, type: f.type || 'application/pdf', data: b64 });
+      encodedFiles.push({ name: f.name, type: f.type || 'application/pdf', data: b64 });
     }
 
     setStep('step-read', 'done');
-    setStep('step-extract', 'active');
+    setStep('step-extract', 'active', `Analyse de ${encodedFiles.length} fichier(s) avec l'IA...`);
 
-    const res = await fetch('/api/compromis-extract', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ files })
-    });
+    // Envoyer chaque fichier séparément et fusionner les résultats
+    let merged = {};
+    for (let i = 0; i < encodedFiles.length; i++) {
+      const f = encodedFiles[i];
+      setStep('step-extract', 'active', `Analyse fichier ${i+1}/${encodedFiles.length} : ${f.name}`);
 
-    if (!res.ok) {
-      const text = await res.text();
-      let msg = `Erreur serveur (${res.status})`;
-      try { msg = JSON.parse(text).error || msg; } catch {}
-      throw new Error(msg);
+      const res = await fetch('/api/compromis-extract', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: f }) // un seul fichier
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        let msg = `Erreur fichier "${f.name}" (${res.status})`;
+        try { msg = JSON.parse(text).error || msg; } catch {}
+        // On continue avec les autres fichiers, on note l'erreur
+        console.warn(msg);
+        continue;
+      }
+
+      const data = await res.json();
+
+      // Fusionner : on garde les valeurs non-null, priorité au dernier trouvé
+      for (const [key, val] of Object.entries(data)) {
+        if (val === null || val === undefined) continue;
+        if (key === 'vendeurs' || key === 'acquereurs') {
+          // Prendre la liste la plus longue
+          if (!merged[key] || (Array.isArray(val) && val.length > (merged[key]?.length || 0))) {
+            merged[key] = val;
+          }
+        } else {
+          if (!merged[key]) merged[key] = val;
+        }
+      }
     }
 
-    const extracted = await res.json();
     setStep('step-extract', 'done');
-    setStep('step-fill', 'active');
+    setStep('step-fill', 'active', 'Remplissage du formulaire');
 
-    // Remplir le formulaire
-    fillForm(extracted);
+    fillForm(merged);
 
     setStep('step-fill', 'done');
     btn.textContent = '✅ Analyse terminée — Vérifiez le formulaire';
