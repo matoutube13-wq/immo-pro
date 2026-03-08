@@ -1,6 +1,12 @@
 import Anthropic from "@anthropic-ai/sdk";
 
-export const config = { api: { bodyParser: { sizeLimit: "25mb" } } };
+export const config = {
+  api: {
+    bodyParser: { sizeLimit: "25mb" },
+    responseLimit: false
+  },
+  maxDuration: 60
+};
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -17,21 +23,31 @@ export default async function handler(req, res) {
 
     // Construire le contenu avec tous les documents
     const contentBlocks = [];
+    let fileCount = 0;
 
     for (const file of files) {
       const mediaType = file.type || "application/pdf";
-      // Seuls PDF et images supportés nativement par Claude
-      if (mediaType === "application/pdf") {
-        contentBlocks.push({
-          type: "document",
-          source: { type: "base64", media_type: "application/pdf", data: file.data }
-        });
-      } else if (mediaType.startsWith("image/")) {
-        contentBlocks.push({
-          type: "image",
-          source: { type: "base64", media_type: mediaType, data: file.data }
-        });
+      try {
+        if (mediaType === "application/pdf") {
+          contentBlocks.push({
+            type: "document",
+            source: { type: "base64", media_type: "application/pdf", data: file.data }
+          });
+          fileCount++;
+        } else if (mediaType.startsWith("image/")) {
+          contentBlocks.push({
+            type: "image",
+            source: { type: "base64", media_type: mediaType, data: file.data }
+          });
+          fileCount++;
+        }
+      } catch (fileErr) {
+        console.error(`Erreur fichier ${file.name}:`, fileErr.message);
       }
+    }
+
+    if (fileCount === 0) {
+      return res.status(400).json({ error: "Aucun fichier PDF ou image valide trouvé" });
     }
 
     // Prompt d'extraction
@@ -128,6 +144,8 @@ Pour chaque champ non trouvé dans les documents, mets null. Ne devine jamais un
 
   } catch (err) {
     console.error("Extract error:", err);
-    return res.status(500).json({ error: err.message || "Erreur lors de l'analyse" });
+    const status = err.status || 500;
+    const message = err.message || "Erreur lors de l'analyse";
+    return res.status(status).json({ error: message });
   }
 }
