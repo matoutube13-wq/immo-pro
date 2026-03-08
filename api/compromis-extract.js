@@ -2,7 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 
 export const config = {
   api: {
-    bodyParser: { sizeLimit: "25mb" },
+    bodyParser: { sizeLimit: "6mb" },
     responseLimit: false
   },
   maxDuration: 60
@@ -16,136 +16,83 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Méthode non autorisée" });
 
   try {
-    const { files } = req.body;
-    if (!files || files.length === 0) return res.status(400).json({ error: "Aucun fichier fourni" });
+    const { file } = req.body; // Un seul fichier à la fois
+    if (!file) return res.status(400).json({ error: "Aucun fichier fourni" });
 
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-    // Construire le contenu avec tous les documents
-    const contentBlocks = [];
-    let fileCount = 0;
+    const mediaType = file.type || "application/pdf";
+    const isSupported = mediaType === "application/pdf" || mediaType.startsWith("image/");
+    if (!isSupported) return res.status(400).json({ error: "Format non supporté. Utilisez PDF ou image." });
 
-    for (const file of files) {
-      const mediaType = file.type || "application/pdf";
-      try {
-        if (mediaType === "application/pdf") {
-          contentBlocks.push({
-            type: "document",
-            source: { type: "base64", media_type: "application/pdf", data: file.data }
-          });
-          fileCount++;
-        } else if (mediaType.startsWith("image/")) {
-          contentBlocks.push({
-            type: "image",
-            source: { type: "base64", media_type: mediaType, data: file.data }
-          });
-          fileCount++;
-        }
-      } catch (fileErr) {
-        console.error(`Erreur fichier ${file.name}:`, fileErr.message);
-      }
+    const estimatedBytes = (file.data.length * 3) / 4;
+    if (estimatedBytes > 4 * 1024 * 1024) {
+      return res.status(413).json({ error: `Fichier trop volumineux (${(estimatedBytes / 1024 / 1024).toFixed(1)} MB). Maximum 4 MB par fichier.` });
     }
 
-    if (fileCount === 0) {
-      return res.status(400).json({ error: "Aucun fichier PDF ou image valide trouvé" });
-    }
-
-    // Prompt d'extraction
-    contentBlocks.push({
-      type: "text",
-      text: `Tu es un expert en immobilier belge. Analyse TOUS ces documents officiels liés à une transaction immobilière en Wallonie (fiche bien, PEB, contrôle électrique, attestation sol, renseignements urbanistiques, titre de propriété, etc.).
-
-Extrais TOUTES les informations disponibles pour remplir un compromis de vente.
-
-Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans texte avant ou après. Format exact :
-
-{
-  "vendeurs": [
-    {
-      "civilite": "Monsieur ou Madame",
-      "nom": "NOM en majuscules",
-      "prenom": "Prénom",
-      "dateNaissance": "JJ mois AAAA",
-      "lieuNaissance": "Ville",
-      "adresse": "Adresse complète",
-      "telephone": "numéro",
-      "email": "email"
-    }
-  ],
-  "acquereurs": [
-    {
-      "civilite": "Monsieur ou Madame",
-      "nom": "NOM en majuscules",
-      "prenom": "Prénom",
-      "dateNaissance": "JJ mois AAAA",
-      "lieuNaissance": "Ville",
-      "adresse": "Adresse complète",
-      "situationFamiliale": "célibataire / marié(e) / cohabitant(e) légal(e) / divorcé(e) / veuf/veuve",
-      "telephone": "numéro",
-      "email": "email"
-    }
-  ],
-  "adresseBien": "adresse complète du bien vendu",
-  "commune": "nom de la commune",
-  "division": "division cadastrale ex: 1ère DIVISION",
-  "section": "lettre de section cadastrale ex: B",
-  "numero": "numéro de parcelle cadastrale",
-  "contenance": "surface en ares et centiares ex: 3 ares 92 centiares",
-  "revenuCadastral": "montant en EUR sans symbole ex: 671",
-  "prixChiffres": "prix en chiffres ex: 400.000",
-  "prixLettres": "prix en lettres ex: quatre cent mille euros",
-  "peb_numero": "numéro du certificat PEB",
-  "peb_expert": "nom de l'expert PEB",
-  "peb_date": "date du certificat PEB ex: 12/12/2025",
-  "peb_classe": "lettre de classe PEB: A++ A+ A B C D E F ou G",
-  "elec_date": "date du contrôle électrique ex: 19/11/2008",
-  "elec_organisme": "organisme de contrôle ex: BTV ou CERGA",
-  "elec_conforme": "conforme ou non conforme",
-  "citerne_present": "oui ou non",
-  "citerne_type": "gaz ou mazout",
-  "zone_inondable": "oui ou non",
-  "urbanisme_zone": "description de la zone urbanistique",
-  "urbanisme_permis": "description du dernier permis d'urbanisme",
-  "urbanisme_date_permis": "date du permis ex: 21/08/2007",
-  "sol_date": "date de l'extrait BDES ex: 28/01/2026",
-  "notaireVendeur": "Maître Prénom NOM à Ville",
-  "notaireAcquereur": "Maître Prénom NOM à Ville"
-}
-
-Pour chaque champ non trouvé dans les documents, mets null. Ne devine jamais une valeur. Réponds uniquement avec le JSON.`
-    });
+    const contentBlock = mediaType === "application/pdf"
+      ? { type: "document", source: { type: "base64", media_type: "application/pdf", data: file.data } }
+      : { type: "image", source: { type: "base64", media_type: mediaType, data: file.data } };
 
     const response = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 4000,
-      messages: [{ role: "user", content: contentBlocks }]
+      messages: [{
+        role: "user",
+        content: [
+          contentBlock,
+          {
+            type: "text",
+            text: `Tu es un expert en immobilier belge. Analyse ce document officiel lié à une transaction immobilière en Wallonie.
+
+Extrais TOUTES les informations disponibles. Pour les champs non présents dans CE document, mets null.
+
+Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans texte avant ou après :
+
+{
+  "vendeurs": [{"civilite": "Monsieur ou Madame","nom": "NOM majuscules","prenom": "Prénom","dateNaissance": "JJ mois AAAA","lieuNaissance": "Ville","adresse": "Adresse complète","telephone": "numéro","email": "email"}],
+  "acquereurs": [{"civilite": "Monsieur ou Madame","nom": "NOM majuscules","prenom": "Prénom","dateNaissance": "JJ mois AAAA","lieuNaissance": "Ville","adresse": "Adresse complète","situationFamiliale": "célibataire/marié(e)/cohabitant(e) légal(e)/divorcé(e)/veuf/veuve","telephone": "numéro","email": "email"}],
+  "adresseBien": null,
+  "commune": null,
+  "division": null,
+  "section": null,
+  "numero": null,
+  "contenance": null,
+  "revenuCadastral": null,
+  "prixChiffres": null,
+  "prixLettres": null,
+  "peb_numero": null,
+  "peb_expert": null,
+  "peb_date": null,
+  "peb_classe": null,
+  "elec_date": null,
+  "elec_organisme": null,
+  "elec_conforme": null,
+  "citerne_present": null,
+  "citerne_type": null,
+  "zone_inondable": null,
+  "urbanisme_zone": null,
+  "urbanisme_permis": null,
+  "urbanisme_date_permis": null,
+  "sol_date": null,
+  "notaireVendeur": null,
+  "notaireAcquereur": null
+}`
+          }
+        ]
+      }]
     });
 
-    const rawText = response.content
-      .filter(b => b.type === "text")
-      .map(b => b.text)
-      .join("");
-
-    // Nettoyer et parser le JSON
+    const rawText = response.content.filter(b => b.type === "text").map(b => b.text).join("");
     const clean = rawText.replace(/```json|```/g, "").trim();
     let extracted = {};
-    try {
-      extracted = JSON.parse(clean);
-    } catch (parseErr) {
-      // Tenter d'extraire un JSON partiel
-      const match = clean.match(/\{[\s\S]*\}/);
-      if (match) {
-        try { extracted = JSON.parse(match[0]); }
-        catch { extracted = {}; }
-      }
-    }
+    try { extracted = JSON.parse(clean); }
+    catch { const m = clean.match(/\{[\s\S]*\}/); if (m) try { extracted = JSON.parse(m[0]); } catch {} }
 
     return res.status(200).json(extracted);
 
   } catch (err) {
     console.error("Extract error:", err);
-    const status = err.status || 500;
-    const message = err.message || "Erreur lors de l'analyse";
-    return res.status(status).json({ error: message });
+    return res.status(err.status || 500).json({ error: err.message || "Erreur lors de l'analyse" });
   }
 }
