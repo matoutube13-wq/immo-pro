@@ -3,14 +3,24 @@ export const config = { maxDuration: 30 };
 const KV_URL = process.env.KV_REST_API_URL;
 const KV_TOKEN = process.env.KV_REST_API_TOKEN;
 
+function parseVal(val) {
+  if (val === null || val === undefined) return null;
+  if (typeof val === 'object') return val;
+  // Peut être doublement encodé : "\"{ ... }\""
+  let v = val;
+  try { v = JSON.parse(v); } catch {}
+  if (typeof v === 'string') {
+    try { v = JSON.parse(v); } catch {}
+  }
+  return v;
+}
+
 async function kvGet(key) {
   const r = await fetch(`${KV_URL}/get/${encodeURIComponent(key)}`, {
     headers: { Authorization: `Bearer ${KV_TOKEN}` }
   });
   const d = await r.json();
-  if (!d.result) return null;
-  try { return typeof d.result === 'string' ? JSON.parse(d.result) : d.result; }
-  catch { return d.result; }
+  return parseVal(d.result);
 }
 
 async function kvSet(key, value) {
@@ -18,14 +28,6 @@ async function kvSet(key, value) {
     method: 'POST',
     headers: { Authorization: `Bearer ${KV_TOKEN}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(JSON.stringify(value))
-  });
-  return r.json();
-}
-
-async function kvDel(key) {
-  const r = await fetch(`${KV_URL}/del/${encodeURIComponent(key)}`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${KV_TOKEN}` }
   });
   return r.json();
 }
@@ -38,24 +40,12 @@ async function kvKeys(pattern) {
   return d.result || [];
 }
 
-async function kvLPush(key, value) {
-  const r = await fetch(`${KV_URL}/lpush/${encodeURIComponent(key)}`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${KV_TOKEN}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(JSON.stringify(value))
-  });
-  return r.json();
-}
-
 async function kvLRange(key) {
   const r = await fetch(`${KV_URL}/lrange/${encodeURIComponent(key)}/0/999`, {
     headers: { Authorization: `Bearer ${KV_TOKEN}` }
   });
   const d = await r.json();
-  return (d.result || []).map(i => {
-    try { return typeof i === 'string' ? JSON.parse(i) : i; }
-    catch { return i; }
-  });
+  return (d.result || []).map(i => parseVal(i));
 }
 
 export default async function handler(req, res) {
@@ -65,23 +55,21 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
 
   if (!KV_URL || !KV_TOKEN) {
-    return res.status(500).json({ error: "KV_REST_API_URL ou KV_REST_API_TOKEN manquant" });
+    return res.status(500).json({ error: "Variables KV manquantes" });
   }
 
   try {
-    // GET — lister tous les biens
     if (req.method === 'GET') {
       const keys = await kvKeys('bien:*');
       const biens = (await Promise.all(keys.map(k => kvGet(k)))).filter(Boolean);
       const enriched = await Promise.all(biens.map(async b => {
         const cands = await kvLRange(`candidatures:bien:${b.id}`);
-        return { ...b, nbCandidatures: cands.length, nbEvalues: cands.filter(c => c.score !== null).length };
+        return { ...b, nbCandidatures: cands.length, nbEvalues: cands.filter(c => c && c.score !== null).length };
       }));
       enriched.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       return res.status(200).json({ biens: enriched });
     }
 
-    // POST — créer un bien
     if (req.method === 'POST') {
       const { adresse, loyer, type, chambres, surface, criteresSup, statut } = req.body;
       if (!adresse || !loyer) return res.status(400).json({ error: "Adresse et loyer obligatoires" });
@@ -100,7 +88,6 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, bien });
     }
 
-    // PUT — modifier un bien
     if (req.method === 'PUT') {
       const { id, ...updates } = req.body;
       if (!id) return res.status(400).json({ error: "ID manquant" });
@@ -112,7 +99,6 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, bien: updated });
     }
 
-    // DELETE — archiver un bien
     if (req.method === 'DELETE') {
       const { id } = req.query;
       if (!id) return res.status(400).json({ error: "ID manquant" });
