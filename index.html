@@ -183,6 +183,44 @@
       .content { padding: 20px 12px 60px; }
       .tools-grid { padding: 0 16px 40px; }
     }
+
+    /* ── MODALE VÉRIFICATION ───────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000; padding: 20px;
+    }
+    .modal {
+      background: #fff; border-radius: 20px; padding: 32px;
+      max-width: 640px; width: 100%; max-height: 85vh; overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .modal-title { font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+    .modal-subtitle { font-size: 13px; color: #888; margin-bottom: 20px; }
+    .verify-section { margin-bottom: 20px; }
+    .verify-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; color: #999; }
+    .verify-item { border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; font-size: 13px; }
+    .verify-item.warning { background: #fff8e1; border-left: 3px solid #f59e0b; }
+    .verify-item.danger  { background: #fff0f0; border-left: 3px solid #e74c3c; }
+    .verify-item-title { font-weight: 700; color: #1a1a2e; margin-bottom: 3px; }
+    .verify-item-desc { color: #555; line-height: 1.5; }
+    .verify-vals { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+    .verify-val { background: #f0ece4; border-radius: 4px; padding: 2px 8px; font-size: 11px; color: #555; }
+    .verify-val.good { background: #e8f5e9; color: #1a6e3d; font-weight: 700; }
+    .verify-ok { background: #f0fff4; border-radius: 10px; padding: 14px; text-align: center; color: #27ae60; font-weight: 600; font-size: 14px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+    .modal-actions button { flex: 1; padding: 13px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; border: none; }
+    .btn-modal-ok { background: #1a1a2e; color: #fff; }
+    .btn-modal-ok:hover { background: #2d2d4e; }
+    .btn-modal-cancel { background: #f0ece4; color: #1a1a2e; }
+    .verify-banner {
+      border-radius: 12px; padding: 14px 16px; margin-bottom: 20px;
+      display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5;
+    }
+    .verify-banner.ok       { background: #f0fff4; border: 1px solid #b2f0c8; color: #1a6e3d; }
+    .verify-banner.attention{ background: #fff8e1; border: 1px solid #fcd34d; color: #92400e; }
+    .verify-banner.bloquant { background: #fff0f0; border: 1px solid #fca5a5; color: #7f1d1d; }
+    .verify-banner-icon { font-size: 20px; flex-shrink: 0; line-height: 1; }
   </style>
 </head>
 <body>
@@ -657,6 +695,8 @@ function addPersonBlock(containerId, type) {
 }
 
 // ── Analyse IA ────────────────────────────────────────────
+let _mergedData = {}; // Stocke les données extraites pour la modale
+
 async function analyzeDocuments() {
   const btn = document.getElementById('btn-analyze');
   const progress = document.getElementById('ai-progress');
@@ -674,13 +714,12 @@ async function analyzeDocuments() {
     if (status === 'active') el.querySelector('.ai-step-icon').textContent = '⏳';
     if (status === 'done')   el.querySelector('.ai-step-icon').textContent = '✅';
     if (status === 'error')  el.querySelector('.ai-step-icon').textContent = '❌';
-    if (label) el.childNodes[1].textContent = label;
+    if (label) el.querySelector('.ai-step-icon').nextSibling.textContent = ' ' + label;
   }
 
   try {
     setStep('step-read', 'active', 'Lecture des documents');
 
-    // Encoder tous les fichiers en base64
     const encodedFiles = [];
     for (const f of selectedFiles) {
       const b64 = await new Promise((res, rej) => {
@@ -693,52 +732,83 @@ async function analyzeDocuments() {
     }
 
     setStep('step-read', 'done');
-    setStep('step-extract', 'active', `Analyse de ${encodedFiles.length} fichier(s) avec l'IA...`);
+    setStep('step-extract', 'active', `Analyse de ${encodedFiles.length} fichier(s)...`);
 
-    // Envoyer chaque fichier séparément et fusionner les résultats
+    // Extraction fichier par fichier
     let merged = {};
+    const documentsFound = [];
+
     for (let i = 0; i < encodedFiles.length; i++) {
       const f = encodedFiles[i];
-      setStep('step-extract', 'active', `Analyse fichier ${i+1}/${encodedFiles.length} : ${f.name}`);
+      setStep('step-extract', 'active', `Fichier ${i+1}/${encodedFiles.length} : ${f.name}`);
 
       const res = await fetch('/api/compromis-extract', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file: f }) // un seul fichier
+        body: JSON.stringify({ file: f })
       });
 
       if (!res.ok) {
         const text = await res.text();
         let msg = `Erreur fichier "${f.name}" (${res.status})`;
         try { msg = JSON.parse(text).error || msg; } catch {}
-        // On continue avec les autres fichiers, on note l'erreur
         console.warn(msg);
         continue;
       }
 
       const data = await res.json();
+      if (data._typeDocument) documentsFound.push(data._typeDocument);
 
-      // Fusionner : on garde les valeurs non-null, priorité au dernier trouvé
       for (const [key, val] of Object.entries(data)) {
-        if (val === null || val === undefined) continue;
+        if (val === null || val === undefined || key === '_typeDocument') continue;
         if (key === 'vendeurs' || key === 'acquereurs') {
-          // Prendre la liste la plus longue
-          if (!merged[key] || (Array.isArray(val) && val.length > (merged[key]?.length || 0))) {
-            merged[key] = val;
-          }
+          if (!merged[key] || (Array.isArray(val) && val.length > (merged[key]?.length || 0))) merged[key] = val;
         } else {
           if (!merged[key]) merged[key] = val;
         }
       }
     }
 
-    setStep('step-extract', 'done');
-    setStep('step-fill', 'active', 'Remplissage du formulaire');
+    merged._documentsFound = documentsFound;
+    _mergedData = merged;
 
-    fillForm(merged);
+    setStep('step-extract', 'done');
+    setStep('step-fill', 'active', 'Vérification de la cohérence...');
+
+    // ── Appel vérification IA ──────────────────────────────
+    const verifyRes = await fetch('/api/compromis-extract', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'verify', allExtracted: merged })
+    });
+
+    let verification = null;
+    if (verifyRes.ok) {
+      verification = await verifyRes.json();
+    }
 
     setStep('step-fill', 'done');
-    btn.textContent = '✅ Analyse terminée — Vérifiez le formulaire';
+
+    const hasIssues = verification && (
+      (verification.documentsManquants?.length > 0) ||
+      (verification.incoherences?.length > 0)
+    );
+
+    if (hasIssues) {
+      // Afficher la modale
+      showVerifyModal(verification);
+    } else {
+      // Tout OK → remplir directement
+      fillForm(_mergedData);
+      btn.textContent = '✅ Analyse terminée — Vérifiez le formulaire';
+      if (verification?.resume) {
+        errBox.style.display = 'block';
+        errBox.style.background = '#f0fff4';
+        errBox.style.borderColor = '#b2f0c8';
+        errBox.style.color = '#1a6e3d';
+        errBox.textContent = '✅ ' + verification.resume;
+      }
+    }
 
   } catch (err) {
     setStep('step-read', 'error');
@@ -749,6 +819,82 @@ async function analyzeDocuments() {
     btn.disabled = false;
     btn.textContent = '✨ Analyser avec l\'IA';
   }
+}
+
+// ── Modale de vérification ────────────────────────────────
+function showVerifyModal(v) {
+  const modal = document.getElementById('verify-modal');
+  const body = document.getElementById('verify-modal-body');
+  const statut = v.statut || 'attention';
+  const icons = { ok: '✅', attention: '⚠️', bloquant: '🚨' };
+
+  let html = '';
+
+  // Bannière résumé
+  html += `<div class="verify-banner ${statut}">
+    <div class="verify-banner-icon">${icons[statut]}</div>
+    <div><strong>${v.resume || 'Vérification terminée'}</strong></div>
+  </div>`;
+
+  // Documents manquants
+  if (v.documentsManquants?.length > 0) {
+    html += `<div class="verify-section">
+      <div class="verify-section-title">📋 Documents manquants ou incomplets</div>`;
+    for (const d of v.documentsManquants) {
+      const cls = d.obligatoire ? 'danger' : 'warning';
+      const tag = d.obligatoire ? '🔴 Obligatoire' : '🟡 Recommandé';
+      html += `<div class="verify-item ${cls}">
+        <div class="verify-item-title">${d.document} <span style="font-size:11px;font-weight:400;color:#888">${tag}</span></div>
+        <div class="verify-item-desc">${d.raison}</div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  // Incohérences
+  if (v.incoherences?.length > 0) {
+    html += `<div class="verify-section">
+      <div class="verify-section-title">⚠️ Incohérences détectées</div>`;
+    for (const inc of v.incoherences) {
+      html += `<div class="verify-item danger">
+        <div class="verify-item-title">${inc.description}</div>
+        <div class="verify-vals">`;
+      if (inc.valeur1) html += `<span class="verify-val">📄 ${inc.valeur1}</span>`;
+      if (inc.valeur2) html += `<span class="verify-val">📄 ${inc.valeur2}</span>`;
+      if (inc.suggestion) html += `<span class="verify-val good">💡 ${inc.suggestion}</span>`;
+      html += `</div></div>`;
+    }
+    html += `</div>`;
+  }
+
+  html += `<p style="font-size:13px;color:#888;margin-top:8px;">Vous pouvez continuer et corriger manuellement dans le formulaire, ou revenir pour ajouter les documents manquants.</p>`;
+
+  body.innerHTML = html;
+
+  // Ajuster bouton selon gravité
+  const confirmBtn = document.getElementById('verify-modal-confirm');
+  if (statut === 'bloquant') {
+    confirmBtn.textContent = '⚠️ Continuer malgré tout →';
+    confirmBtn.style.background = '#e74c3c';
+  } else {
+    confirmBtn.textContent = 'Continuer quand même →';
+    confirmBtn.style.background = '#1a1a2e';
+  }
+
+  modal.style.display = 'flex';
+}
+
+function closeVerifyModal() {
+  document.getElementById('verify-modal').style.display = 'none';
+  const btn = document.getElementById('btn-analyze');
+  btn.disabled = false;
+  btn.textContent = '✨ Analyser avec l\'IA';
+}
+
+function confirmVerifyAndFill() {
+  document.getElementById('verify-modal').style.display = 'none';
+  fillForm(_mergedData);
+  document.getElementById('btn-analyze').textContent = '✅ Analyse terminée — Vérifiez le formulaire';
 }
 
 // ── Remplir le formulaire avec données IA ─────────────────
@@ -951,5 +1097,19 @@ async function generateCompromis() {
   }
 }
 </script>
+
+<!-- ── MODALE VÉRIFICATION ──────────────────────────────────────────────── -->
+<div id="verify-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this) closeVerifyModal()">
+  <div class="modal">
+    <div class="modal-title" id="verify-modal-title">🔍 Analyse du dossier</div>
+    <div class="modal-subtitle" id="verify-modal-subtitle">Vérification des documents et de la cohérence</div>
+    <div id="verify-modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeVerifyModal()">← Revoir les documents</button>
+      <button class="btn-modal-ok" id="verify-modal-confirm" onclick="confirmVerifyAndFill()">Continuer quand même →</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
