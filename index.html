@@ -552,13 +552,20 @@ function logout() {
 // NAVIGATION
 // ════════════════════════════════════════════════════════════
 function showTool(id) {
+  ['social-tool', 'compromis-tool', 'candidatures-tool'].forEach(function(t) {
+    const el = document.getElementById(t);
+    if (el) el.style.display = 'none';
+  });
   document.getElementById('dashboard').style.display = 'none';
-  document.getElementById(id).style.display = 'block';
+  const target = document.getElementById(id);
+  if (target) target.style.display = 'block';
   window.scrollTo(0, 0);
+  // Init candidatures
+  if (id === 'candidatures-tool') { switchTab('biens'); loadBiens(); }
 }
 
 function showDashboard() {
-  ['social-tool', 'compromis-tool'].forEach(id => {
+  ['social-tool', 'compromis-tool', 'candidatures-tool'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
@@ -1105,11 +1112,7 @@ async function evaluerTous() {
   btn.textContent='✨ Tout évaluer'; btn.disabled=false; await loadAllCandidatures();
 }
 
-const _origShowTool2 = showTool;
-function showTool(id) {
-  _origShowTool2(id);
-  if (id==='candidatures-tool') { switchTab('biens'); loadBiens(); }
-}
+
 
 </script>
 
