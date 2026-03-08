@@ -701,8 +701,10 @@ async function analyzeDocuments() {
     });
 
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || 'Erreur serveur');
+      const text = await res.text();
+      let msg = `Erreur serveur (${res.status})`;
+      try { msg = JSON.parse(text).error || msg; } catch {}
+      throw new Error(msg);
     }
 
     const extracted = await res.json();
@@ -899,8 +901,10 @@ async function generateCompromis() {
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || 'Erreur lors de la génération');
+      const text = await res.text();
+      let msg = `Erreur serveur (${res.status})`;
+      try { msg = JSON.parse(text).error || msg; } catch {}
+      throw new Error(msg);
     }
 
     const blob = await res.blob();
