@@ -8,7 +8,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', sans-serif; background: #f7f5f2; min-height: 100vh; }
 
-    /* LOGIN */
+    /* ── LOGIN ─────────────────────────────────────────────── */
     #login-page {
       min-height: 100vh; display: flex; align-items: center; justify-content: center;
       background: linear-gradient(135deg, #1a1a2e 0%, #2d2d4e 100%);
@@ -36,48 +36,64 @@
     .login-error { color: #c0392b; font-size: 13px; margin-top: 10px; display: none; }
     .login-spinner { display: none; margin-top: 12px; color: #999; font-size: 13px; }
 
-    /* APP */
+    /* ── APP SHELL ─────────────────────────────────────────── */
     #app { display: none; }
-    .header { background: #1a1a2e; padding: 22px 40px; display: flex; align-items: center; gap: 14px; }
+    .header { background: #1a1a2e; padding: 22px 40px; display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 100; }
     .logo { width: 40px; height: 40px; background: #c9a84c; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
     .logo-text { color: #fff; font-weight: 700; font-size: 18px; }
     .logo-sub { color: #c9a84c; font-size: 11px; letter-spacing: 1px; }
     .logout-btn { margin-left: auto; background: none; border: 1px solid #c9a84c; color: #c9a84c; padding: 6px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: 600; }
     .logout-btn:hover { background: #c9a84c; color: #1a1a2e; }
 
+    /* ── DASHBOARD ─────────────────────────────────────────── */
     #dashboard { display: block; }
     .welcome { padding: 36px 40px 16px; }
     .welcome h1 { font-size: 24px; font-weight: 700; color: #1a1a2e; }
     .welcome p { color: #666; margin-top: 6px; font-size: 14px; }
     .tools-grid { padding: 0 40px 60px; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
     .tool-card { background: #fff; border-radius: 16px; padding: 26px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); cursor: pointer; border: 2px solid transparent; transition: all 0.2s; position: relative; }
-    .tool-card:hover { border-color: #c9a84c; }
+    .tool-card:hover { border-color: #c9a84c; transform: translateY(-2px); }
     .tool-card.disabled { opacity: 0.5; cursor: default; }
-    .tool-card.disabled:hover { border-color: transparent; }
+    .tool-card.disabled:hover { border-color: transparent; transform: none; }
     .tool-badge { position: absolute; top: 12px; right: 12px; background: #f0ece4; color: #999; font-size: 9px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+    .tool-badge.new { background: #e8f5e9; color: #27ae60; }
     .tool-icon { font-size: 32px; margin-bottom: 12px; }
     .tool-title { font-weight: 700; font-size: 15px; color: #1a1a2e; margin-bottom: 4px; }
     .tool-desc { font-size: 12px; color: #888; line-height: 1.5; }
 
-    #social-tool { display: none; }
+    /* ── TOOL SHELLS ───────────────────────────────────────── */
+    #social-tool, #compromis-tool { display: none; }
     .tool-header { background: #1a1a2e; padding: 18px 40px; display: flex; align-items: center; gap: 14px; }
-    .back-btn { background: none; border: none; color: #c9a84c; cursor: pointer; font-size: 20px; padding: 0; }
-    .tool-icon-sm { width: 34px; height: 34px; background: #c9a84c; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .back-btn { background: none; border: none; color: #c9a84c; cursor: pointer; font-size: 20px; padding: 0; line-height: 1; }
+    .tool-icon-sm { width: 34px; height: 34px; background: #c9a84c; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
     .tool-header-text { color: #fff; font-weight: 700; font-size: 16px; }
     .tool-header-sub { color: #c9a84c; font-size: 10px; letter-spacing: 1px; }
 
-    .content { max-width: 700px; margin: 0 auto; padding: 36px 20px; }
+    /* ── SHARED COMPONENTS ─────────────────────────────────── */
+    .content { max-width: 860px; margin: 0 auto; padding: 36px 20px 60px; }
     .card { background: #fff; border-radius: 16px; padding: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); margin-bottom: 24px; }
+    .card h3 { font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
     label { display: block; font-weight: 600; color: #1a1a2e; margin-bottom: 8px; font-size: 14px; }
-    input[type=text] { width: 100%; padding: 13px 16px; border-radius: 10px; border: 1.5px solid #e0dbd2; font-size: 14px; outline: none; color: #333; background: #fafaf8; transition: border 0.2s; }
-    input[type=text]:focus { border-color: #c9a84c; }
+    input[type=text], input[type=email], input[type=password], select, textarea {
+      width: 100%; padding: 11px 14px; border-radius: 10px; border: 1.5px solid #e0dbd2;
+      font-size: 14px; outline: none; color: #333; background: #fafaf8; transition: border 0.2s;
+      font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus { border-color: #c9a84c; }
     .btn-primary { width: 100%; padding: 14px; background: #1a1a2e; color: #fff; border: none; border-radius: 10px; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 16px; transition: background 0.2s; }
     .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
     .btn-primary:hover:not(:disabled) { background: #2d2d4e; }
-    .loading { margin-top: 14px; padding: 12px 16px; background: #f0ece4; border-radius: 10px; font-size: 13px; color: #1a1a2e; font-weight: 500; display: none; align-items: center; gap: 10px; }
-    .spinner { width: 14px; height: 14px; border: 2px solid #c9a84c; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    .btn-gold { background: #c9a84c; color: #fff; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: background 0.2s; padding: 12px 24px; font-size: 14px; }
+    .btn-gold:hover { background: #b8943e; }
+    .btn-ghost { background: #f0ece4; color: #1a1a2e; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; padding: 10px 18px; font-size: 13px; }
+    .btn-ghost:hover { background: #e5e0d6; }
+    .loading { margin-top: 14px; padding: 14px 16px; background: #f0ece4; border-radius: 10px; font-size: 13px; color: #1a1a2e; font-weight: 500; display: none; align-items: center; gap: 10px; }
+    .spinner { width: 14px; height: 14px; border: 2px solid #c9a84c; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .error-box { background: #fff0f0; border: 1px solid #ffcccc; border-radius: 10px; padding: 10px 14px; margin-top: 10px; font-size: 13px; color: #c0392b; display: none; }
+    .success-box { background: #f0fff4; border: 1px solid #b2f0c8; border-radius: 10px; padding: 10px 14px; margin-top: 10px; font-size: 13px; color: #27ae60; display: none; }
+
+    /* ── SOCIAL TOOL ───────────────────────────────────────── */
     .result-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
     .avatar { width: 40px; height: 40px; border-radius: 50%; background: #1a1a2e; display: flex; align-items: center; justify-content: center; color: #c9a84c; font-weight: 700; font-size: 14px; }
     .fb-badge { margin-left: auto; background: #1877f2; color: #fff; border-radius: 8px; padding: 3px 10px; font-size: 11px; font-weight: 600; }
@@ -86,11 +102,92 @@
     .btn-copy { flex: 1; padding: 12px; background: #c9a84c; color: #fff; border: none; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; transition: background 0.2s; }
     .btn-copy.copied { background: #27ae60; }
     .btn-regen { flex: 1; padding: 12px; background: #f0ece4; color: #1a1a2e; border: none; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; }
+
+    /* ── COMPROMIS TOOL ────────────────────────────────────── */
+    .drop-zone {
+      border: 2px dashed #d0c9bc; border-radius: 12px; padding: 36px 24px;
+      text-align: center; cursor: pointer; background: #fafaf8; transition: all 0.2s;
+    }
+    .drop-zone:hover, .drop-zone.dragover { border-color: #c9a84c; background: #fdf8ee; }
+    .drop-zone-icon { font-size: 40px; margin-bottom: 10px; }
+    .drop-zone p { color: #666; font-size: 14px; margin-bottom: 6px; }
+    .drop-zone small { color: #aaa; font-size: 12px; }
+    .file-list { margin-top: 16px; }
+    .file-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+      background: #f7f5f2; border-radius: 8px; margin-bottom: 8px; font-size: 13px;
+    }
+    .file-item .file-name { flex: 1; color: #333; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-item .file-size { color: #999; font-size: 11px; flex-shrink: 0; }
+    .file-item .file-remove { background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 18px; line-height: 1; flex-shrink: 0; }
+
+    /* Étapes IA */
+    .ai-steps { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+    .ai-step {
+      display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+      border-radius: 10px; font-size: 13px; background: #f7f5f2; color: #999;
+      transition: all 0.3s;
+    }
+    .ai-step.active { background: #fdf8ee; color: #1a1a2e; font-weight: 600; }
+    .ai-step.done { background: #f0fff4; color: #27ae60; font-weight: 600; }
+    .ai-step.error { background: #fff0f0; color: #c0392b; }
+    .ai-step-icon { font-size: 18px; width: 28px; text-align: center; flex-shrink: 0; }
+
+    /* Formulaire compromis */
+    .form-section { margin-bottom: 28px; }
+    .form-section-title {
+      font-size: 13px; font-weight: 700; color: #c9a84c; text-transform: uppercase;
+      letter-spacing: 1px; margin-bottom: 14px; padding-bottom: 8px;
+      border-bottom: 1px solid #f0ece4;
+    }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group label { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 0; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group input, .form-group select { font-size: 13px; padding: 9px 12px; }
+    .ai-filled { border-color: #c9a84c !important; background: #fffbf0 !important; }
+
+    .personne-block {
+      background: #f9f8f6; border-radius: 10px; padding: 18px;
+      margin-bottom: 14px; border: 1px solid #eee;
+    }
+    .personne-block-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px;
+    }
+    .personne-block-title { font-size: 13px; font-weight: 700; color: #1a1a2e; }
+    .btn-remove { background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 13px; font-weight: 600; }
+
+    .btn-add-person {
+      display: flex; align-items: center; gap: 6px; background: none;
+      border: 1.5px dashed #ccc; border-radius: 8px; padding: 8px 16px;
+      cursor: pointer; color: #888; font-size: 13px; font-weight: 600;
+      transition: all 0.2s; width: 100%;
+    }
+    .btn-add-person:hover { border-color: #c9a84c; color: #c9a84c; background: #fdf8ee; }
+
+    .download-btn {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 16px; background: #1a1a2e; color: #fff; border: none;
+      border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer;
+      transition: background 0.2s; margin-top: 8px;
+    }
+    .download-btn:hover { background: #2d2d4e; }
+    .download-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    .badge-ai { display: inline-flex; align-items: center; gap: 4px; background: #fdf8ee; border: 1px solid #e8d9a0; color: #a07c20; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .header { padding: 16px 20px; }
+      .content { padding: 20px 12px 60px; }
+      .tools-grid { padding: 0 16px 40px; }
+    }
   </style>
 </head>
 <body>
 
-<!-- LOGIN -->
+<!-- ── LOGIN ──────────────────────────────────────────────────────────────── -->
 <div id="login-page">
   <div class="login-box">
     <div class="login-logo">🏠</div>
@@ -103,7 +200,7 @@
   </div>
 </div>
 
-<!-- APP -->
+<!-- ── APP ────────────────────────────────────────────────────────────────── -->
 <div id="app">
   <div class="header">
     <div class="logo">🏠</div>
@@ -126,11 +223,11 @@
         <div class="tool-title">Réseaux Sociaux</div>
         <div class="tool-desc">Générez des posts Facebook à partir d'un lien d'annonce</div>
       </div>
-      <div class="tool-card disabled">
-        <span class="tool-badge">BIENTÔT</span>
+      <div class="tool-card" onclick="showTool('compromis-tool')">
+        <span class="tool-badge new">NOUVEAU</span>
         <div class="tool-icon">📄</div>
         <div class="tool-title">Compromis de Vente</div>
-        <div class="tool-desc">Rédigez et exportez un compromis en Word automatiquement</div>
+        <div class="tool-desc">Importez les documents — l'IA remplit et génère le compromis Word</div>
       </div>
       <div class="tool-card disabled">
         <span class="tool-badge">BIENTÔT</span>
@@ -147,7 +244,7 @@
     </div>
   </div>
 
-  <!-- SOCIAL TOOL -->
+  <!-- ── SOCIAL TOOL ─────────────────────────────────────── -->
   <div id="social-tool">
     <div class="tool-header">
       <button class="back-btn" onclick="showDashboard()">←</button>
@@ -157,7 +254,7 @@
         <div class="tool-header-sub">FACEBOOK · PROFESSIONNEL</div>
       </div>
     </div>
-    <div class="content">
+    <div class="content" style="max-width:700px">
       <div class="card">
         <label>🔗 Lien de l'annonce immobilière</label>
         <input type="text" id="annonce-url" placeholder="https://www.trevi.be/fr/bien/..." onkeydown="if(event.key==='Enter') generate()"/>
@@ -185,115 +282,647 @@
       </div>
     </div>
   </div>
+
+  <!-- ── COMPROMIS TOOL ───────────────────────────────────── -->
+  <div id="compromis-tool">
+    <div class="tool-header">
+      <button class="back-btn" onclick="showDashboard()">←</button>
+      <div class="tool-icon-sm">📄</div>
+      <div>
+        <div class="tool-header-text">Compromis de Vente</div>
+        <div class="tool-header-sub">ANALYSE IA · GÉNÉRATION WORD</div>
+      </div>
+    </div>
+    <div class="content">
+
+      <!-- ÉTAPE 1 : Upload -->
+      <div class="card">
+        <h3>📁 Étape 1 — Importer les documents <span class="badge-ai">✨ IA</span></h3>
+        <p style="font-size:13px;color:#888;margin-bottom:16px;">
+          Glissez-déposez tous les documents officiels. L'IA analysera chaque fichier et remplira automatiquement le formulaire.
+        </p>
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+          <div class="drop-zone-icon">📂</div>
+          <p><strong>Cliquez ou glissez vos fichiers ici</strong></p>
+          <small>PEB · Contrôle électrique · Attestation sol · Renseignements urbanistiques · Fiche Whise · etc.</small>
+          <input type="file" id="file-input" multiple accept=".pdf,.jpg,.jpeg,.png" style="display:none">
+        </div>
+        <div id="file-list" class="file-list"></div>
+
+        <!-- Progression IA -->
+        <div id="ai-progress" style="display:none; margin-top:20px;">
+          <div style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:12px;">Analyse en cours...</div>
+          <div class="ai-steps">
+            <div class="ai-step" id="step-read"><div class="ai-step-icon">📖</div>Lecture des documents</div>
+            <div class="ai-step" id="step-extract"><div class="ai-step-icon">🔍</div>Extraction des informations</div>
+            <div class="ai-step" id="step-fill"><div class="ai-step-icon">✍️</div>Remplissage automatique du formulaire</div>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="btn-analyze" onclick="analyzeDocuments()" style="margin-top:20px;" disabled>
+          ✨ Analyser avec l'IA
+        </button>
+        <div class="error-box" id="analyze-error"></div>
+      </div>
+
+      <!-- ÉTAPE 2 : Formulaire -->
+      <div class="card" id="form-card">
+        <h3>✏️ Étape 2 — Vérifier et compléter <span class="badge-ai">✨ Pré-rempli par IA</span></h3>
+        <p style="font-size:13px;color:#888;margin-bottom:24px;">
+          Les champs en <span style="color:#a07c20;font-weight:700;">or</span> ont été remplis automatiquement. Vérifiez et complétez si nécessaire.
+        </p>
+
+        <!-- VENDEUR(S) -->
+        <div class="form-section">
+          <div class="form-section-title">👤 Vendeur(s)</div>
+          <div id="vendeurs-container"></div>
+          <button class="btn-add-person" onclick="addPersonBlock('vendeurs-container', 'vendeur')">
+            <span>＋</span> Ajouter un co-vendeur
+          </button>
+        </div>
+
+        <!-- ACQUÉREUR(S) -->
+        <div class="form-section">
+          <div class="form-section-title">👤 Acquéreur(s)</div>
+          <div id="acquereurs-container"></div>
+          <button class="btn-add-person" onclick="addPersonBlock('acquereurs-container', 'acquereur')">
+            <span>＋</span> Ajouter un co-acquéreur
+          </button>
+        </div>
+
+        <!-- LE BIEN -->
+        <div class="form-section">
+          <div class="form-section-title">🏠 Le bien vendu</div>
+          <div class="form-grid">
+            <div class="form-group full"><label>Adresse complète</label><input type="text" id="f_adresseBien" placeholder="Rue Thier du Moulin, 45A – 4530 Villers-le-Bouillet"></div>
+            <div class="form-group"><label>Commune</label><input type="text" id="f_commune" placeholder="Villers-le-Bouillet"></div>
+            <div class="form-group"><label>Division cadastrale</label><input type="text" id="f_division" placeholder="1ère DIVISION"></div>
+            <div class="form-group"><label>Section</label><input type="text" id="f_section" placeholder="B"></div>
+            <div class="form-group"><label>Numéro parcelle</label><input type="text" id="f_numero" placeholder="1114 D2 P0000"></div>
+            <div class="form-group"><label>Contenance</label><input type="text" id="f_contenance" placeholder="3 ares 92 centiares"></div>
+            <div class="form-group full"><label>Inclus dans la vente</label><input type="text" id="f_inclus" placeholder="immeubles par incorporation, citerne d'eau de pluie..."></div>
+          </div>
+        </div>
+
+        <!-- PRIX -->
+        <div class="form-section">
+          <div class="form-section-title">💰 Prix et paiement</div>
+          <div class="form-grid">
+            <div class="form-group full"><label>Prix en lettres</label><input type="text" id="f_prixLettres" placeholder="deux cent cinquante mille euros"></div>
+            <div class="form-group"><label>Prix en chiffres</label><input type="text" id="f_prixChiffres" placeholder="250.000"></div>
+            <div class="form-group"><label>Montant garantie (EUR)</label><input type="text" id="f_montantGarantie" placeholder="25.000"></div>
+            <div class="form-group"><label>IBAN acquéreur</label><input type="text" id="f_ibanAcquereur" placeholder="BE12 XXXX XXXX XXXX"></div>
+            <div class="form-group"><label>IBAN agence (Trevi)</label><input type="text" id="f_ibanAgence" value="BE12 0689 0274 6792"></div>
+            <div class="form-group full">
+              <label>Condition suspensive financement</label>
+              <select id="f_conditionFinancement">
+                <option value="non">Non — vente sans condition de financement</option>
+                <option value="oui">Oui — sous condition d'obtenir un crédit</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- NOTAIRES -->
+        <div class="form-section">
+          <div class="form-section-title">⚖️ Notaires</div>
+          <div class="form-grid">
+            <div class="form-group"><label>Notaire du vendeur</label><input type="text" id="f_notaireVendeur" placeholder="Maître Moïra PLENEVAUX à Wanze"></div>
+            <div class="form-group"><label>Notaire de l'acquéreur</label><input type="text" id="f_notaireAcquereur" placeholder="Maître Thérèse DE NIJS à Wanze"></div>
+          </div>
+        </div>
+
+        <!-- INFOS TECHNIQUES -->
+        <div class="form-section">
+          <div class="form-section-title">⚙️ Informations techniques</div>
+          <div class="form-grid">
+            <div class="form-group"><label>Revenu cadastral (EUR)</label><input type="text" id="f_revenuCadastral" placeholder="671"></div>
+            <div class="form-group"><label>Classe PEB</label>
+              <select id="f_pebClasse">
+                <option value="">Sélectionner</option>
+                <option>A++</option><option>A+</option><option>A</option>
+                <option>B</option><option>C</option><option>D</option>
+                <option>E</option><option>F</option><option>G</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Numéro certificat PEB</label><input type="text" id="f_pebNumero" placeholder="20251212009588"></div>
+            <div class="form-group"><label>Expert PEB</label><input type="text" id="f_pebExpert" placeholder="PIERARD Rémy"></div>
+            <div class="form-group"><label>Date certificat PEB</label><input type="text" id="f_pebDate" placeholder="12/12/2025"></div>
+            <div class="form-group"><label>Contrôle électrique</label>
+              <select id="f_elecConforme">
+                <option value="conforme">Conforme</option>
+                <option value="non conforme">Non conforme</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Organisme contrôle élec.</label><input type="text" id="f_elecOrganisme" placeholder="BTV"></div>
+            <div class="form-group"><label>Date contrôle élec.</label><input type="text" id="f_elecDate" placeholder="19/11/2008"></div>
+            <div class="form-group"><label>Citerne présente</label>
+              <select id="f_citiernePresent">
+                <option value="non">Non</option>
+                <option value="oui">Oui</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Type citerne</label>
+              <select id="f_citierneType">
+                <option value="gaz">Gaz</option>
+                <option value="mazout">Mazout</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Zone inondable</label>
+              <select id="f_zoneInondable">
+                <option value="non">Non</option>
+                <option value="oui">Oui</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Date extrait sol (BDES)</label><input type="text" id="f_solDate" placeholder="28/01/2026"></div>
+            <div class="form-group full"><label>Zone urbanistique</label><input type="text" id="f_urbanismeZone" placeholder="habitat à caractère rural au plan de secteur"></div>
+            <div class="form-group"><label>Description permis urbanisme</label><input type="text" id="f_urbanismePermis" placeholder="construction d'une habitation"></div>
+            <div class="form-group"><label>Date permis urbanisme</label><input type="text" id="f_urbanismeDate" placeholder="21/08/2007"></div>
+          </div>
+        </div>
+
+        <!-- DATE & LIEU -->
+        <div class="form-section">
+          <div class="form-section-title">📅 Signature</div>
+          <div class="form-grid">
+            <div class="form-group"><label>Date de signature</label><input type="text" id="f_dateSignature" placeholder="27/02/2026"></div>
+            <div class="form-group"><label>Lieu de signature</label><input type="text" id="f_lieuSignature" value="Huy"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ÉTAPE 3 : Générer -->
+      <div class="card">
+        <h3>📥 Étape 3 — Générer le compromis</h3>
+        <p style="font-size:13px;color:#888;margin-bottom:16px;">Le document Word sera généré et téléchargé automatiquement.</p>
+        <div class="loading" id="gen-loading">
+          <div class="spinner"></div>
+          <span id="gen-loading-text">Génération du compromis...</span>
+        </div>
+        <div class="error-box" id="gen-error"></div>
+        <div class="success-box" id="gen-success">✅ Compromis généré et téléchargé !</div>
+        <button class="download-btn" id="btn-generate" onclick="generateCompromis()">
+          📄 Générer le Compromis de Vente (.docx)
+        </button>
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <script>
-  // Vérifie si déjà connecté
-  if (sessionStorage.getItem('immo-auth') === 'true') {
-    document.getElementById('login-page').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-  }
+// ════════════════════════════════════════════════════════════
+// AUTH
+// ════════════════════════════════════════════════════════════
+if (sessionStorage.getItem('immo-auth') === 'true') {
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+}
 
-  async function login() {
-    const pwd = document.getElementById('password-input').value;
-    const btn = document.getElementById('login-btn');
-    const errEl = document.getElementById('login-error');
-    const spinner = document.getElementById('login-spinner');
-
-    if (!pwd) return;
-    btn.disabled = true;
-    errEl.style.display = 'none';
-    spinner.style.display = 'block';
-
-    try {
-      const res = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: pwd })
-      });
-      const data = await res.json();
-      if (data.success) {
-        sessionStorage.setItem('immo-auth', 'true');
-        document.getElementById('login-page').style.display = 'none';
-        document.getElementById('app').style.display = 'block';
-      } else {
-        errEl.style.display = 'block';
-        document.getElementById('password-input').value = '';
-      }
-    } catch(e) {
-      errEl.textContent = '❌ Erreur de connexion, réessayez.';
+async function login() {
+  const pwd = document.getElementById('password-input').value;
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+  const spinner = document.getElementById('login-spinner');
+  if (!pwd) return;
+  btn.disabled = true; errEl.style.display = 'none'; spinner.style.display = 'block';
+  try {
+    const res = await fetch('/api/auth', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ password: pwd }) });
+    const data = await res.json();
+    if (data.success) {
+      sessionStorage.setItem('immo-auth', 'true');
+      document.getElementById('login-page').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+    } else {
       errEl.style.display = 'block';
-    } finally {
-      btn.disabled = false;
-      spinner.style.display = 'none';
+      document.getElementById('password-input').value = '';
     }
+  } catch(e) {
+    errEl.textContent = '❌ Erreur de connexion, réessayez.';
+    errEl.style.display = 'block';
+  } finally { btn.disabled = false; spinner.style.display = 'none'; }
+}
+
+function logout() {
+  sessionStorage.removeItem('immo-auth');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-page').style.display = 'flex';
+  document.getElementById('password-input').value = '';
+}
+
+// ════════════════════════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════════════════════════
+function showTool(id) {
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById(id).style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+function showDashboard() {
+  ['social-tool', 'compromis-tool'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  document.getElementById('dashboard').style.display = 'block';
+  // Reset social
+  document.getElementById('annonce-url').value = '';
+  document.getElementById('result-card').style.display = 'none';
+  document.getElementById('error-box').style.display = 'none';
+  window.scrollTo(0, 0);
+}
+
+// ════════════════════════════════════════════════════════════
+// SOCIAL TOOL
+// ════════════════════════════════════════════════════════════
+async function generate() {
+  const url = document.getElementById('annonce-url').value.trim();
+  const errBox = document.getElementById('error-box');
+  const loadBox = document.getElementById('loading-box');
+  const genBtn = document.getElementById('gen-btn');
+  const resultCard = document.getElementById('result-card');
+  if (!url) { showError("Veuillez coller un lien d'annonce."); return; }
+  errBox.style.display = 'none'; resultCard.style.display = 'none';
+  loadBox.style.display = 'flex'; genBtn.disabled = true; genBtn.textContent = 'Génération en cours...';
+  try {
+    document.getElementById('loading-text').textContent = "🔍 Récupération de l'annonce...";
+    const res = await fetch(`/api/scrape?url=${encodeURIComponent(url)}`);
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'Erreur serveur');
+    if (!data.post) throw new Error('Post vide reçu');
+    document.getElementById('post-output').textContent = data.post;
+    resultCard.style.display = 'block';
+  } catch(e) {
+    showError(e.message || 'Une erreur est survenue.');
+  } finally {
+    loadBox.style.display = 'none'; genBtn.disabled = false;
+    genBtn.textContent = '✨ Générer le post Facebook';
+  }
+}
+
+function showError(msg) {
+  const errBox = document.getElementById('error-box');
+  errBox.textContent = '⚠️ ' + msg; errBox.style.display = 'block';
+}
+
+function copyPost() {
+  const text = document.getElementById('post-output').textContent;
+  navigator.clipboard.writeText(text);
+  const btn = document.getElementById('copy-btn');
+  btn.textContent = '✅ Copié !'; btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = '📋 Copier le post'; btn.classList.remove('copied'); }, 2000);
+}
+
+// ════════════════════════════════════════════════════════════
+// COMPROMIS TOOL
+// ════════════════════════════════════════════════════════════
+let selectedFiles = [];
+let vendeurCount = 0;
+let acquereurCount = 0;
+
+// Init blocs personne
+(function init() {
+  addPersonBlock('vendeurs-container', 'vendeur');
+  addPersonBlock('acquereurs-container', 'acquereur');
+})();
+
+// ── Drag & Drop ───────────────────────────────────────────
+const dropZone = document.getElementById('drop-zone');
+document.getElementById('file-input').addEventListener('change', e => addFiles(e.target.files));
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('dragover'); addFiles(e.dataTransfer.files); });
+
+function addFiles(files) {
+  for (const f of files) {
+    if (!selectedFiles.find(x => x.name === f.name && x.size === f.size)) selectedFiles.push(f);
+  }
+  renderFileList();
+  document.getElementById('btn-analyze').disabled = selectedFiles.length === 0;
+}
+
+function removeFile(i) {
+  selectedFiles.splice(i, 1);
+  renderFileList();
+  document.getElementById('btn-analyze').disabled = selectedFiles.length === 0;
+}
+
+function renderFileList() {
+  const container = document.getElementById('file-list');
+  if (!selectedFiles.length) { container.innerHTML = ''; return; }
+  container.innerHTML = selectedFiles.map((f, i) => `
+    <div class="file-item">
+      <span>📄</span>
+      <span class="file-name">${f.name}</span>
+      <span class="file-size">${(f.size / 1024).toFixed(0)} Ko</span>
+      <button class="file-remove" onclick="removeFile(${i})">×</button>
+    </div>
+  `).join('');
+}
+
+// ── Blocs vendeur / acquéreur ─────────────────────────────
+function addPersonBlock(containerId, type) {
+  const container = document.getElementById(containerId);
+  const isVendeur = type === 'vendeur';
+  const count = isVendeur ? vendeurCount++ : acquereurCount++;
+  const label = isVendeur ? 'Vendeur' : 'Acquéreur';
+  const prefix = `${type}_${count}`;
+
+  const div = document.createElement('div');
+  div.className = 'personne-block';
+  div.id = `block_${prefix}`;
+  div.innerHTML = `
+    <div class="personne-block-header">
+      <span class="personne-block-title">${label} ${count + 1}</span>
+      ${count > 0 ? `<button class="btn-remove" onclick="document.getElementById('block_${prefix}').remove()">Supprimer</button>` : ''}
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Civilité</label>
+        <select id="${prefix}_civilite"><option>Monsieur</option><option>Madame</option></select>
+      </div>
+      <div class="form-group"><label>Nom</label><input type="text" id="${prefix}_nom" placeholder="NOM"></div>
+      <div class="form-group"><label>Prénom</label><input type="text" id="${prefix}_prenom" placeholder="Prénom"></div>
+      <div class="form-group"><label>Date de naissance</label><input type="text" id="${prefix}_dateNaissance" placeholder="06 mars 1955"></div>
+      <div class="form-group"><label>Lieu de naissance</label><input type="text" id="${prefix}_lieuNaissance" placeholder="Ville"></div>
+      ${!isVendeur ? `<div class="form-group"><label>Situation familiale</label>
+        <select id="${prefix}_situation">
+          <option>célibataire</option><option>marié(e)</option>
+          <option>cohabitant(e) légal(e)</option><option>divorcé(e)</option><option>veuf/veuve</option>
+        </select></div>` : '<div class="form-group"></div>'}
+      <div class="form-group full"><label>Adresse complète</label><input type="text" id="${prefix}_adresse" placeholder="Rue, numéro, code postal, ville"></div>
+      <div class="form-group"><label>Téléphone</label><input type="text" id="${prefix}_telephone" placeholder="04XX/XX.XX.XX"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="${prefix}_email" placeholder="email@exemple.com"></div>
+    </div>`;
+  container.appendChild(div);
+}
+
+// ── Analyse IA ────────────────────────────────────────────
+async function analyzeDocuments() {
+  const btn = document.getElementById('btn-analyze');
+  const progress = document.getElementById('ai-progress');
+  const errBox = document.getElementById('analyze-error');
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Analyse en cours...';
+  errBox.style.display = 'none';
+  progress.style.display = 'block';
+
+  function setStep(id, status) {
+    const el = document.getElementById(id);
+    el.classList.remove('active', 'done', 'error');
+    el.classList.add(status);
+    if (status === 'active') el.querySelector('.ai-step-icon').textContent = '⏳';
+    if (status === 'done') el.querySelector('.ai-step-icon').textContent = '✅';
+    if (status === 'error') el.querySelector('.ai-step-icon').textContent = '❌';
   }
 
-  function logout() {
-    sessionStorage.removeItem('immo-auth');
-    document.getElementById('app').style.display = 'none';
-    document.getElementById('login-page').style.display = 'flex';
-    document.getElementById('password-input').value = '';
-  }
+  try {
+    setStep('step-read', 'active');
 
-  function showTool(id) {
-    document.getElementById('dashboard').style.display = 'none';
-    document.getElementById(id).style.display = 'block';
-  }
-
-  function showDashboard() {
-    document.getElementById('social-tool').style.display = 'none';
-    document.getElementById('dashboard').style.display = 'block';
-    document.getElementById('annonce-url').value = '';
-    document.getElementById('result-card').style.display = 'none';
-    document.getElementById('error-box').style.display = 'none';
-  }
-
-  async function generate() {
-    const url = document.getElementById('annonce-url').value.trim();
-    const errBox = document.getElementById('error-box');
-    const loadBox = document.getElementById('loading-box');
-    const genBtn = document.getElementById('gen-btn');
-    const resultCard = document.getElementById('result-card');
-
-    if (!url) { showError("Veuillez coller un lien d'annonce."); return; }
-    errBox.style.display = 'none';
-    resultCard.style.display = 'none';
-    loadBox.style.display = 'flex';
-    genBtn.disabled = true;
-    genBtn.textContent = 'Génération en cours...';
-
-    try {
-      document.getElementById('loading-text').textContent = '🔍 Récupération de l\'annonce...';
-      const res = await fetch(`/api/scrape?url=${encodeURIComponent(url)}`);
-      const data = await res.json();
-      if (!res.ok || data.error) throw new Error(data.error || 'Erreur serveur');
-      if (!data.post) throw new Error('Post vide reçu');
-      document.getElementById('post-output').textContent = data.post;
-      resultCard.style.display = 'block';
-    } catch(e) {
-      showError(e.message || 'Une erreur est survenue.');
-    } finally {
-      loadBox.style.display = 'none';
-      genBtn.disabled = false;
-      genBtn.textContent = '✨ Générer le post Facebook';
+    // Encoder fichiers en base64
+    const files = [];
+    for (const f of selectedFiles) {
+      const b64 = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result.split(',')[1]);
+        r.onerror = rej;
+        r.readAsDataURL(f);
+      });
+      files.push({ name: f.name, type: f.type || 'application/pdf', data: b64 });
     }
-  }
 
-  function showError(msg) {
-    const errBox = document.getElementById('error-box');
-    errBox.textContent = '⚠️ ' + msg;
+    setStep('step-read', 'done');
+    setStep('step-extract', 'active');
+
+    const res = await fetch('/api/compromis-extract', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ files })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Erreur serveur');
+    }
+
+    const extracted = await res.json();
+    setStep('step-extract', 'done');
+    setStep('step-fill', 'active');
+
+    // Remplir le formulaire
+    fillForm(extracted);
+
+    setStep('step-fill', 'done');
+    btn.textContent = '✅ Analyse terminée — Vérifiez le formulaire';
+
+  } catch (err) {
+    setStep('step-read', 'error');
+    setStep('step-extract', 'error');
+    setStep('step-fill', 'error');
+    errBox.textContent = '❌ ' + err.message;
     errBox.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = '✨ Analyser avec l\'IA';
+  }
+}
+
+// ── Remplir le formulaire avec données IA ─────────────────
+function fillForm(data) {
+  function setField(id, value) {
+    if (!value) return;
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = value;
+    el.classList.add('ai-filled');
   }
 
-  function copyPost() {
-    const text = document.getElementById('post-output').textContent;
-    navigator.clipboard.writeText(text);
-    const btn = document.getElementById('copy-btn');
-    btn.textContent = '✅ Copié !';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = '📋 Copier le post'; btn.classList.remove('copied'); }, 2000);
+  function setSelect(id, value) {
+    if (!value) return;
+    const el = document.getElementById(id);
+    if (!el) return;
+    const opt = Array.from(el.options).find(o => o.value.toLowerCase() === value.toLowerCase() || o.text.toLowerCase() === value.toLowerCase());
+    if (opt) { el.value = opt.value; el.classList.add('ai-filled'); }
   }
+
+  // Bien
+  setField('f_adresseBien', data.adresseBien);
+  setField('f_commune', data.commune);
+  setField('f_division', data.division);
+  setField('f_section', data.section);
+  setField('f_numero', data.numero);
+  setField('f_contenance', data.contenance);
+
+  // Prix
+  setField('f_prixLettres', data.prixLettres);
+  setField('f_prixChiffres', data.prixChiffres);
+
+  // Technique
+  setField('f_revenuCadastral', data.revenuCadastral);
+  setField('f_pebNumero', data.peb_numero);
+  setField('f_pebExpert', data.peb_expert);
+  setField('f_pebDate', data.peb_date);
+  setSelect('f_pebClasse', data.peb_classe);
+  setField('f_elecDate', data.elec_date);
+  setField('f_elecOrganisme', data.elec_organisme);
+  setSelect('f_elecConforme', data.elec_conforme);
+  setSelect('f_citiernePresent', data.citerne_present);
+  setSelect('f_citierneType', data.citerne_type);
+  setSelect('f_zoneInondable', data.zone_inondable);
+  setField('f_solDate', data.sol_date);
+  setField('f_urbanismeZone', data.urbanisme_zone);
+  setField('f_urbanismePermis', data.urbanisme_permis);
+  setField('f_urbanismeDate', data.urbanisme_date_permis);
+
+  // Vendeurs
+  if (data.vendeurs && data.vendeurs.length > 0) {
+    document.getElementById('vendeurs-container').innerHTML = '';
+    vendeurCount = 0;
+    data.vendeurs.forEach(v => {
+      addPersonBlock('vendeurs-container', 'vendeur');
+      const i = vendeurCount - 1;
+      const p = `vendeur_${i}`;
+      setSelect(`${p}_civilite`, v.civilite);
+      setField(`${p}_nom`, v.nom);
+      setField(`${p}_prenom`, v.prenom);
+      setField(`${p}_dateNaissance`, v.dateNaissance);
+      setField(`${p}_lieuNaissance`, v.lieuNaissance);
+      setField(`${p}_adresse`, v.adresse);
+      setField(`${p}_telephone`, v.telephone);
+      setField(`${p}_email`, v.email);
+    });
+  }
+
+  // Acquéreurs
+  if (data.acquereurs && data.acquereurs.length > 0) {
+    document.getElementById('acquereurs-container').innerHTML = '';
+    acquereurCount = 0;
+    data.acquereurs.forEach(a => {
+      addPersonBlock('acquereurs-container', 'acquereur');
+      const i = acquereurCount - 1;
+      const p = `acquereur_${i}`;
+      setSelect(`${p}_civilite`, a.civilite);
+      setField(`${p}_nom`, a.nom);
+      setField(`${p}_prenom`, a.prenom);
+      setField(`${p}_dateNaissance`, a.dateNaissance);
+      setField(`${p}_lieuNaissance`, a.lieuNaissance);
+      setField(`${p}_adresse`, a.adresse);
+      setSelect(`${p}_situation`, a.situationFamiliale);
+      setField(`${p}_telephone`, a.telephone);
+      setField(`${p}_email`, a.email);
+    });
+  }
+
+  // Scroll vers formulaire
+  document.getElementById('form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Collecter les données du formulaire ───────────────────
+function collectFormData() {
+  const g = id => document.getElementById(id)?.value?.trim() || '';
+
+  const vendeurs = [];
+  document.querySelectorAll('#vendeurs-container .personne-block').forEach(block => {
+    const id = block.id.replace('block_vendeur_', '');
+    const p = `vendeur_${id}`;
+    vendeurs.push({
+      civilite: document.getElementById(`${p}_civilite`)?.value || 'Monsieur',
+      nom: document.getElementById(`${p}_nom`)?.value || '',
+      prenom: document.getElementById(`${p}_prenom`)?.value || '',
+      dateNaissance: document.getElementById(`${p}_dateNaissance`)?.value || '',
+      lieuNaissance: document.getElementById(`${p}_lieuNaissance`)?.value || '',
+      adresse: document.getElementById(`${p}_adresse`)?.value || '',
+      telephone: document.getElementById(`${p}_telephone`)?.value || '',
+      email: document.getElementById(`${p}_email`)?.value || ''
+    });
+  });
+
+  const acquereurs = [];
+  document.querySelectorAll('#acquereurs-container .personne-block').forEach(block => {
+    const id = block.id.replace('block_acquereur_', '');
+    const p = `acquereur_${id}`;
+    acquereurs.push({
+      civilite: document.getElementById(`${p}_civilite`)?.value || 'Monsieur',
+      nom: document.getElementById(`${p}_nom`)?.value || '',
+      prenom: document.getElementById(`${p}_prenom`)?.value || '',
+      dateNaissance: document.getElementById(`${p}_dateNaissance`)?.value || '',
+      lieuNaissance: document.getElementById(`${p}_lieuNaissance`)?.value || '',
+      adresse: document.getElementById(`${p}_adresse`)?.value || '',
+      situationFamiliale: document.getElementById(`${p}_situation`)?.value || 'célibataire',
+      telephone: document.getElementById(`${p}_telephone`)?.value || '',
+      email: document.getElementById(`${p}_email`)?.value || ''
+    });
+  });
+
+  return {
+    vendeurs, acquereurs,
+    adresseBien: g('f_adresseBien'), commune: g('f_commune'),
+    division: g('f_division'), section: g('f_section'),
+    numero: g('f_numero'), contenance: g('f_contenance'), inclus: g('f_inclus'),
+    prixLettres: g('f_prixLettres'), prixChiffres: g('f_prixChiffres'),
+    montantGarantie: g('f_montantGarantie'), ibanAcquereur: g('f_ibanAcquereur'),
+    ibanAgence: g('f_ibanAgence'),
+    conditionSuspensiveFinancement: g('f_conditionFinancement'),
+    notaireVendeur: g('f_notaireVendeur'), notaireAcquereur: g('f_notaireAcquereur'),
+    revenuCadastral: g('f_revenuCadastral'),
+    peb_numero: g('f_pebNumero'), peb_expert: g('f_pebExpert'),
+    peb_date: g('f_pebDate'), peb_classe: g('f_pebClasse'),
+    elec_date: g('f_elecDate'), elec_organisme: g('f_elecOrganisme'),
+    elec_conforme: g('f_elecConforme'),
+    citerne_present: g('f_citiernePresent'), citerne_type: g('f_citierneType'),
+    zone_inondable: g('f_zoneInondable'),
+    urbanisme_zone: g('f_urbanismeZone'), urbanisme_permis: g('f_urbanismePermis'),
+    urbanisme_date_permis: g('f_urbanismeDate'),
+    sol_date: g('f_solDate'),
+    dateSignature: g('f_dateSignature'), lieuSignature: g('f_lieuSignature')
+  };
+}
+
+// ── Générer le compromis ──────────────────────────────────
+async function generateCompromis() {
+  const btn = document.getElementById('btn-generate');
+  const loading = document.getElementById('gen-loading');
+  const errBox = document.getElementById('gen-error');
+  const successBox = document.getElementById('gen-success');
+
+  btn.disabled = true;
+  loading.style.display = 'flex';
+  errBox.style.display = 'none';
+  successBox.style.display = 'none';
+
+  try {
+    const formData = collectFormData();
+
+    const res = await fetch('/api/compromis', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ formData })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Erreur lors de la génération');
+    }
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Compromis_${formData.commune || 'Bien'}_${new Date().toISOString().slice(0,10)}.docx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    successBox.style.display = 'block';
+
+  } catch (err) {
+    errBox.textContent = '❌ ' + err.message;
+    errBox.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    loading.style.display = 'none';
+  }
+}
 </script>
 </body>
 </html>
