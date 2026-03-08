@@ -1090,13 +1090,27 @@ function closeCandDetail() { document.getElementById('cand-detail-modal').style.
 
 async function evaluerCandidature(id) {
   const btn=document.getElementById('btn-eval-single');
-  btn.disabled=true; btn.textContent='⏳ Évaluation...';
+  btn.disabled=true; btn.textContent='⏳ Évaluation en cours (15-20s)...';
   try {
-    const r=await fetch('/api/candidature-evaluate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id})});
-    const d=await r.json();
-    if (!r.ok) throw new Error(d.error);
-    await openCandDetail(id); await loadAllCandidatures();
-  } catch(e) { alert('Erreur : '+e.message); btn.disabled=false; btn.textContent='✨ Évaluer avec l\'IA'; }
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 55000);
+    const r=await fetch('/api/candidature-evaluate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id}),signal:controller.signal});
+    clearTimeout(timeout);
+    const text = await r.text();
+    let d = {};
+    try { d = JSON.parse(text); } catch(e) {}
+    if (!r.ok) throw new Error(d.error || 'Erreur serveur');
+    closeCandDetail();
+    await loadAllCandidatures();
+    setTimeout(() => openCandDetail(id), 300);
+  } catch(e) {
+    if (e.name === 'AbortError') {
+      alert('Timeout — l\'évaluation prend trop de temps. Réessaie.');
+    } else {
+      alert('Erreur : '+e.message);
+    }
+    btn.disabled=false; btn.textContent='✨ Évaluer avec l\'IA';
+  }
 }
 
 async function evaluerTous() {
