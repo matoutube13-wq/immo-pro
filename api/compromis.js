@@ -1,9 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
-import {
-  Document, Packer, Paragraph, TextRun, AlignmentType,
+const { Document, Packer, Paragraph, TextRun, AlignmentType,
   HeadingLevel, BorderStyle, UnderlineType, LevelFormat,
-  PageNumber, Footer, Header, TabStopType, TabStopPosition
-} from "docx";
+  PageNumber, Footer, TabStopType, TabStopPosition } = await import("docx");
 
 export const config = { api: { bodyParser: { sizeLimit: "20mb" } } };
 
