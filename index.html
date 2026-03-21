@@ -1460,153 +1460,245 @@ function postfbUpdatePreview() {
 
 function postfbRender() {
   var canvas = document.getElementById('postfb-canvas');
-  var S = 1200; // taille finale
+  var S = 1200;
   canvas.width = S; canvas.height = S;
   var ctx = canvas.getContext('2d');
 
-  var type        = document.getElementById('postfb-type').value || 'MAISON';
-  var transaction = document.getElementById('postfb-transaction').value || 'À VENDRE';
+  var type        = (document.getElementById('postfb-type').value || 'MAISON').toUpperCase();
+  var transaction = (document.getElementById('postfb-transaction').value || 'À VENDRE').toUpperCase();
   var localite    = (document.getElementById('postfb-localite').value || '').toUpperCase();
-  var prixFormule = document.getElementById('postfb-prix-formule').value || 'À PARTIR DE';
+  var prixFormule = (document.getElementById('postfb-prix-formule').value || 'À PARTIR DE').toUpperCase();
   var prix        = document.getElementById('postfb-prix').value || '';
   var surface     = document.getElementById('postfb-surface').value || '';
   var chambres    = document.getElementById('postfb-chambres').value || '';
   var sdb         = document.getElementById('postfb-sdb').value || '';
-  var garage      = document.getElementById('postfb-garage').value || '';
 
-  var photoH = Math.round(S * 0.62);   // 62% pour la photo
-  var bandY  = photoH;                  // début bande blanche
-  var bandH  = S - photoH;             // hauteur bande
+  // ── Couleurs exactes mesurées sur le design
+  var DARK   = '#093e56';   // rgb(9,62,86)
+  var RED    = '#b81229';   // rgb(184,18,41)
+  var WHITE  = '#ffffff';
+  var BAND   = '#d8d7ce';   // rgb(216,215,206)
 
-  // ── PHOTO (avec crop centré)
+  // ── 1. PHOTO (crop centré, 63.7% de hauteur)
+  var photoH = Math.round(S * 0.637); // 764px
   if (_postfbPhoto) {
     var ph = _postfbPhoto;
     var scale = Math.max(S / ph.width, photoH / ph.height);
-    var dw = ph.width * scale;
-    var dh = ph.height * scale;
-    var dx = (S - dw) / 2;
-    var dy = (photoH - dh) / 2;
-    ctx.drawImage(ph, dx, dy, dw, dh);
+    var dw = ph.width * scale, dh = ph.height * scale;
+    ctx.drawImage(ph, (S-dw)/2, (photoH-dh)/2, dw, dh);
   } else {
-    ctx.fillStyle = '#cccccc';
-    ctx.fillRect(0, 0, S, photoH);
+    ctx.fillStyle = '#aaa'; ctx.fillRect(0, 0, S, photoH);
+    ctx.fillStyle='#888'; ctx.font='bold 40px Arial';
+    ctx.textAlign='center'; ctx.fillText('Ajoutez une photo', S/2, photoH/2);
+    ctx.textAlign='left';
   }
 
-  // ── DÉGRADÉ BAS DE PHOTO (pour lisibilité du texte)
-  var grad = ctx.createLinearGradient(0, photoH - 260, 0, photoH);
+  // ── 2. DÉGRADÉ bas de photo
+  var grad = ctx.createLinearGradient(0, photoH-300, 0, photoH);
   grad.addColorStop(0, 'rgba(0,0,0,0)');
-  grad.addColorStop(1, 'rgba(0,0,0,0.55)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.5)');
   ctx.fillStyle = grad;
-  ctx.fillRect(0, photoH - 260, S, 260);
+  ctx.fillRect(0, photoH-300, S, 300);
 
-  // ── NOM DU TYPE (MAISON, APPARTEMENT...)
-  var typeFontSize = type.length > 9 ? 88 : 110;
-  ctx.font = 'bold ' + typeFontSize + 'px Arial, sans-serif';
-  ctx.fillStyle = C_WHITE;
-  ctx.textBaseline = 'bottom';
-  ctx.shadowColor = 'rgba(0,0,0,0.4)';
-  ctx.shadowBlur = 8;
-  ctx.fillText(type, 44, photoH - 18);
+  // ── 3. MAISON (texte blanc bold, baseline y≈740, x≈50)
+  // Adapter la taille selon longueur du mot
+  var typeFontSize = type.length <= 6 ? 148 : type.length <= 9 ? 118 : type.length <= 11 ? 98 : 82;
+  ctx.font = 'bold ' + typeFontSize + 'px Arial Black, Arial, sans-serif';
+  ctx.fillStyle = WHITE;
+  ctx.textBaseline = 'alphabetic';
+  ctx.shadowColor = 'rgba(0,0,0,0.3)';
+  ctx.shadowBlur = 6;
+  ctx.fillText(type, 50, 740);
   ctx.shadowBlur = 0;
 
-  // ── BANDE BLANCHE
-  ctx.fillStyle = C_BGBAND;
-  ctx.fillRect(0, bandY, S, bandH);
+  // ── 4. BANDE BLANCHE/GRISE
+  ctx.fillStyle = BAND;
+  ctx.fillRect(0, photoH, S, S - photoH);
 
-  // ── BADGE LOCALITÉ (rouge, haut centre-gauche de la bande)
-  var locY = bandY + 44;
-  var locX = S * 0.38;
-  var locW = Math.min(280, localite.length * 18 + 60);
-  var locH = 52;
-  roundRect(ctx, locX, locY - locH/2, locW, locH, 26, C_RED);
-  // Pin icon
-  ctx.font = 'bold 22px Arial';
-  ctx.fillStyle = C_WHITE;
-  ctx.textBaseline = 'middle';
-  ctx.fillText('📍', locX - 32, locY);
-  ctx.font = 'bold 20px Arial, sans-serif';
-  ctx.fillStyle = C_WHITE;
+  // ── 5. BADGE LOCALITÉ (rouge, avec pin, y centré à 792)
+  // Badge: x=458-759, y=766-819 => cx=608, cy=792, w=301, h=53
+  var locCX = 608, locCY = 792;
+  var locW = Math.max(240, localite.length * 17 + 80), locH = 53;
+  var locX = locCX - locW/2, locY = locCY - locH/2;
+  roundRect(ctx, locX, locY, locW, locH, 27, RED);
+
+  // Pin SVG (dessiné manuellement)
+  ctx.fillStyle = WHITE;
+  ctx.beginPath();
+  ctx.arc(locX - 34, locCY - 4, 13, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = RED;
+  ctx.beginPath();
+  ctx.arc(locX - 34, locCY - 4, 7, 0, Math.PI * 2);
+  ctx.fill();
+  // Tige du pin
+  ctx.fillStyle = WHITE;
+  ctx.beginPath();
+  ctx.moveTo(locX - 34, locCY + 9);
+  ctx.lineTo(locX - 38, locCY + 20);
+  ctx.lineTo(locX - 30, locCY + 20);
+  ctx.closePath();
+  ctx.fill();
+
+  // Texte localité
+  ctx.font = 'bold 22px Arial, sans-serif';
+  ctx.fillStyle = WHITE;
   ctx.textAlign = 'center';
-  ctx.fillText(localite, locX + locW/2, locY);
+  ctx.textBaseline = 'middle';
+  ctx.fillText(localite, locCX, locCY + 1);
   ctx.textAlign = 'left';
 
-  // ── BADGE TRANSACTION (À VENDRE / À LOUER)
-  var tvW = transaction.length * 20 + 40;
-  var tvH = 64;
-  var tvX = 36;
-  var tvY = bandY + 86;
-  roundRect(ctx, tvX, tvY, tvW, tvH, 14, C_DARK);
-  ctx.font = 'bold 28px Arial, sans-serif';
-  ctx.fillStyle = C_WHITE;
+  // ── 6. BADGE À VENDRE (bleu foncé)
+  // x=50-399, y=837-899 => x=50, y=837, w=349, h=62
+  var tvX = 50, tvY = 837, tvH = 62;
+  var tvFontSize = transaction.length <= 8 ? 30 : transaction.length <= 10 ? 26 : 22;
+  ctx.font = 'bold ' + tvFontSize + 'px Arial Black, Arial, sans-serif';
+  var tvW = ctx.measureText(transaction).width + 48;
+  roundRect(ctx, tvX, tvY, tvW, tvH, 14, DARK);
+  ctx.fillStyle = WHITE;
   ctx.textBaseline = 'middle';
-  ctx.fillText(transaction, tvX + 20, tvY + tvH/2);
+  ctx.fillText(transaction, tvX + 24, tvY + tvH/2);
 
-  // ── PRIX
-  var prixY = tvY + tvH + 18;
-  ctx.font = '500 22px Arial, sans-serif';
-  ctx.fillStyle = '#555';
+  // ── 7. PRIX LABEL + MONTANT
+  // "À PARTIR DE / AU PRIX DE" small gris, y≈900
+  // Prix en rouge bold, y≈938
+  ctx.font = '600 19px Arial, sans-serif';
+  ctx.fillStyle = '#444';
   ctx.textBaseline = 'top';
-  ctx.fillText(prixFormule, tvX + 4, prixY);
-  var prixFontSize = prix.length > 10 ? 54 : 64;
-  ctx.font = 'bold ' + prixFontSize + 'px Arial, sans-serif';
-  ctx.fillStyle = C_RED;
-  ctx.textBaseline = 'top';
-  ctx.fillText(prix + '€', tvX + 4, prixY + 28);
+  ctx.fillText(prixFormule, 55, 908);
 
-  // ── ICÔNES DROITE
-  var iconsX = S * 0.67;
-  var iconsY = bandY + 28;
-  var iconSize = 110;
-  var iconGap  = 14;
+  // Prix montant (rouge, très grand)
+  var prixFontSize = prix.length <= 8 ? 78 : prix.length <= 10 ? 68 : 58;
+  ctx.font = 'bold ' + prixFontSize + 'px Arial Black, Arial, sans-serif';
+  ctx.fillStyle = RED;
+  ctx.fillText(prix + ' €', 55, 934);
 
-  var icons = [];
-  if (chambres) icons.push({ icon: '🛏', val: chambres });
-  if (surface)  icons.push({ icon: '📐', val: surface + 'M2' });
-  if (sdb)      icons.push({ icon: '🛁', val: sdb });
-  if (garage)   icons.push({ icon: '🚗', val: garage });
+  // ── 8. ICÔNES (badges bleu foncé, côté droit)
+  // Chambre: x=830, y=810, size=83x109 (badge carré arrondi)
+  // M2: x=1006, y=810, size=113x109
+  // SDB: x=890, y=900, size=189x159 (mais trop large - à corriger)
 
-  var cols = Math.min(2, icons.length);
-  icons.forEach(function(ic, idx) {
-    var col = idx % 2;
-    var row = Math.floor(idx / 2);
-    var ix = iconsX + col * (iconSize + iconGap);
-    var iy = iconsY + row * (iconSize + iconGap);
-    roundRect(ctx, ix, iy, iconSize, iconSize, 14, C_DARK);
-    ctx.font = (iconSize * 0.38) + 'px serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = C_WHITE;
-    ctx.fillText(ic.icon, ix + iconSize/2, iy + iconSize * 0.38);
-    ctx.font = 'bold ' + Math.round(iconSize * 0.22) + 'px Arial, sans-serif';
-    ctx.fillStyle = '#e8c44a';
-    ctx.fillText(ic.val, ix + iconSize/2, iy + iconSize * 0.75);
-    ctx.textAlign = 'left';
-  });
+  // Icône chambre - badge 108x108, coins arrondis
+  var IC = 108, IR = 16;
+  var ix1 = 832, iy1 = 808;
+  roundRect(ctx, ix1, iy1, IC, IC, IR, DARK);
+  // Icône lit (SVG simplifié)
+  drawBedIcon(ctx, ix1 + IC/2, iy1 + 38, 46, WHITE);
+  // Badge rouge avec le nombre
+  roundRect(ctx, ix1 + IC/2 - 22, iy1 + IC - 2, 44, 34, 17, RED);
+  ctx.font = 'bold 22px Arial Black, sans-serif';
+  ctx.fillStyle = WHITE; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(chambres || '?', ix1 + IC/2, iy1 + IC + 15);
+  ctx.textAlign = 'left';
 
-  // ── LOGO TREVI (centré bas)
+  // Icône m² - badge 108x108
+  var ix2 = 1002, iy2 = 808;
+  roundRect(ctx, ix2, iy2, IC, IC, IR, DARK);
+  drawBoxIcon(ctx, ix2 + IC/2, iy2 + 38, 44, WHITE);
+  // Texte m² en bas du badge (pas de badge rouge séparé)
+  roundRect(ctx, ix2 + IC/2 - 38, iy2 + IC - 2, 76, 34, 17, '#0a3d56');
+  ctx.font = 'bold 16px Arial Black, sans-serif';
+  ctx.fillStyle = '#e8c050'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText((surface || '?') + 'M2', ix2 + IC/2, iy2 + IC + 15);
+  ctx.textAlign = 'left';
+
+  // Icône sdb - badge 108x108, centré entre les deux
+  var ix3 = 917, iy3 = 958;
+  roundRect(ctx, ix3, iy3, IC, IC, IR, DARK);
+  drawBathIcon(ctx, ix3 + IC/2, iy3 + 38, 46, WHITE);
+  roundRect(ctx, ix3 + IC/2 - 22, iy3 + IC - 2, 44, 34, 17, RED);
+  ctx.font = 'bold 22px Arial Black, sans-serif';
+  ctx.fillStyle = WHITE; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(sdb || '?', ix3 + IC/2, iy3 + IC + 15);
+  ctx.textAlign = 'left';
+
+  // ── 9. LOGO TREVI (centré, y=1131-1177)
   if (_logoImg) {
-    var lw = 160;
-    var lh = Math.round(lw * _logoImg.naturalHeight / _logoImg.naturalWidth);
-    var lx = (S - lw) / 2;
-    var ly = S - lh - 28;
+    var lw = 157, lh = 46;
+    var lx = (S - lw) / 2, ly = 1131;
     ctx.drawImage(_logoImg, lx, ly, lw, lh);
   }
 
-  // ── BARRES DÉCO ROUGES (bas gauche)
-  var barW = 120; var barH2 = 22; var barR = 11; var barGap = 12;
-  var bx = -30;
-  var by1 = S - 55;
-  var by2 = S - 55 + barH2 + barGap;
-  roundRect(ctx, bx, by1, barW, barH2, barR, C_RED);
-  roundRect(ctx, bx, by2, barW, barH2, barR, C_RED);
+  // ── 10. BARRES ROUGES DÉCO (2 pilules qui dépassent à gauche)
+  // Barre 1 (petite): y≈1055-1070, partiellement visible
+  // Barre 2 (grande): y≈1104-1199, bien visible
+  var barRadius = 20;
+  // Barre 1 : petite, haute (y=1047, centre hors image à gauche)
+  ctx.fillStyle = RED;
+  ctx.beginPath();
+  ctx.roundRect ? ctx.roundRect(-80, 1043, 200, 38, barRadius) : void(0);
+  ctx.fill();
+  // Barre 2 : grande (y=1095)
+  ctx.fillStyle = RED;
+  ctx.beginPath();
+  if (ctx.roundRect) {
+    ctx.roundRect(-80, 1088, 310, 120, 60);
+  } else {
+    // Fallback
+    ctx.arc(230, 1148, 60, 0, Math.PI*2);
+    ctx.fillRect(-80, 1088, 310, 120);
+  }
+  ctx.fill();
 
   // Redimensionner pour l'affichage
   var maxW = canvas.parentElement.clientWidth - 4;
   if (S > maxW) {
-    var sc = maxW / S;
-    canvas.style.width  = maxW + 'px';
-    canvas.style.height = Math.round(S * sc) + 'px';
+    canvas.style.width = maxW + 'px';
+    canvas.style.height = Math.round(S * (maxW/S)) + 'px';
   }
+}
+
+// ── Icônes dessinées en Canvas (style ligne blanche)
+function drawBedIcon(ctx, cx, cy, size, color) {
+  var s = size / 46;
+  ctx.strokeStyle = color; ctx.lineWidth = 3 * s; ctx.lineCap = 'round';
+  // Lit
+  ctx.beginPath(); ctx.moveTo(cx - 18*s, cy + 10*s); ctx.lineTo(cx - 18*s, cy - 14*s);
+  ctx.lineTo(cx + 18*s, cy - 14*s); ctx.lineTo(cx + 18*s, cy + 10*s); ctx.stroke();
+  // Matelas
+  ctx.fillStyle = color; ctx.fillRect(cx - 15*s, cy - 11*s, 30*s, 10*s);
+  // Oreiller gauche
+  roundRect(ctx, cx - 14*s, cy - 10*s, 11*s, 8*s, 2*s, color);
+  // Pied de lit
+  ctx.beginPath(); ctx.moveTo(cx - 20*s, cy + 10*s); ctx.lineTo(cx + 20*s, cy + 10*s); ctx.stroke();
+}
+
+function drawBoxIcon(ctx, cx, cy, size, color) {
+  var s = size / 44;
+  ctx.strokeStyle = color; ctx.lineWidth = 3 * s; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  // Boîte 3D
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - 18*s);
+  ctx.lineTo(cx + 16*s, cy - 9*s);
+  ctx.lineTo(cx + 16*s, cy + 9*s);
+  ctx.lineTo(cx, cy + 18*s);
+  ctx.lineTo(cx - 16*s, cy + 9*s);
+  ctx.lineTo(cx - 16*s, cy - 9*s);
+  ctx.closePath(); ctx.stroke();
+  // Ligne centrale
+  ctx.beginPath(); ctx.moveTo(cx, cy - 18*s); ctx.lineTo(cx, cy + 18*s); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx - 16*s, cy - 9*s); ctx.lineTo(cx + 16*s, cy - 9*s); ctx.stroke();
+}
+
+function drawBathIcon(ctx, cx, cy, size, color) {
+  var s = size / 46;
+  ctx.strokeStyle = color; ctx.lineWidth = 3 * s; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  // Baignoire
+  ctx.beginPath();
+  ctx.moveTo(cx - 20*s, cy + 5*s);
+  ctx.lineTo(cx - 20*s, cy - 14*s);
+  ctx.lineTo(cx - 14*s, cy - 14*s);
+  ctx.lineTo(cx - 14*s, cy - 5*s);
+  ctx.stroke();
+  // Corps baignoire
+  ctx.beginPath();
+  ctx.moveTo(cx - 20*s, cy + 5*s);
+  ctx.quadraticCurveTo(cx - 20*s, cy + 16*s, cx - 10*s, cy + 16*s);
+  ctx.lineTo(cx + 10*s, cy + 16*s);
+  ctx.quadraticCurveTo(cx + 20*s, cy + 16*s, cx + 20*s, cy + 5*s);
+  ctx.lineTo(cx - 20*s, cy + 5*s); ctx.stroke();
+  // Robinet
+  ctx.beginPath(); ctx.moveTo(cx - 22*s, cy + 5*s); ctx.lineTo(cx + 22*s, cy + 5*s); ctx.stroke();
 }
 
 function roundRect(ctx, x, y, w, h, r, color) {
