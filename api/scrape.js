@@ -193,7 +193,11 @@ ${virtualVisit ? `\nVISITE VIRTUELLE DISPONIBLE 🎥 : ${virtualVisit}\n` : ""}
       ville: propertyData.ville,
       type_bien: propertyData.type_bien,
       prix_label: prixLabel,
+      surface: propertyData.surface,
+      nb_chambres: propertyData.nb_chambres,
+      sdb: propertyData.sdb || propertyData.salles_bain,
       image_principale: mainImage,
+      images: propertyImages,
       webhook_sent: true
     });
 
