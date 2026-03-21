@@ -1388,11 +1388,7 @@ function postfbScrape() {
   btn.disabled = true; btn.textContent = '⏳';
   loading.style.display = 'flex'; errBox.style.display = 'none';
 
-  fetch('/api/scrape', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url: url, mode: 'data' })
-  })
+  fetch('/api/scrape?url=' + encodeURIComponent(url))
   .then(function(r) { return r.json(); })
   .then(function(d) {
     loading.style.display = 'none';
@@ -1409,32 +1405,34 @@ function postfbScrape() {
 }
 
 function postfbFillForm(d) {
-  // Remplir les champs avec les données scrapées
   function setField(id, val) {
     var el = document.getElementById(id);
     if (!el || !val) return;
-    el.value = val;
+    el.value = String(val).trim();
     el.classList.add('ai-filled');
   }
-  if (d.type) {
-    var types = {'maison':'MAISON','appartement':'APPARTEMENT','terrain':'TERRAIN','entrepot':'ENTREPÔT','viager':'VIAGER','bureau':'BUREAU'};
-    var t = d.type.toLowerCase();
-    for (var k in types) { if (t.includes(k)) { document.getElementById('postfb-type').value = types[k]; break; } }
+  // type_bien retourné par scrape.js
+  if (d.type_bien) {
+    var types = {'maison':'MAISON','appartement':'APPARTEMENT','terrain':'TERRAIN','entrepot':'ENTREPÔT','viager':'VIAGER','bureau':'BUREAU','immeuble':'IMMEUBLE'};
+    var t = d.type_bien.toLowerCase();
+    for (var k in types) { if (t.includes(k)) { document.getElementById('postfb-type').value = types[k]; document.getElementById('postfb-type').classList.add('ai-filled'); break; } }
   }
-  if (d.transaction) {
-    document.getElementById('postfb-transaction').value = d.transaction.toLowerCase().includes('lou') ? 'À LOUER' : 'À VENDRE';
+  // prix_label ex: "À partir de 349 000 €" ou "Au prix de 250 000 €"
+  if (d.prix_label) {
+    var lbl = d.prix_label.toLowerCase();
+    document.getElementById('postfb-prix-formule').value = lbl.includes('partir') ? 'À PARTIR DE' : 'AU PRIX DE';
+    document.getElementById('postfb-prix-formule').classList.add('ai-filled');
+    // Extraire juste le montant
+    var montant = d.prix_label.replace(/[^0-9\s]/g, '').trim();
+    if (montant) setField('postfb-prix', montant);
   }
-  if (d.prix_type) {
-    document.getElementById('postfb-prix-formule').value = d.prix_type.toLowerCase().includes('partir') ? 'À PARTIR DE' : 'AU PRIX DE';
-  }
-  setField('postfb-localite', d.localite || d.ville);
-  setField('postfb-prix', d.prix);
+  setField('postfb-localite', d.ville);
   setField('postfb-surface', d.surface);
-  setField('postfb-chambres', d.chambres);
-  setField('postfb-sdb', d.salles_bain || d.sdb);
-  _postfbFbText = d.post_facebook || d.texte || '';
+  setField('postfb-chambres', d.nb_chambres);
+  _postfbFbText = d.post || d.post_facebook || '';
   document.getElementById('postfb-step2').style.display = '';
   document.getElementById('postfb-step3').style.display = '';
+  postfbUpdatePreview();
 }
 
 // ── Photo
