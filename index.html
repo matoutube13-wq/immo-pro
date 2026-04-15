@@ -1192,12 +1192,31 @@ function getStamp(type, cb) {
   if (_stampCache[type]) { cb(_stampCache[type]); return; }
   var img = new Image();
   img.onload = function() { _stampCache[type] = img; cb(img); };
+  img.onerror = function() { console.error('Stamp load error:', type); cb(null); };
+  // Pour les SVG data URI, certains navigateurs nécessitent crossOrigin
+  img.crossOrigin = 'anonymous';
   img.src = STAMP_SRC[type];
+  // Fallback: si onload ne se déclenche pas dans 500ms, forcer via Blob
+  setTimeout(function() {
+    if (_stampCache[type]) return; // déjà chargé
+    try {
+      var svgData = atob(STAMP_SRC[type].split(',')[1]);
+      var blob = new Blob([svgData], { type: 'image/svg+xml' });
+      var url = URL.createObjectURL(blob);
+      var img2 = new Image();
+      img2.onload = function() {
+        _stampCache[type] = img2;
+        cb(img2);
+        URL.revokeObjectURL(url);
+      };
+      img2.src = url;
+    } catch(e) { console.error('Stamp fallback error:', e); cb(null); }
+  }, 500);
 }
 function drawStamp(ctx, W, H, type, stamp) {
+  if (!stamp) return;
   var cfg = STAMP_CFG[type];
   var sw = Math.round(W * cfg.wPct);
-  // Utiliser le ratio défini ou le ratio naturel si disponible
   var ratio = cfg.aspect || (stamp.naturalHeight && stamp.naturalWidth ? stamp.naturalHeight / stamp.naturalWidth : 0.2);
   var sh = Math.round(sw * ratio);
   ctx.drawImage(stamp, W - sw - Math.round(W * cfg.marginRPct), H - sh - Math.round(H * cfg.marginBPct), sw, sh);
