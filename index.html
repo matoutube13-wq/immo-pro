@@ -1202,10 +1202,23 @@ function drawStamp(ctx, W, H, type, stamp) {
 }
 var MAX_BYTES = 10 * 1024 * 1024;
 function autoCompress(canvas, mime, cb) {
+  // Pour PNG, vérifier d'abord si < 10Mo, sinon basculer en JPEG
+  if (mime === 'image/png') {
+    canvas.toBlob(function(blob) {
+      if (blob && blob.size <= MAX_BYTES) {
+        cb(blob);
+      } else {
+        // PNG trop gros → convertir en JPEG compressé
+        autoCompress(canvas, 'image/jpeg', cb);
+      }
+    }, 'image/png');
+    return;
+  }
+  // JPEG : compression adaptative
   function tryQ(q) {
     canvas.toBlob(function(blob) {
       if (blob.size <= MAX_BYTES || q <= 0.25) { cb(blob); } else { tryQ(+(q-0.07).toFixed(2)); }
-    }, mime, q);
+    }, 'image/jpeg', q);
   }
   tryQ(0.85);
 }
@@ -1283,8 +1296,8 @@ function mentionProcess(type) {
         var c=document.createElement('canvas'); c.width=img.width; c.height=img.height;
         var ctx=c.getContext('2d'); ctx.drawImage(img,0,0);
         drawStamp(ctx, c.width, c.height, type, stamp);
-        var mime = f.type==='image/png'?'image/png':'image/jpeg';
-        autoCompress(c, mime, function(blob){
+        // Toujours exporter en JPEG pour garantir la compression ≤ 10 Mo
+        autoCompress(c, 'image/jpeg', function(blob){
           dl(blob, f.name.replace(/\.[^.]+$/,'')+'_mention.jpg');
           if(st){st.className='file-status done';st.textContent='✅ '+(blob.size/1024/1024).toFixed(1)+' Mo';}
           setTimeout(function(){next(i+1);},150);
@@ -1717,7 +1730,94 @@ function roundRect(ctx, x, y, w, h, r, color) {
   ctx.fill();
 }
 
-// ── Téléchargement
+// ── Générer via API Canva
+function postfbGenerate() {
+  if (!_postfbPhoto) { alert('Ajoutez une photo du bien.'); return; }
+  var btn = document.getElementById('postfb-generate-btn');
+  btn.disabled = true; btn.textContent = '⏳ Génération en cours…';
+  document.getElementById('postfb-result-card').style.display = 'none';
+  document.getElementById('postfb-generate-loading').style.display = 'flex';
+
+  // Convertir la photo en base64
+  var canvas = document.createElement('canvas');
+  canvas.width = _postfbPhoto.width; canvas.height = _postfbPhoto.height;
+  canvas.getContext('2d').drawImage(_postfbPhoto, 0, 0);
+  var photoBase64 = canvas.toDataURL('image/jpeg', 0.9);
+
+  fetch('/api/post-facebook', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      type_bien:    document.getElementById('postfb-type').value,
+      localite:     document.getElementById('postfb-localite').value,
+      transaction:  document.getElementById('postfb-transaction').value,
+      prix_formule: document.getElementById('postfb-prix-formule').value,
+      prix:         document.getElementById('postfb-prix').value,
+      chambres:     document.getElementById('postfb-chambres').value,
+      surface:      document.getElementById('postfb-surface').value,
+      sdb:          document.getElementById('postfb-sdb').value,
+      photo_base64: photoBase64,
+      photo_mime:   'image/jpeg',
+      post_text:    _postfbFbText,
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    document.getElementById('postfb-generate-loading').style.display = 'none';
+    btn.disabled = false; btn.textContent = '🎨 Générer le visuel Canva';
+    if (!d.success) {
+      document.getElementById('postfb-gen-error').textContent = d.error || 'Erreur inconnue';
+      document.getElementById('postfb-gen-error').style.display = 'block';
+      return;
+    }
+    // Afficher les résultats
+    var resultCard = document.getElementById('postfb-result-card');
+    resultCard.style.display = '';
+
+    // Images en base64
+    var imgsDiv = document.getElementById('postfb-result-images');
+    imgsDiv.innerHTML = '';
+    if (d.images && d.images.length) {
+      d.images.forEach(function(img) {
+        // Conteneur image
+        var wrap = document.createElement('div');
+        wrap.style.cssText = 'margin-bottom:16px;';
+
+        // Image
+        var imgEl = document.createElement('img');
+        imgEl.src = img.base64;
+        imgEl.style.cssText = 'width:100%;border-radius:12px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.1);';
+        wrap.appendChild(imgEl);
+
+        // Bouton télécharger
+        var btn = document.createElement('a');
+        btn.href = img.base64;
+        btn.download = img.filename;
+        btn.className = 'btn-primary';
+        btn.style.cssText = 'width:auto;padding:10px 18px;text-decoration:none;display:inline-flex;margin-top:10px;font-size:13px;';
+        btn.innerHTML = '⬇️ Télécharger ' + img.filename;
+        wrap.appendChild(btn);
+
+        imgsDiv.appendChild(wrap);
+      });
+    }
+
+    // Texte Facebook
+    if (d.post_text) {
+      _postfbFbText = d.post_text;
+      document.getElementById('postfb-fb-text').textContent = d.post_text;
+      document.getElementById('postfb-fb-text').style.display = 'block';
+    }
+  })
+  .catch(function(e) {
+    document.getElementById('postfb-generate-loading').style.display = 'none';
+    btn.disabled = false; btn.textContent = '🎨 Générer le visuel Canva';
+    document.getElementById('postfb-gen-error').textContent = 'Erreur : ' + e.message;
+    document.getElementById('postfb-gen-error').style.display = 'block';
+  });
+}
+
+// ── Téléchargement local (fallback aperçu)
 function postfbDownload() {
   var canvas = document.getElementById('postfb-canvas');
   canvas.toBlob(function(blob) {
@@ -2085,18 +2185,26 @@ function postfbReset() {
         <input type="file" id="postfb-photo-input" accept="image/*" style="display:none" onchange="postfbPhotoLoad(this.files[0])">
       </div>
 
-      <!-- Étape 4 : aperçu + actions -->
+      <!-- Étape 4 : génération Canva -->
       <div class="card" id="postfb-step4" style="display:none">
-        <h3 style="margin-bottom:14px">4. Aperçu du visuel</h3>
-        <div class="postfb-preview-wrap">
-          <canvas id="postfb-canvas"></canvas>
-        </div>
+        <h3 style="margin-bottom:6px">4. Générer le visuel</h3>
+        <p style="font-size:13px;color:#888;margin-bottom:16px">Claude va remplir ton template Canva automatiquement et exporter les images.</p>
         <div class="postfb-actions">
-          <button class="btn-primary" style="width:auto;padding:12px 22px" onclick="postfbDownload()">⬇️ Télécharger le visuel (JPG)</button>
+          <button class="btn-primary" id="postfb-generate-btn" style="width:auto;padding:12px 22px" onclick="postfbGenerate()">🎨 Générer le visuel Canva</button>
           <button class="btn-ghost" onclick="postfbCopyText()">📋 Copier le texte Facebook</button>
           <button class="btn-ghost" onclick="postfbReset()">🔄 Nouveau post</button>
         </div>
+        <div class="loading" id="postfb-generate-loading" style="display:none;margin-top:12px">
+          <div class="spinner"></div> Génération en cours (~30 sec)…
+        </div>
+        <div id="postfb-gen-error" class="error-box"></div>
         <div id="postfb-fb-text" class="postfb-text-result"></div>
+      </div>
+
+      <!-- Résultat -->
+      <div class="card" id="postfb-result-card" style="display:none">
+        <h3 style="margin-bottom:14px">✅ Visuel généré !</h3>
+        <div id="postfb-result-images"></div>
       </div>
 
     </div>
