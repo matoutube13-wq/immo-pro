@@ -75,6 +75,42 @@
     #main-wrapper { margin-left: 68px; padding-top: 64px; transition: margin-left 0.25s cubic-bezier(.4,0,.2,1); min-height: 100vh; }
     body.sb-open #main-wrapper { margin-left: 240px; }
 
+    /* ── ANNONCE BANDEAU ── */
+    .announce-wrap { padding: 0 32px 20px; }
+    .announce-card {
+      background: linear-gradient(135deg, #1a1f2e 0%, #252c40 100%);
+      border-radius: 14px; padding: 20px 24px;
+      display: flex; align-items: flex-start; gap: 16px;
+      position: relative; overflow: hidden;
+    }
+    .announce-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, #c9a84c, #e8c97a, #c9a84c);
+    }
+    .announce-icon {
+      width: 40px; height: 40px; background: rgba(201,168,76,0.15);
+      border-radius: 10px; display: flex; align-items: center;
+      justify-content: center; font-size: 20px; flex-shrink: 0; margin-top: 1px;
+    }
+    .announce-body { flex: 1; min-width: 0; }
+    .announce-tag {
+      display: inline-block; background: rgba(201,168,76,0.2); color: #c9a84c;
+      font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 3px 9px; border-radius: 20px; margin-bottom: 8px;
+    }
+    .announce-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 6px; letter-spacing: -0.2px; }
+    .announce-text { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.65; }
+    .announce-text strong { color: rgba(255,255,255,0.9); font-weight: 600; }
+    .announce-text a { color: #c9a84c; text-decoration: none; font-weight: 600; }
+    .announce-text a:hover { text-decoration: underline; }
+    .announce-close {
+      background: none; border: none; color: rgba(255,255,255,0.3); cursor: pointer;
+      font-size: 18px; line-height: 1; padding: 2px 4px; flex-shrink: 0;
+      transition: color 0.15s; margin-top: -2px;
+    }
+    .announce-close:hover { color: rgba(255,255,255,0.7); }
+    @media (max-width: 768px) { .announce-wrap { padding: 0 16px 16px; } }
+
     /* ── DASHBOARD ── */
     #dashboard { display: block; }
     .dash-header { padding: 32px 32px 20px; }
@@ -350,6 +386,23 @@
       <div class="dash-title">Bonjour &#x1F44B;</div>
       <div class="dash-sub">Accédez à vos outils métiers en un clic.</div>
     </div>
+    <!-- ── BANDEAU ANNONCE ── -->
+    <div class="announce-wrap" id="announce-wrap">
+      <div class="announce-card">
+        <div class="announce-icon">🎉</div>
+        <div class="announce-body">
+          <span class="announce-tag">Nouveauté · Avril 2026</span>
+          <div class="announce-title">Nouveau design &amp; outil Mention IA en ligne !</div>
+          <div class="announce-text">
+            Nouveau look, même bonne humeur 🎨 — l'outil <strong>Mention IA</strong> est dispo et prêt à bosser !<br>
+            N'oublie pas : <strong>«&nbsp;Projet IA&nbsp;»</strong> sur tes images générées par IA, <strong>«&nbsp;Optimisation visuelle&nbsp;»</strong> quand tu as viré le bazar dans une pièce ou amélioré une photo. Simple comme bonjour 😎<br><br>
+            Un bug ? Une question existentielle ? <a href="mailto:mathias@trevirasquain.be">Écris-moi</a> — je ne mords pas (enfin, presque). <strong>Bonne utilisation &amp; amusez-vous bien !</strong> 🚀
+          </div>
+        </div>
+        <button class="announce-close" onclick="document.getElementById('announce-wrap').style.display='none'" title="Fermer">✕</button>
+      </div>
+    </div>
+
     <div class="dash-stats">
       <div class="stat-card">
         <div class="stat-label">Outil disponible</div>
