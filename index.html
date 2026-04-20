@@ -5,344 +5,407 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Immo Pro</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    /* ── RESET ── */
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', sans-serif; background: #f7f5f2; min-height: 100vh; }
+    body { font-family: 'Inter', 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; overflow-x: hidden; }
 
-    /* ── LOGIN ─────────────────────────────────────────────── */
-    #login-page {
-      min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      background: linear-gradient(135deg, #1a1a2e 0%, #2d2d4e 100%);
-    }
-    .login-box {
-      background: #fff; border-radius: 20px; padding: 48px 40px; width: 100%; max-width: 400px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center;
-    }
-    .login-logo { width: 64px; height: 64px; background: #c9a84c; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 0 auto 20px; }
-    .login-title { font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
-    .login-sub { font-size: 13px; color: #999; margin-bottom: 32px; }
-    .login-box input {
-      width: 100%; padding: 14px 16px; border-radius: 10px; border: 1.5px solid #e0dbd2;
-      font-size: 15px; outline: none; color: #333; background: #fafaf8; text-align: center;
-      letter-spacing: 3px; transition: border 0.2s;
-    }
+    /* ── LOGIN (conservé) ── */
+    #login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #1a1f2e; }
+    .login-box { background: #fff; border-radius: 16px; padding: 48px 40px; width: 100%; max-width: 380px; box-shadow: 0 24px 64px rgba(0,0,0,0.25); text-align: center; }
+    .login-logo { width: 56px; height: 56px; background: #c9a84c; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 20px; }
+    .login-title { font-size: 20px; font-weight: 700; color: #1a1f2e; margin-bottom: 4px; letter-spacing: -0.3px; }
+    .login-sub { font-size: 13px; color: #aaa; margin-bottom: 28px; }
+    .login-box input { width: 100%; padding: 13px 16px; border-radius: 10px; border: 1.5px solid #e5e7eb; font-size: 15px; outline: none; color: #333; background: #fafafa; text-align: center; letter-spacing: 3px; transition: border 0.2s; }
     .login-box input:focus { border-color: #c9a84c; }
-    .login-btn {
-      width: 100%; padding: 14px; background: #1a1a2e; color: #fff; border: none;
-      border-radius: 10px; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 14px;
-      transition: background 0.2s;
-    }
-    .login-btn:hover { background: #2d2d4e; }
+    .login-btn { width: 100%; padding: 13px; background: #1a1f2e; color: #fff; border: none; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 12px; transition: background 0.2s; }
+    .login-btn:hover { background: #252c40; }
     .login-btn:disabled { background: #ccc; cursor: not-allowed; }
-    .login-error { color: #c0392b; font-size: 13px; margin-top: 10px; display: none; }
-    .login-spinner { display: none; margin-top: 12px; color: #999; font-size: 13px; }
+    .login-error { color: #dc2626; font-size: 13px; margin-top: 10px; display: none; }
+    .login-spinner { display: none; margin-top: 10px; color: #999; font-size: 13px; }
 
-    /* ── APP SHELL ─────────────────────────────────────────── */
-    #app { display: none; }
-    .header { background: #1a1a2e; padding: 22px 40px; display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 100; }
-    .logo { width: 40px; height: 40px; background: #c9a84c; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-    .logo-text { color: #fff; font-weight: 700; font-size: 18px; }
-    .logo-sub { color: #c9a84c; font-size: 11px; letter-spacing: 1px; }
-    .logout-btn { margin-left: auto; background: none; border: 1px solid #c9a84c; color: #c9a84c; padding: 6px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: 600; }
-    .logout-btn:hover { background: #c9a84c; color: #1a1a2e; }
+    /* ── APP SHELL ── */
+    #app { display: none; min-height: 100vh; }
 
-    /* ── DASHBOARD ─────────────────────────────────────────── */
+    /* ── SIDEBAR ── */
+    #sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: 68px; background: #1a1f2e; display: flex; flex-direction: column; transition: width 0.25s cubic-bezier(.4,0,.2,1); z-index: 200; overflow: hidden; }
+    #sidebar.open { width: 240px; }
+    .sb-logo { height: 64px; display: flex; align-items: center; gap: 12px; padding: 0 17px; border-bottom: 1px solid rgba(255,255,255,0.07); flex-shrink: 0; }
+    .sb-logo-icon { width: 34px; height: 34px; background: #c9a84c; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .sb-logo-icon svg { width: 18px; height: 18px; }
+    .sb-logo-text { color: #fff; font-weight: 700; font-size: 15px; white-space: nowrap; opacity: 0; transition: opacity 0.2s; }
+    .sb-logo-sub { color: rgba(201,168,76,0.75); font-size: 9px; font-weight: 600; letter-spacing: 1.2px; white-space: nowrap; opacity: 0; transition: opacity 0.2s; }
+    #sidebar.open .sb-logo-text, #sidebar.open .sb-logo-sub { opacity: 1; }
+    .sb-nav { flex: 1; padding: 12px 0; overflow: hidden; }
+    .sb-section { font-size: 9px; font-weight: 700; letter-spacing: 1.8px; color: rgba(255,255,255,0.2); padding: 14px 20px 5px; white-space: nowrap; opacity: 0; transition: opacity 0.2s; text-transform: uppercase; }
+    #sidebar.open .sb-section { opacity: 1; }
+    .sb-item { display: flex; align-items: center; gap: 13px; padding: 10px 0 10px 22px; cursor: pointer; position: relative; transition: background 0.15s; white-space: nowrap; }
+    .sb-item:hover { background: rgba(255,255,255,0.06); }
+    .sb-item.active { background: rgba(201,168,76,0.12); }
+    .sb-item.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 22px; background: #c9a84c; border-radius: 0 3px 3px 0; }
+    .sb-item.sb-disabled { opacity: 0.35; cursor: default; pointer-events: none; }
+    .sb-icon { width: 20px; height: 20px; flex-shrink: 0; }
+    .sb-label { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.65); white-space: nowrap; opacity: 0; transition: opacity 0.15s; }
+    #sidebar.open .sb-label { opacity: 1; }
+    .sb-item.active .sb-label { color: #fff; font-weight: 600; }
+    .sb-pill { background: rgba(201,168,76,0.2); color: #c9a84c; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; margin-left: auto; margin-right: 14px; flex-shrink: 0; opacity: 0; transition: opacity 0.15s; letter-spacing: 0.5px; }
+    #sidebar.open .sb-pill { opacity: 1; }
+    .sb-bottom { border-top: 1px solid rgba(255,255,255,0.07); padding: 10px 0; }
+    .sb-user { display: flex; align-items: center; gap: 12px; padding: 10px 18px; }
+    .sb-avatar { width: 32px; height: 32px; background: rgba(201,168,76,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #c9a84c; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+    .sb-user-info { opacity: 0; transition: opacity 0.15s; }
+    #sidebar.open .sb-user-info { opacity: 1; }
+    .sb-user-name { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.8); }
+    .sb-user-role { font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 1px; }
+
+    /* ── TOPBAR ── */
+    #topbar { position: fixed; top: 0; left: 68px; right: 0; height: 64px; background: #fff; border-bottom: 1px solid #e8eaed; display: flex; align-items: center; padding: 0 28px; gap: 14px; z-index: 100; transition: left 0.25s cubic-bezier(.4,0,.2,1); }
+    body.sb-open #topbar { left: 240px; }
+    .tb-toggle { width: 36px; height: 36px; border: none; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 8px; color: #888; transition: background 0.15s; flex-shrink: 0; }
+    .tb-toggle:hover { background: #f0f2f5; }
+    .tb-toggle svg { width: 18px; height: 18px; }
+    .tb-breadcrumb { font-size: 13px; color: #bbb; display: flex; align-items: center; gap: 6px; }
+    .tb-breadcrumb .tb-page { color: #1a1f2e; font-weight: 600; }
+    .tb-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .tb-agency { background: #f0f2f5; border-radius: 20px; padding: 5px 14px; font-size: 12px; color: #555; font-weight: 500; }
+    .tb-avatar { width: 34px; height: 34px; background: #1a1f2e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #c9a84c; font-size: 11px; font-weight: 700; cursor: pointer; }
+
+    /* ── MAIN WRAPPER ── */
+    #main-wrapper { margin-left: 68px; padding-top: 64px; transition: margin-left 0.25s cubic-bezier(.4,0,.2,1); min-height: 100vh; }
+    body.sb-open #main-wrapper { margin-left: 240px; }
+
+    /* ── DASHBOARD ── */
     #dashboard { display: block; }
-    .welcome { padding: 36px 40px 16px; }
-    .welcome h1 { font-size: 24px; font-weight: 700; color: #1a1a2e; }
-    .welcome p { color: #666; margin-top: 6px; font-size: 14px; }
-    .tools-grid { padding: 0 40px 60px; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
-    .tool-card { background: #fff; border-radius: 16px; padding: 26px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); cursor: pointer; border: 2px solid transparent; transition: all 0.2s; position: relative; }
-    .tool-card:hover { border-color: #c9a84c; transform: translateY(-2px); }
+    .dash-header { padding: 32px 32px 20px; }
+    .dash-title { font-size: 22px; font-weight: 700; color: #1a1f2e; letter-spacing: -0.4px; }
+    .dash-sub { font-size: 13px; color: #9ca3af; margin-top: 4px; }
+    .dash-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; padding: 0 32px 24px; }
+    .stat-card { background: #fff; border-radius: 12px; padding: 18px 20px; border: 1px solid #e8eaed; }
+    .stat-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: #d1d5db; text-transform: uppercase; margin-bottom: 8px; }
+    .stat-val { font-size: 26px; font-weight: 700; color: #1a1f2e; letter-spacing: -0.5px; }
+    .stat-hint { font-size: 11px; color: #9ca3af; margin-top: 4px; display: flex; align-items: center; gap: 5px; }
+    .stat-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+    .tools-section-title { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: #d1d5db; text-transform: uppercase; padding: 0 32px 12px; }
+    .tools-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap: 14px; padding: 0 32px 48px; }
+    .tool-card { background: #fff; border-radius: 14px; padding: 22px; border: 1.5px solid #e8eaed; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
+    .tool-card:hover { border-color: #c9a84c; transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,0.09); }
     .tool-card.disabled { opacity: 0.5; cursor: default; }
-    .tool-card.disabled:hover { border-color: transparent; transform: none; }
-    .tool-badge { position: absolute; top: 12px; right: 12px; background: #f0ece4; color: #999; font-size: 9px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
-    .tool-badge.new { background: #e8f5e9; color: #27ae60; }
-    .tool-icon { font-size: 32px; margin-bottom: 12px; }
-    .tool-title { font-weight: 700; font-size: 15px; color: #1a1a2e; margin-bottom: 4px; }
-    .tool-desc { font-size: 12px; color: #888; line-height: 1.5; }
+    .tool-card.disabled:hover { transform: none; box-shadow: none; border-color: #e8eaed; }
+    .tool-card.tc-active { border-color: #c9a84c; }
+    .tc-stripe { position: absolute; top: 0; left: 0; right: 0; height: 3px; background: #c9a84c; border-radius: 14px 14px 0 0; }
+    .tool-badge { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 0.8px; padding: 3px 9px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
+    .badge-active { background: #dcfce7; color: #166534; }
+    .badge-dev { background: #f3f4f6; color: #9ca3af; }
+    .tc-icon { width: 42px; height: 42px; border-radius: 11px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+    .tc-icon svg { width: 22px; height: 22px; }
+    .tool-title { font-size: 14px; font-weight: 700; color: #1a1f2e; margin-bottom: 6px; }
+    .tool-desc { font-size: 12px; color: #9ca3af; line-height: 1.55; }
 
-    /* ── TOOL SHELLS ───────────────────────────────────────── */
-    #social-tool, #compromis-tool { display: none; }
-    .tool-header { background: #1a1a2e; padding: 18px 40px; display: flex; align-items: center; gap: 14px; }
-    .back-btn { background: none; border: none; color: #c9a84c; cursor: pointer; font-size: 20px; padding: 0; line-height: 1; }
-    .tool-icon-sm { width: 34px; height: 34px; background: #c9a84c; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-    .tool-header-text { color: #fff; font-weight: 700; font-size: 16px; }
-    .tool-header-sub { color: #c9a84c; font-size: 10px; letter-spacing: 1px; }
+    /* ── TOOL VIEW ── */
+    #social-tool, #compromis-tool, #candidatures-tool, #mention-tool, #postfb-tool { display: none; }
+    .tool-topbar { height: 56px; background: #fff; border-bottom: 1px solid #e8eaed; display: flex; align-items: center; gap: 14px; padding: 0 28px; margin-bottom: 28px; }
+    .back-btn { width: 34px; height: 34px; background: #f3f4f6; border: none; border-radius: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #555; font-size: 16px; transition: background 0.15s; flex-shrink: 0; }
+    .back-btn:hover { background: #e5e7eb; color: #1a1f2e; }
+    .tool-icon-sm { width: 32px; height: 32px; background: #c9a84c; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+    .tool-header-text { color: #1a1f2e; font-weight: 700; font-size: 15px; }
+    .tool-header-sub { color: #9ca3af; font-size: 10px; letter-spacing: 1px; font-weight: 600; }
 
-    /* ── SHARED COMPONENTS ─────────────────────────────────── */
-    .content { max-width: 860px; margin: 0 auto; padding: 36px 20px 60px; }
-    .card { background: #fff; border-radius: 16px; padding: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); margin-bottom: 24px; }
-    .card h3 { font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-    label { display: block; font-weight: 600; color: #1a1a2e; margin-bottom: 8px; font-size: 14px; }
-    input[type=text], input[type=email], input[type=password], select, textarea {
-      width: 100%; padding: 11px 14px; border-radius: 10px; border: 1.5px solid #e0dbd2;
-      font-size: 14px; outline: none; color: #333; background: #fafaf8; transition: border 0.2s;
-      font-family: inherit;
-    }
-    input:focus, select:focus, textarea:focus { border-color: #c9a84c; }
-    .btn-primary { width: 100%; padding: 14px; background: #1a1a2e; color: #fff; border: none; border-radius: 10px; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 16px; transition: background 0.2s; }
-    .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
-    .btn-primary:hover:not(:disabled) { background: #2d2d4e; }
-    .btn-gold { background: #c9a84c; color: #fff; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: background 0.2s; padding: 12px 24px; font-size: 14px; }
+    /* ── SHARED COMPONENTS ── */
+    .content { max-width: 860px; margin: 0 auto; padding: 0 28px 60px; }
+    .card { background: #fff; border-radius: 14px; padding: 26px; border: 1px solid #e8eaed; margin-bottom: 18px; }
+    .card h3 { font-size: 15px; font-weight: 700; color: #1a1f2e; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    label { display: block; font-weight: 600; color: #374151; margin-bottom: 7px; font-size: 13px; }
+    input[type=text], input[type=email], input[type=password], select, textarea { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1.5px solid #e5e7eb; font-size: 14px; outline: none; color: #1a1f2e; background: #fafafa; transition: border 0.2s; font-family: inherit; }
+    input:focus, select:focus, textarea:focus { border-color: #c9a84c; background: #fff; }
+    .btn-primary { width: 100%; padding: 13px; background: #1a1f2e; color: #fff; border: none; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 14px; transition: background 0.2s; }
+    .btn-primary:disabled { background: #d1d5db; cursor: not-allowed; }
+    .btn-primary:hover:not(:disabled) { background: #252c40; }
+    .btn-gold { background: #c9a84c; color: #fff; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: background 0.2s; padding: 11px 22px; font-size: 14px; }
     .btn-gold:hover { background: #b8943e; }
-    .btn-ghost { background: #f0ece4; color: #1a1a2e; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; padding: 10px 18px; font-size: 13px; }
-    .btn-ghost:hover { background: #e5e0d6; }
-    .loading { margin-top: 14px; padding: 14px 16px; background: #f0ece4; border-radius: 10px; font-size: 13px; color: #1a1a2e; font-weight: 500; display: none; align-items: center; gap: 10px; }
+    .btn-ghost { background: #f3f4f6; color: #374151; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; padding: 10px 18px; font-size: 13px; transition: background 0.15s; }
+    .btn-ghost:hover { background: #e5e7eb; }
+    .loading { margin-top: 14px; padding: 13px 16px; background: #fafafa; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 13px; color: #374151; font-weight: 500; display: none; align-items: center; gap: 10px; }
     .spinner { width: 14px; height: 14px; border: 2px solid #c9a84c; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .error-box { background: #fff0f0; border: 1px solid #ffcccc; border-radius: 10px; padding: 10px 14px; margin-top: 10px; font-size: 13px; color: #c0392b; display: none; }
-    .success-box { background: #f0fff4; border: 1px solid #b2f0c8; border-radius: 10px; padding: 10px 14px; margin-top: 10px; font-size: 13px; color: #27ae60; display: none; }
+    .error-box { background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 10px 14px; margin-top: 10px; font-size: 13px; color: #dc2626; display: none; }
+    .success-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 10px 14px; margin-top: 10px; font-size: 13px; color: #16a34a; display: none; }
 
-    /* ── SOCIAL TOOL ───────────────────────────────────────── */
+    /* ── SOCIAL ── */
     .result-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-    .avatar { width: 40px; height: 40px; border-radius: 50%; background: #1a1a2e; display: flex; align-items: center; justify-content: center; color: #c9a84c; font-weight: 700; font-size: 14px; }
-    .fb-badge { margin-left: auto; background: #1877f2; color: #fff; border-radius: 8px; padding: 3px 10px; font-size: 11px; font-weight: 600; }
-    .post-text { background: #f7f5f2; border-radius: 12px; padding: 18px; font-size: 14px; line-height: 1.8; color: #333; white-space: pre-wrap; border-left: 3px solid #c9a84c; }
+    .avatar { width: 38px; height: 38px; border-radius: 50%; background: #1a1f2e; display: flex; align-items: center; justify-content: center; color: #c9a84c; font-weight: 700; font-size: 13px; }
+    .fb-badge { margin-left: auto; background: #1877f2; color: #fff; border-radius: 8px; padding: 3px 10px; font-size: 11px; font-weight: 700; }
+    .post-text { background: #f9fafb; border-radius: 12px; padding: 18px; font-size: 14px; line-height: 1.8; color: #374151; white-space: pre-wrap; border-left: 3px solid #c9a84c; }
     .result-actions { display: flex; gap: 10px; margin-top: 16px; }
-    .btn-copy { flex: 1; padding: 12px; background: #c9a84c; color: #fff; border: none; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; transition: background 0.2s; }
-    .btn-copy.copied { background: #27ae60; }
-    .btn-regen { flex: 1; padding: 12px; background: #f0ece4; color: #1a1a2e; border: none; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; }
+    .btn-copy { flex: 1; padding: 11px; background: #c9a84c; color: #fff; border: none; border-radius: 10px; font-weight: 600; font-size: 13px; cursor: pointer; transition: background 0.2s; }
+    .btn-copy:hover { background: #b8943e; }
+    .btn-regen { flex: 1; padding: 11px; background: #f3f4f6; color: #374151; border: none; border-radius: 10px; font-weight: 600; font-size: 13px; cursor: pointer; transition: background 0.15s; }
+    .btn-regen:hover { background: #e5e7eb; }
 
-    /* ── COMPROMIS TOOL ────────────────────────────────────── */
-    .drop-zone {
-      border: 2px dashed #d0c9bc; border-radius: 12px; padding: 36px 24px;
-      text-align: center; cursor: pointer; background: #fafaf8; transition: all 0.2s;
-    }
-    .drop-zone:hover, .drop-zone.dragover { border-color: #c9a84c; background: #fdf8ee; }
-    .drop-zone-icon { font-size: 40px; margin-bottom: 10px; }
-    .drop-zone p { color: #666; font-size: 14px; margin-bottom: 6px; }
-    .drop-zone small { color: #aaa; font-size: 12px; }
-    .file-list { margin-top: 16px; }
-    .file-item {
-      display: flex; align-items: center; gap: 10px; padding: 10px 14px;
-      background: #f7f5f2; border-radius: 8px; margin-bottom: 8px; font-size: 13px;
-    }
-    .file-item .file-name { flex: 1; color: #333; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .file-item .file-size { color: #999; font-size: 11px; flex-shrink: 0; }
-    .file-item .file-remove { background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 18px; line-height: 1; flex-shrink: 0; }
+    /* ── MENTION IA ── */
+    .mention-tabs { display: flex; background: #1a1f2e; border-radius: 11px; padding: 4px; gap: 3px; margin-bottom: 22px; }
+    .mention-tab { flex: 1; padding: 9px 12px; border: none; background: transparent; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.55); cursor: pointer; transition: all 0.2s; text-align: center; }
+    .mention-tab.active { background: #fff; color: #1a1f2e; font-weight: 600; }
+    .mention-panel { display: none; }
+    .mention-panel.active { display: block; }
+    .drop-zone { border: 2px dashed #e5e7eb; border-radius: 12px; padding: 36px 20px; text-align: center; cursor: pointer; transition: all 0.2s; background: #f9fafb; }
+    .drop-zone:hover, .drop-zone.dragover { border-color: #c9a84c; background: #fffdf5; }
+    .drop-zone-icon { font-size: 36px; margin-bottom: 10px; }
+    .drop-zone p { color: #374151; font-size: 14px; margin-bottom: 5px; font-weight: 500; }
+    .drop-zone small { color: #9ca3af; font-size: 12px; }
+    .img-preview-wrap canvas { max-width: 100%; max-height: 260px; display: block; margin: auto; border-radius: 8px; }
+    .file-list { margin-top: 14px; }
+    .file-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #f9fafb; border-radius: 9px; margin-bottom: 7px; font-size: 13px; border: 1px solid #f3f4f6; }
+    .file-item .file-name { flex: 1; color: #374151; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-item .file-size { color: #9ca3af; font-size: 11px; flex-shrink: 0; }
+    .file-status { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px; }
+    .file-status.pending { background: #f3f4f6; color: #9ca3af; }
+    .file-status.analyzing { background: #fef9c3; color: #a16207; }
+    .file-status.done { background: #f0fdf4; color: #16a34a; }
+    .m-progress { background: #f3f4f6; border-radius: 8px; height: 6px; overflow: hidden; margin-top: 14px; }
+    .m-progress-bar { height: 100%; background: #c9a84c; border-radius: 8px; width: 0%; transition: width 0.3s; }
+    .m-progress-txt { font-size: 12px; color: #9ca3af; margin-top: 6px; text-align: center; }
+    .sec-lbl { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #9ca3af; display: block; margin-bottom: 10px; }
 
-    /* Étapes IA */
-    .ai-steps { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
-    .ai-step {
-      display: flex; align-items: center; gap: 12px; padding: 12px 16px;
-      border-radius: 10px; font-size: 13px; background: #f7f5f2; color: #999;
-      transition: all 0.3s;
-    }
-    .ai-step.active { background: #fdf8ee; color: #1a1a2e; font-weight: 600; }
-    .ai-step.done { background: #f0fff4; color: #27ae60; font-weight: 600; }
-    .ai-step.error { background: #fff0f0; color: #c0392b; }
+    /* ── COMPROMIS ── */
+    .ai-steps { display: flex; flex-direction: column; gap: 8px; }
+    .ai-step { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 10px; font-size: 13px; background: #f9fafb; color: #9ca3af; border: 1px solid #f3f4f6; }
+    .ai-step.active { background: #fffdf5; color: #1a1f2e; font-weight: 600; border-color: #f0e8cc; }
+    .ai-step.done { background: #f0fdf4; color: #16a34a; font-weight: 600; border-color: #bbf7d0; }
     .ai-step-icon { font-size: 18px; width: 28px; text-align: center; flex-shrink: 0; }
-
-    /* Formulaire compromis */
-    .form-section { margin-bottom: 28px; }
-    .form-section-title {
-      font-size: 13px; font-weight: 700; color: #c9a84c; text-transform: uppercase;
-      letter-spacing: 1px; margin-bottom: 14px; padding-bottom: 8px;
-      border-bottom: 1px solid #f0ece4;
-    }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .form-group { display: flex; flex-direction: column; gap: 5px; }
-    .form-group label { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 0; }
+    .form-section { margin-bottom: 24px; }
+    .form-section-title { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #c9a84c; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid #f3f4f6; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-group { display: flex; flex-direction: column; }
     .form-group.full { grid-column: 1 / -1; }
+    .form-group label { font-size: 11px; font-weight: 600; color: #6b7280; margin-bottom: 5px; }
     .form-group input, .form-group select { font-size: 13px; padding: 9px 12px; }
-    .ai-filled { border-color: #c9a84c !important; background: #fffbf0 !important; }
+    .personne-block { background: #f9fafb; border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid #f3f4f6; }
+    .personne-block-title { font-size: 13px; font-weight: 700; color: #1a1f2e; }
+    .btn-remove { background: none; border: none; color: #dc2626; cursor: pointer; font-size: 13px; font-weight: 600; padding: 4px 8px; border-radius: 6px; }
+    .btn-remove:hover { background: #fef2f2; }
+    .btn-add-person { display: flex; align-items: center; gap: 6px; cursor: pointer; color: #6b7280; font-size: 13px; font-weight: 600; padding: 8px 0; background: none; border: none; transition: color 0.15s; }
+    .btn-add-person:hover { color: #c9a84c; }
+    .badge-ai { display: inline-flex; align-items: center; gap: 4px; background: #fffdf5; border: 1px solid #f0e8cc; color: #a07c20; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+    .download-btn { width: 100%; padding: 14px; background: #c9a84c; color: #fff; border: none; border-radius: 10px; font-weight: 700; font-size: 15px; cursor: pointer; transition: background 0.2s; margin-top: 4px; }
+    .download-btn:hover { background: #b8943e; }
+    .download-btn:disabled { background: #d1d5db; cursor: not-allowed; }
 
-    .personne-block {
-      background: #f9f8f6; border-radius: 10px; padding: 18px;
-      margin-bottom: 14px; border: 1px solid #eee;
-    }
-    .personne-block-header {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 14px;
-    }
-    .personne-block-title { font-size: 13px; font-weight: 700; color: #1a1a2e; }
-    .btn-remove { background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 13px; font-weight: 600; }
+    /* ── CANDIDATURES ── */
+    .tab-btn { padding: 8px 18px; border: none; background: #f3f4f6; border-radius: 9px; font-family: inherit; font-size: 13px; font-weight: 600; color: #6b7280; cursor: pointer; transition: all 0.15s; }
+    .tab-btn.active { background: #1a1f2e; color: #fff; }
+    .tab-btn:hover:not(.active) { background: #e5e7eb; }
+    .content-header { display: none; }
+    .cand-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #e8eaed; }
+    .cand-table th { background: #f9fafb; padding: 11px 16px; font-size: 10px; font-weight: 700; letter-spacing: 0.8px; color: #9ca3af; text-align: left; text-transform: uppercase; border-bottom: 1px solid #e8eaed; }
+    .cand-table td { padding: 12px 16px; font-size: 13px; color: #374151; border-bottom: 1px solid #f9fafb; }
+    .cand-table tr:last-child td { border-bottom: none; }
+    .cand-table tr:hover td { background: #f9fafb; cursor: pointer; }
+    .score-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .score-high { background: #f0fdf4; color: #16a34a; }
+    .score-mid { background: #fef9c3; color: #a16207; }
+    .score-low { background: #fef2f2; color: #dc2626; }
+    .bien-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(200px,1fr)); gap: 14px; }
+    .bien-card { background: #fff; border-radius: 12px; padding: 18px; border: 1.5px solid #e8eaed; cursor: pointer; transition: all 0.2s; }
+    .bien-card:hover { border-color: #c9a84c; transform: translateY(-2px); }
+    .bien-card.selected { border-color: #c9a84c; background: #fffdf5; }
+    .bien-card-title { font-weight: 700; color: #1a1f2e; font-size: 14px; margin-bottom: 4px; }
+    .bien-card-sub { font-size: 12px; color: #9ca3af; }
+    .btn-add-bien { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; background: #f9fafb; border: 2px dashed #e5e7eb; border-radius: 12px; cursor: pointer; color: #6b7280; font-size: 14px; font-weight: 600; transition: all 0.2s; width: 100%; font-family: inherit; }
+    .btn-add-bien:hover { border-color: #c9a84c; color: #c9a84c; background: #fffdf5; }
+    .modal-bien-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
 
-    .btn-add-person {
-      display: flex; align-items: center; gap: 6px; background: none;
-      border: 1.5px dashed #ccc; border-radius: 8px; padding: 8px 16px;
-      cursor: pointer; color: #888; font-size: 13px; font-weight: 600;
-      transition: all 0.2s; width: 100%;
-    }
-    .btn-add-person:hover { border-color: #c9a84c; color: #c9a84c; background: #fdf8ee; }
-
-    .download-btn {
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-      width: 100%; padding: 16px; background: #1a1a2e; color: #fff; border: none;
-      border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer;
-      transition: background 0.2s; margin-top: 8px;
-    }
-    .download-btn:hover { background: #2d2d4e; }
-    .download-btn:disabled { background: #ccc; cursor: not-allowed; }
-
-    .badge-ai { display: inline-flex; align-items: center; gap: 4px; background: #fdf8ee; border: 1px solid #e8d9a0; color: #a07c20; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
-
-    @media (max-width: 600px) {
-      .form-grid { grid-template-columns: 1fr; }
-      .header { padding: 16px 20px; }
-      .content { padding: 20px 12px 60px; }
-      .tools-grid { padding: 0 16px 40px; }
-    }
-
-    /* ── MODALE VÉRIFICATION ───────────────────────────────── */
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.55);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 1000; padding: 20px;
-    }
-    .modal {
-      background: #fff; border-radius: 20px; padding: 32px;
-      max-width: 640px; width: 100%; max-height: 85vh; overflow-y: auto;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    }
-    .modal-title { font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
-    .modal-subtitle { font-size: 13px; color: #888; margin-bottom: 20px; }
-    .verify-section { margin-bottom: 20px; }
-    .verify-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; color: #999; }
-    .verify-item { border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; font-size: 13px; }
-    .verify-item.warning { background: #fff8e1; border-left: 3px solid #f59e0b; }
-    .verify-item.danger  { background: #fff0f0; border-left: 3px solid #e74c3c; }
-    .verify-item-title { font-weight: 700; color: #1a1a2e; margin-bottom: 3px; }
-    .verify-item-desc { color: #555; line-height: 1.5; }
-    .verify-vals { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
-    .verify-val { background: #f0ece4; border-radius: 4px; padding: 2px 8px; font-size: 11px; color: #555; }
-    .verify-val.good { background: #e8f5e9; color: #1a6e3d; font-weight: 700; }
-    .verify-ok { background: #f0fff4; border-radius: 10px; padding: 14px; text-align: center; color: #27ae60; font-weight: 600; font-size: 14px; }
-    .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
-    .modal-actions button { flex: 1; padding: 13px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; border: none; }
-    .btn-modal-ok { background: #1a1a2e; color: #fff; }
-    .btn-modal-ok:hover { background: #2d2d4e; }
-    .btn-modal-cancel { background: #f0ece4; color: #1a1a2e; }
-    .verify-banner {
-      border-radius: 12px; padding: 14px 16px; margin-bottom: 20px;
-      display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5;
-    }
-    .verify-banner.ok       { background: #f0fff4; border: 1px solid #b2f0c8; color: #1a6e3d; }
-    .verify-banner.attention{ background: #fff8e1; border: 1px solid #fcd34d; color: #92400e; }
-    .verify-banner.bloquant { background: #fff0f0; border: 1px solid #fca5a5; color: #7f1d1d; }
+    /* ── MODALS ── */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 500; }
+    .modal-box { background: #fff; border-radius: 16px; padding: 28px; width: 90%; max-width: 680px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,0.2); }
+    .modal-title { font-size: 17px; font-weight: 700; color: #1a1f2e; margin-bottom: 4px; }
+    .modal-subtitle { font-size: 13px; color: #9ca3af; margin-bottom: 20px; }
+    .verify-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; color: #9ca3af; }
+    .verify-item { border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; font-size: 13px; border: 1px solid #f3f4f6; background: #f9fafb; }
+    .verify-item-title { font-weight: 700; color: #1a1f2e; margin-bottom: 3px; }
+    .verify-val { background: #f3f4f6; border-radius: 4px; padding: 2px 8px; font-size: 11px; color: #6b7280; }
+    .verify-val.good { background: #f0fdf4; color: #16a34a; font-weight: 700; }
+    .verify-ok { background: #f0fdf4; border-radius: 10px; padding: 14px; text-align: center; color: #16a34a; font-weight: 600; font-size: 14px; border: 1px solid #bbf7d0; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-actions button { flex: 1; padding: 12px; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; border: none; }
+    .btn-modal-cancel { background: #f3f4f6; color: #374151; }
+    .btn-modal-cancel:hover { background: #e5e7eb; }
+    .btn-modal-ok { background: #c9a84c; color: #fff; }
+    .btn-modal-ok:hover { background: #b8943e; }
+    .verify-banner { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; background: #fffdf5; border: 1px solid #f0e8cc; border-radius: 10px; padding: 14px; margin-bottom: 12px; color: #374151; }
     .verify-banner-icon { font-size: 20px; flex-shrink: 0; line-height: 1; }
-  
-  /* ── MENTION IA ── */
-  .mention-tabs { display:flex; background:#0a3d5c; border-radius:10px; padding:4px; gap:3px; margin-bottom:22px; }
-  .mention-tab { flex:1; padding:9px 12px; border:none; background:transparent; border-radius:8px; font-family:inherit; font-size:13px; font-weight:600; color:rgba(255,255,255,0.7); cursor:pointer; transition:all 0.2s; text-align:center; }
-  .mention-tab.active { background:#fff; color:#1a1a2e; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
-  .mention-panel { display:none; }
-  .mention-panel.active { display:block; }
-  .img-preview-wrap { border:1px solid #e0dbd2; border-radius:10px; overflow:hidden; background:#f7f5f2; min-height:130px; display:flex; align-items:center; justify-content:center; margin-bottom:16px; }
-  .img-preview-wrap canvas { max-width:100%; max-height:260px; display:block; margin:auto; }
-  .m-progress { display:none; margin-top:12px; }
-  .m-progress-bg { height:4px; background:#e0dbd2; border-radius:2px; overflow:hidden; }
-  .m-progress-bar { height:100%; background:#c9a84c; border-radius:2px; width:0%; transition:width 0.3s; }
-  .m-progress-txt { font-size:12px; color:#999; margin-top:5px; text-align:center; }
-  .sec-lbl { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#999; display:block; margin-bottom:10px; }
-  .btn-ghost { padding:11px 18px; background:#fff; border:1.5px solid #e0dbd2; border-radius:10px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; color:#666; transition:all 0.2s; }
-  .btn-ghost:hover { border-color:#c9a84c; }
 
-  /* ── POST FACEBOOK ── */
-  .postfb-form { display:grid; gap:14px; }
-  .postfb-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .postfb-field { display:flex; flex-direction:column; gap:5px; }
-  .postfb-field label { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#999; }
-  .postfb-field input, .postfb-field select { padding:10px 13px; border:1.5px solid #e0dbd2; border-radius:9px; font-family:inherit; font-size:14px; color:#1a1a2e; background:#fff; outline:none; transition:border-color 0.2s; }
-  .postfb-field input:focus, .postfb-field select:focus { border-color:#c9a84c; }
-  .postfb-field input.ai-filled { border-color:rgba(201,168,76,0.6); background:rgba(201,168,76,0.03); }
-  .postfb-preview-wrap { background:#f0f0f0; border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; min-height:300px; margin-bottom:16px; }
-  #postfb-canvas { max-width:100%; display:block; cursor:pointer; }
-  .postfb-photo-drop { border:2px dashed #e0dbd2; border-radius:10px; padding:20px; text-align:center; cursor:pointer; transition:all 0.2s; background:#faf8f5; }
-  .postfb-photo-drop:hover, .postfb-photo-drop.dragover { border-color:#c9a84c; background:rgba(201,168,76,0.03); }
-  .postfb-photo-drop p { font-size:13px; font-weight:600; color:#1a1a2e; margin-bottom:3px; }
-  .postfb-photo-drop small { font-size:11px; color:#aaa; }
-  .postfb-photo-thumb { width:100%; height:80px; object-fit:cover; border-radius:8px; margin-top:8px; display:none; }
-  .postfb-scrape-row {
-    display:flex !important; gap:10px; align-items:center; flex-direction:row !important;
-  }
-  .postfb-scrape-row input[type=text] {
-    flex:1 !important; min-width:0; width:auto !important;
-    padding:12px 14px; border:1.5px solid #e0dbd2; border-radius:10px;
-    font-family:inherit; font-size:14px; color:#1a1a2e; background:#fff;
-    outline:none; transition:border-color 0.2s;
-  }
-  .postfb-scrape-row input[type=text]:focus { border-color:#c9a84c; }
-  #postfb-scrape-btn { width:auto !important; flex-shrink:0; white-space:nowrap; }
-  .postfb-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:4px; }
-  .postfb-text-result { background:#f7f3ed; border-radius:10px; padding:16px; font-size:13px; line-height:1.7; color:#1a1a2e; white-space:pre-wrap; display:none; margin-top:12px; border:1px solid #ede8e0; }
-</style>
+    /* ── POST FACEBOOK ── */
+    .postfb-field { margin-bottom: 14px; }
+    .postfb-field label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #9ca3af; }
+    .postfb-field input, .postfb-field select { padding: 10px 13px; border: 1.5px solid #e5e7eb; border-radius: 9px; font-family: inherit; font-size: 14px; color: #1a1f2e; background: #fff; outline: none; transition: border-color 0.2s; }
+    .postfb-field input:focus, .postfb-field select:focus { border-color: #c9a84c; }
+    #postfb-canvas { max-width: 100%; display: block; cursor: pointer; border-radius: 10px; }
+    .postfb-photo-drop { border: 2px dashed #e5e7eb; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s; background: #f9fafb; }
+    .postfb-photo-drop:hover, .postfb-photo-drop.dragover { border-color: #c9a84c; background: #fffdf5; }
+    .postfb-photo-drop p { font-size: 13px; font-weight: 600; color: #1a1f2e; margin-bottom: 3px; }
+    .postfb-photo-drop small { font-size: 11px; color: #9ca3af; }
+    .postfb-photo-thumb { width: 100%; height: 80px; object-fit: cover; border-radius: 8px; margin-top: 8px; display: none; }
+    .postfb-scrape-row { display: flex !important; gap: 10px; align-items: center; flex-direction: row !important; }
+    .postfb-scrape-row input[type=text] { flex: 1 !important; min-width: 0; width: auto !important; }
+    #postfb-scrape-btn { width: auto !important; flex-shrink: 0; white-space: nowrap; }
+    .postfb-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+    .postfb-text-result { background: #f9fafb; border-radius: 10px; padding: 16px; font-size: 13px; line-height: 1.7; color: #374151; white-space: pre-wrap; display: none; margin-top: 12px; border: 1px solid #e5e7eb; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      #topbar { padding: 0 16px; }
+      .dash-header { padding: 24px 16px 16px; }
+      .dash-stats { grid-template-columns: 1fr 1fr; padding: 0 16px 20px; }
+      .dash-stats .stat-card:last-child { grid-column: 1/-1; }
+      .tools-section-title { padding: 0 16px 10px; }
+      .tools-grid { padding: 0 16px 40px; grid-template-columns: 1fr 1fr; }
+      .content { padding: 0 16px 48px; }
+      .tool-topbar { padding: 0 16px; }
+      .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 
-<!-- ── LOGIN ──────────────────────────────────────────────────────────────── -->
-<div id="login-page">
-  <div class="login-box">
-    <div class="login-logo">🏠</div>
-    <div class="login-title">Immo Pro</div>
-    <div class="login-sub">Accès réservé aux collaborateurs</div>
-    <input type="password" id="password-input" placeholder="Mot de passe" onkeydown="if(event.key==='Enter') login()"/>
-    <button class="login-btn" id="login-btn" onclick="login()">Connexion →</button>
-    <div class="login-error" id="login-error">❌ Mot de passe incorrect</div>
-    <div class="login-spinner" id="login-spinner">⏳ Vérification...</div>
-  </div>
-</div>
+<!-- ── LOGIN (désactivé temporairement) ──────────────────────────────────── -->
+<!-- <div id="login-page">...</div> -->
 
 <!-- ── APP ────────────────────────────────────────────────────────────────── -->
 <div id="app">
-  <div class="header">
-    <div class="logo">🏠</div>
-    <div>
-      <div class="logo-text">Immo Pro</div>
-      <div class="logo-sub">PLATEFORME COLLABORATEURS</div>
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#1a1f2e" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+      </div>
+      <div>
+        <div class="sb-logo-text">Immo Pro</div>
+        <div class="sb-logo-sub">TREVI RASQUAIN</div>
+      </div>
     </div>
-    <button class="logout-btn" onclick="logout()">🔒 Déconnexion</button>
+    <nav class="sb-nav">
+      <div class="sb-section">Principal</div>
+      <div class="sb-item active" id="sb-nav-dashboard" onclick="showDashboard()">
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span class="sb-label" style="color:#fff;font-weight:600">Dashboard</span>
+      </div>
+      <div class="sb-section" style="margin-top:4px">Outils</div>
+      <div class="sb-item" id="sb-nav-mention" onclick="showTool('mention-tool')">
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        <span class="sb-label">Mention IA</span>
+        <span class="sb-pill">ACTIF</span>
+      </div>
+      <div class="sb-item sb-disabled">
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+        <span class="sb-label">Réseaux Sociaux</span>
+        <span class="sb-pill">SOON</span>
+      </div>
+      <div class="sb-item sb-disabled">
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        <span class="sb-label">Post Facebook</span>
+        <span class="sb-pill">SOON</span>
+      </div>
+      <div class="sb-item sb-disabled">
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14,2 14,8 20,8"/></svg>
+        <span class="sb-label">Compromis</span>
+        <span class="sb-pill">SOON</span>
+      </div>
+      <div class="sb-item sb-disabled">
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        <span class="sb-label">Candidatures</span>
+        <span class="sb-pill">SOON</span>
+      </div>
+    </nav>
+    <div class="sb-bottom">
+      <div class="sb-user">
+        <div class="sb-avatar">TR</div>
+        <div class="sb-user-info">
+          <div class="sb-user-name">TREVI Rasquain</div>
+          <div class="sb-user-role">Liège · Belgique</div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <button class="tb-toggle" onclick="toggleSidebar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="tb-breadcrumb">Immo Pro &rsaquo; <span class="tb-page" id="tb-page-name">Dashboard</span></div>
+    <div class="tb-right">
+      <span class="tb-agency">TREVI Rasquain</span>
+      <div class="tb-avatar">TR</div>
+    </div>
+  </div>
+
+  <!-- MAIN WRAPPER -->
+  <div id="main-wrapper">
 
   <!-- DASHBOARD -->
   <div id="dashboard">
-    <div class="welcome">
-      <h1>Bonjour 👋</h1>
-      <p>Accédez à vos outils métiers en un clic.</p>
+    <div class="dash-header">
+      <div class="dash-title">Bonjour &#x1F44B;</div>
+      <div class="dash-sub">Accédez à vos outils métiers en un clic.</div>
     </div>
+    <div class="dash-stats">
+      <div class="stat-card">
+        <div class="stat-label">Outil disponible</div>
+        <div class="stat-val">1</div>
+        <div class="stat-hint"><span class="stat-dot" style="background:#22c55e"></span>Mention IA opérationnel</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">En développement</div>
+        <div class="stat-val">4</div>
+        <div class="stat-hint"><span class="stat-dot" style="background:#c9a84c"></span>Bientôt disponibles</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Agence</div>
+        <div class="stat-val" style="font-size:17px;margin-top:3px">TREVI</div>
+        <div class="stat-hint">Rasquain · Liège</div>
+      </div>
+    </div>
+    <div class="tools-section-title">Outils</div>
     <div class="tools-grid">
-      <div class="tool-card" onclick="showTool('social-tool')">
-        <div class="tool-icon">📱</div>
+      <div class="tool-card tc-active" onclick="showTool('mention-tool')">
+        <div class="tc-stripe"></div>
+        <span class="tool-badge badge-active">Disponible</span>
+        <div class="tc-icon" style="background:#fffbeb"><svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>
+        <div class="tool-title">Mention IA</div>
+        <div class="tool-desc">Apposez une mention sur vos images ou compressez-les pour Whise</div>
+      </div>
+      <div class="tool-card disabled">
+        <span class="tool-badge badge-dev">En développement</span>
+        <div class="tc-icon" style="background:#f3f4f6"><svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></div>
         <div class="tool-title">Réseaux Sociaux</div>
         <div class="tool-desc">Générez des posts Facebook à partir d'un lien d'annonce</div>
       </div>
-      <div class="tool-card" onclick="showTool('compromis-tool')">
-        <span class="tool-badge new">NOUVEAU</span>
-        <div class="tool-icon">📄</div>
-        <div class="tool-title">Compromis de Vente</div>
-        <div class="tool-desc">Importez les documents — l'IA remplit et génère le compromis Word</div>
-      </div>
-      <div class="tool-card" onclick="showTool('candidatures-tool')">
-        <span class="tool-badge new">NOUVEAU</span>
-        <div class="tool-icon">🗂️</div>
-        <div class="tool-title">Candidatures Locatives</div>
-        <div class="tool-desc">Triez et évaluez automatiquement les dossiers de location avec l'IA</div>
-      </div>
-      <div class="tool-card" onclick="showTool('mention-tool')">
-        <span class="tool-badge new">NOUVEAU</span>
-        <div class="tool-icon">🏷️</div>
-        <div class="tool-title">Mention IA</div>
-        <div class="tool-desc">Apposez une mention sur vos images modifiées par IA ou compressez-les pour Whise</div>
-      </div>
-      <div class="tool-card" onclick="showTool('postfb-tool')">
-        <span class="tool-badge new">NOUVEAU</span>
-        <div class="tool-icon">📸</div>
+      <div class="tool-card disabled">
+        <span class="tool-badge badge-dev">En développement</span>
+        <div class="tc-icon" style="background:#f3f4f6"><svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
         <div class="tool-title">Post Facebook</div>
-        <div class="tool-desc">Générez votre visuel post Facebook depuis un lien Trevi en quelques secondes</div>
+        <div class="tool-desc">Visuel automatique depuis un lien Trevi</div>
+      </div>
+      <div class="tool-card disabled">
+        <span class="tool-badge badge-dev">En développement</span>
+        <div class="tc-icon" style="background:#f3f4f6"><svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14,2 14,8 20,8"/></svg></div>
+        <div class="tool-title">Compromis de Vente</div>
+        <div class="tool-desc">L'IA remplit et génère le compromis Word</div>
+      </div>
+      <div class="tool-card disabled">
+        <span class="tool-badge badge-dev">En développement</span>
+        <div class="tc-icon" style="background:#f3f4f6"><svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+        <div class="tool-title">Candidatures Locatives</div>
+        <div class="tool-desc">Scoring IA des dossiers de location</div>
       </div>
     </div>
   </div>
 
   <!-- ── SOCIAL TOOL ─────────────────────────────────────── -->
   <div id="social-tool">
-    <div class="tool-header">
-      <button class="back-btn" onclick="showDashboard()">←</button>
-      <div class="tool-icon-sm">📱</div>
-      <div>
-        <div class="tool-header-text">Générateur de Posts</div>
-        <div class="tool-header-sub">FACEBOOK · PROFESSIONNEL</div>
-      </div>
-    </div>
+    <div class="tool-topbar"><button class="back-btn" onclick="showDashboard()">←</button><div class="tool-icon-sm">📱</div><div><div class="tool-header-text">Réseaux Sociaux</div><div class="tool-header-sub">FACEBOOK · PROFESSIONNEL</div></div></div>
     <div class="content" style="max-width:700px">
       <div class="card">
         <label>🔗 Lien de l'annonce immobilière</label>
@@ -374,14 +437,7 @@
 
   <!-- ── COMPROMIS TOOL ───────────────────────────────────── -->
   <div id="compromis-tool">
-    <div class="tool-header">
-      <button class="back-btn" onclick="showDashboard()">←</button>
-      <div class="tool-icon-sm">📄</div>
-      <div>
-        <div class="tool-header-text">Compromis de Vente</div>
-        <div class="tool-header-sub">ANALYSE IA · GÉNÉRATION WORD</div>
-      </div>
-    </div>
+    <div class="tool-topbar"><button class="back-btn" onclick="showDashboard()">←</button><div class="tool-icon-sm">📄</div><div><div class="tool-header-text">Compromis de Vente</div><div class="tool-header-sub">ANALYSE IA · GÉNÉRATION WORD</div></div></div>
     <div class="content">
 
       <!-- ÉTAPE 1 : Upload -->
@@ -557,77 +613,411 @@
 
     </div>
   </div>
+
+  </div><!-- /#main-wrapper -->
+
+</div><!-- /#app -->
+
+
+
+
+  <!-- ── CANDIDATURES TOOL ────────────────────────────────── -->
+  <div id="candidatures-tool" style="display:none">
+    <div class="tool-topbar"><button class="back-btn" onclick="showDashboard()">←</button><div class="tool-icon-sm">🗂️</div><div><div class="tool-header-text">Candidatures Locatives</div><div class="tool-header-sub">SCORING IA · GESTION</div></div></div>
+    <div class="content">
+      <div class="content-header" style="display:none">
+        <button class="back-btn" onclick="showDashboard()">← Retour</button>
+        <div>
+          <h2 class="content-title">🗂️ Candidatures Locatives</h2>
+          <p class="content-sub">Gérez vos biens et évaluez les dossiers avec l'IA</p>
+        </div>
+      </div>
+
+      <!-- Onglets -->
+      <div style="display:flex;gap:6px;margin-bottom:20px;">
+        <button id="tab-biens" onclick="switchTab('biens')" class="tab-btn active">🏠 Biens</button>
+        <button id="tab-cands" onclick="switchTab('cands')" class="tab-btn">📋 Candidatures</button>
+      </div>
+
+      <!-- ── ONGLET BIENS ── -->
+      <div id="tab-content-biens">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div style="font-size:12px;color:#aaa" id="biens-count"></div>
+          <button onclick="openBienModal()" style="padding:9px 18px;background:#c9a84c;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer">+ Ajouter un bien</button>
+        </div>
+        <div id="biens-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
+          <div style="text-align:center;padding:40px;color:#aaa;grid-column:1/-1">⏳ Chargement...</div>
+        </div>
+      </div>
+
+      <!-- ── ONGLET CANDIDATURES ── -->
+      <div id="tab-content-cands" style="display:none">
+        <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+          <select id="filter-bien" onchange="filterCandidatures()" style="padding:8px 12px;border:1.5px solid #e8e0d4;border-radius:8px;font-size:13px;outline:none;background:#fff">
+            <option value="">Tous les biens</option>
+          </select>
+          <div style="font-size:12px;color:#aaa;margin-left:4px" id="cands-count"></div>
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <button onclick="loadAllCandidatures()" style="padding:8px 14px;background:#f7f5f2;border:1px solid #e8e0d4;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600">🔄 Actualiser</button>
+            <button onclick="evaluerTous()" id="btn-eval-tous" style="padding:8px 14px;background:#c9a84c;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:700">✨ Tout évaluer</button>
+          </div>
+        </div>
+        <div id="cand-list" style="background:#fff;border-radius:16px;border:1px solid #e8e0d4;overflow:hidden;min-height:200px">
+          <div style="text-align:center;padding:60px;color:#aaa">Sélectionnez un bien ou chargez toutes les candidatures</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODALE AJOUT/EDIT BIEN ──────────────────────────────── -->
+  <div id="bien-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeBienModal()">
+    <div class="modal" style="max-width:500px">
+      <div class="modal-title" id="bien-modal-title">🏠 Ajouter un bien</div>
+      <div class="modal-subtitle">Les candidats pourront sélectionner ce bien dans le formulaire public</div>
+      <input type="hidden" id="bien-modal-id"/>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
+        <div>
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Adresse complète *</label>
+          <input id="bien-adresse" type="text" placeholder="Rue de la Paix 12, 4000 Liège" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none"/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Loyer mensuel (€) *</label>
+            <input id="bien-loyer" type="number" placeholder="900" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none"/>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Type de bien</label>
+            <select id="bien-type" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none;background:#fff">
+              <option>Appartement</option><option>Maison</option><option>Studio</option><option>Duplex</option><option>Penthouse</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Chambres</label>
+            <input id="bien-chambres" type="number" placeholder="2" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none"/>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Surface (m²)</label>
+            <input id="bien-surface" type="number" placeholder="75" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none"/>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Critères supplémentaires (optionnel)</label>
+          <textarea id="bien-criteres" placeholder="ex: Pas d'animaux, préférence non-fumeur, garant requis..." style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:13px;outline:none;resize:none;height:70px;font-family:inherit"></textarea>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Statut</label>
+          <select id="bien-statut" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none;background:#fff">
+            <option value="actif">Actif — visible dans le formulaire public</option>
+            <option value="archive">Archivé — masqué du formulaire public</option>
+          </select>
+        </div>
+        <div id="bien-modal-error" style="color:#e74c3c;font-size:13px;display:none"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" onclick="closeBienModal()">Annuler</button>
+        <button class="btn-modal-ok" onclick="saveBien()">💾 Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODALE DÉTAIL CANDIDATURE ──────────────────────────── -->
+  <div id="cand-detail-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeCandDetail()">
+    <div class="modal" style="max-width:720px">
+      <div id="cand-detail-body"></div>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" onclick="closeCandDetail()">← Fermer</button>
+        <button class="btn-modal-ok" id="btn-eval-single" onclick="evaluerCandidature(currentCandId)">✨ Évaluer avec l'IA</button>
+      </div>
+    </div>
+  </div>
+
+<!-- ── MODALE VÉRIFICATION ──────────────────────────────────────────────── -->
+<div id="verify-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this) closeVerifyModal()">
+  <div class="modal">
+    <div class="modal-title" id="verify-modal-title">🔍 Analyse du dossier</div>
+    <div class="modal-subtitle" id="verify-modal-subtitle">Vérification des documents et de la cohérence</div>
+    <div id="verify-modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeVerifyModal()">← Revoir les documents</button>
+      <button class="btn-modal-ok" id="verify-modal-confirm" onclick="confirmVerifyAndFill()">Continuer quand même →</button>
+    </div>
+  </div>
 </div>
+
+
+  <!-- ── MENTION IA ─────────────────────────────────────────── -->
+  <div id="mention-tool" style="display:none">
+    <div class="tool-topbar"><button class="back-btn" onclick="showDashboard()">←</button><div class="tool-icon-sm">🏷️</div><div><div class="tool-header-text">Mention IA</div><div class="tool-header-sub">WATERMARK · COMPRESSION</div></div></div>
+    <div class="content">
+      <div class="mention-tabs">
+        <button class="mention-tab active" onclick="switchMentionTab('ia',this)">🤖 Projet IA</button>
+        <button class="mention-tab" onclick="switchMentionTab('optim',this)">✨ Optimisation visuelle</button>
+        <button class="mention-tab" onclick="switchMentionTab('compress',this)">📦 Compression seule</button>
+      </div>
+
+      <div id="mention-panel-ia" class="mention-panel active">
+        <div class="card" style="margin-bottom:12px;padding:13px 16px;background:#f7f3ed;border:none">
+          <p style="font-size:13px;color:#666;line-height:1.6"><strong>Quand l'utiliser ?</strong> Pour toute image générée ou retravaillée par une IA (home staging virtuel, rendu 3D, meuble virtuel…).</p>
+        </div>
+        <div class="card" id="ia-drop-card">
+          <div class="drop-zone" id="ia-dropzone" onclick="document.getElementById('ia-file-input').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="mentionDrop(event,'ia')">
+            <div style="font-size:26px;margin-bottom:8px">🖼️</div>
+            <p style="font-weight:600;font-size:14px;color:#1a1a2e;margin-bottom:3px">Glissez vos images ici</p>
+            <small style="font-size:12px;color:#aaa">JPG, PNG, WEBP — plusieurs fichiers</small>
+          </div>
+          <input type="file" id="ia-file-input" accept="image/*" multiple style="display:none" onchange="mentionLoad(this.files,'ia')">
+        </div>
+        <div class="card" id="ia-opts" style="display:none">
+          <span class="sec-lbl">Aperçu</span>
+          <div class="img-preview-wrap"><canvas id="ia-canvas"></canvas></div>
+          <span class="sec-lbl">Fichiers</span>
+          <div id="ia-file-list" class="file-list" style="margin-bottom:16px"></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn-primary" style="width:auto;padding:11px 20px" onclick="mentionProcess('ia')">⬇️ Télécharger tout</button>
+            <button class="btn-ghost" onclick="mentionReset('ia')">🔄 Recommencer</button>
+          </div>
+          <div class="m-progress" id="ia-progress"><div class="m-progress-bg"><div class="m-progress-bar" id="ia-pbar"></div></div><p class="m-progress-txt" id="ia-ptxt"></p></div>
+        </div>
+      </div>
+
+      <div id="mention-panel-optim" class="mention-panel">
+        <div class="card" style="margin-bottom:12px;padding:13px 16px;background:#f7f3ed;border:none">
+          <p style="font-size:13px;color:#666;line-height:1.6"><strong>Quand l'utiliser ?</strong> Pour les photos retouchées manuellement (luminosité, suppression d'objets, amélioration de couleurs…).</p>
+        </div>
+        <div class="card" id="optim-drop-card">
+          <div class="drop-zone" id="optim-dropzone" onclick="document.getElementById('optim-file-input').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="mentionDrop(event,'optim')">
+            <div style="font-size:26px;margin-bottom:8px">🖼️</div>
+            <p style="font-weight:600;font-size:14px;color:#1a1a2e;margin-bottom:3px">Glissez vos images ici</p>
+            <small style="font-size:12px;color:#aaa">JPG, PNG, WEBP — plusieurs fichiers</small>
+          </div>
+          <input type="file" id="optim-file-input" accept="image/*" multiple style="display:none" onchange="mentionLoad(this.files,'optim')">
+        </div>
+        <div class="card" id="optim-opts" style="display:none">
+          <span class="sec-lbl">Aperçu</span>
+          <div class="img-preview-wrap"><canvas id="optim-canvas"></canvas></div>
+          <span class="sec-lbl">Fichiers</span>
+          <div id="optim-file-list" class="file-list" style="margin-bottom:16px"></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn-primary" style="width:auto;padding:11px 20px" onclick="mentionProcess('optim')">⬇️ Télécharger tout</button>
+            <button class="btn-ghost" onclick="mentionReset('optim')">🔄 Recommencer</button>
+          </div>
+          <div class="m-progress" id="optim-progress"><div class="m-progress-bg"><div class="m-progress-bar" id="optim-pbar"></div></div><p class="m-progress-txt" id="optim-ptxt"></p></div>
+        </div>
+      </div>
+
+      <div id="mention-panel-compress" class="mention-panel">
+        <div class="card" style="margin-bottom:12px;padding:13px 16px;background:#f7f3ed;border:none">
+          <p style="font-size:13px;color:#666;line-height:1.6"><strong>Quand l'utiliser ?</strong> Pour réduire vos photos 4K avant upload sur Whise. Compression automatique — fichier réduit à moins de 10 Mo.</p>
+        </div>
+        <div class="card" id="comp-drop-card">
+          <div class="drop-zone" id="comp-dropzone" onclick="document.getElementById('comp-file-input').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="compDrop(event)">
+            <div style="font-size:26px;margin-bottom:8px">📦</div>
+            <p style="font-weight:600;font-size:14px;color:#1a1a2e;margin-bottom:3px">Glissez vos images ici</p>
+            <small style="font-size:12px;color:#aaa">Compression automatique ≤ 10 Mo</small>
+          </div>
+          <input type="file" id="comp-file-input" accept="image/*" multiple style="display:none" onchange="compLoad(this.files)">
+        </div>
+        <div class="card" id="comp-opts" style="display:none">
+          <span class="sec-lbl">Aperçu</span>
+          <div class="img-preview-wrap"><canvas id="comp-canvas"></canvas></div>
+          <span class="sec-lbl">Fichiers</span>
+          <div id="comp-file-list" class="file-list" style="margin-bottom:16px"></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn-primary" style="width:auto;padding:11px 20px" onclick="compProcess()">⬇️ Compresser tout</button>
+            <button class="btn-ghost" onclick="compReset()">🔄 Recommencer</button>
+          </div>
+          <div class="m-progress" id="comp-progress"><div class="m-progress-bg"><div class="m-progress-bar" id="comp-pbar"></div></div><p class="m-progress-txt" id="comp-ptxt"></p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── POST FACEBOOK ──────────────────────────────────────── -->
+  <div id="postfb-tool" style="display:none">
+    <div class="tool-topbar"><button class="back-btn" onclick="showDashboard()">←</button><div class="tool-icon-sm">📸</div><div><div class="tool-header-text">Post Facebook</div><div class="tool-header-sub">VISUEL · CANVA</div></div></div>
+    <div class="content">
+
+      <!-- Étape 1 : lien -->
+      <div class="card" id="postfb-step1">
+        <h3 style="margin-bottom:14px">1. Lien de l'annonce Trevi</h3>
+        <div class="postfb-scrape-row">
+          <input type="text" id="postfb-url" placeholder="https://www.trevi.be/fr/bien/..." onkeydown="if(event.key==='Enter') postfbScrape()">
+          <button class="btn-primary" id="postfb-scrape-btn" onclick="postfbScrape()">🔍 Analyser</button>
+        </div>
+        <div id="postfb-scrape-loading" style="display:none;margin-top:10px" class="loading">
+          <div class="spinner"></div> Analyse de l'annonce en cours…
+        </div>
+        <div id="postfb-scrape-error" class="error-box"></div>
+      </div>
+
+      <!-- Étape 2 : formulaire -->
+      <div class="card" id="postfb-step2" style="display:none">
+        <h3 style="margin-bottom:16px">2. Informations du bien <span style="font-size:11px;font-weight:600;letter-spacing:1px;color:#c9a84c;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.2);padding:3px 9px;border-radius:20px;margin-left:8px">Rempli automatiquement</span></h3>
+        <div class="postfb-form">
+          <div class="postfb-row">
+            <div class="postfb-field">
+              <label>Type de bien</label>
+              <select id="postfb-type" onchange="postfbUpdatePreview()">
+                <option value="MAISON">Maison</option>
+                <option value="APPARTEMENT">Appartement</option>
+                <option value="TERRAIN">Terrain</option>
+                <option value="ENTREPÔT">Entrepôt</option>
+                <option value="VIAGER">Viager</option>
+                <option value="BUREAU">Bureau</option>
+              </select>
+            </div>
+            <div class="postfb-field">
+              <label>Transaction</label>
+              <select id="postfb-transaction" onchange="postfbUpdatePreview()">
+                <option value="À VENDRE">À Vendre</option>
+                <option value="À LOUER">À Louer</option>
+              </select>
+            </div>
+          </div>
+          <div class="postfb-row">
+            <div class="postfb-field">
+              <label>Localité</label>
+              <input type="text" id="postfb-localite" placeholder="Verlaine" oninput="postfbUpdatePreview()">
+            </div>
+            <div class="postfb-field">
+              <label>Prix</label>
+              <input type="text" id="postfb-prix" placeholder="349 000" oninput="postfbUpdatePreview()">
+            </div>
+          </div>
+          <div class="postfb-row">
+            <div class="postfb-field">
+              <label>Formule prix</label>
+              <select id="postfb-prix-formule" onchange="postfbUpdatePreview()">
+                <option value="À PARTIR DE">À partir de</option>
+                <option value="AU PRIX DE">Au prix de</option>
+              </select>
+            </div>
+            <div class="postfb-field">
+              <label>Surface (m²)</label>
+              <input type="text" id="postfb-surface" placeholder="250" oninput="postfbUpdatePreview()">
+            </div>
+          </div>
+          <div class="postfb-row">
+            <div class="postfb-field">
+              <label>Chambres</label>
+              <input type="text" id="postfb-chambres" placeholder="3" oninput="postfbUpdatePreview()">
+            </div>
+            <div class="postfb-field">
+              <label>Salle(s) de bain</label>
+              <input type="text" id="postfb-sdb" placeholder="2" oninput="postfbUpdatePreview()">
+            </div>
+          </div>
+          <div class="postfb-row">
+            <div class="postfb-field">
+              <label>Garage</label>
+              <select id="postfb-garage" onchange="postfbUpdatePreview()">
+                <option value="">Sans garage</option>
+                <option value="1">1 garage</option>
+                <option value="2">2 garages</option>
+              </select>
+            </div>
+            <div class="postfb-field" style="align-self:end">
+              <label>&nbsp;</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Étape 3 : photos -->
+      <div class="card" id="postfb-step3" style="display:none">
+        <h3 style="margin-bottom:16px">3. Photo principale</h3>
+        <div class="postfb-photo-drop" id="postfb-photo-drop"
+             onclick="document.getElementById('postfb-photo-input').click()"
+             ondragover="event.preventDefault();this.classList.add('dragover')"
+             ondragleave="this.classList.remove('dragover')"
+             ondrop="postfbPhotoDrop(event)">
+          <div style="font-size:24px;margin-bottom:6px">📷</div>
+          <p>Cliquez ou glissez votre photo</p>
+          <small>JPG, PNG recommandé — format carré idéal</small>
+          <img id="postfb-photo-thumb" class="postfb-photo-thumb">
+        </div>
+        <input type="file" id="postfb-photo-input" accept="image/*" style="display:none" onchange="postfbPhotoLoad(this.files[0])">
+      </div>
+
+      <!-- Étape 4 : génération Canva -->
+      <div class="card" id="postfb-step4" style="display:none">
+        <h3 style="margin-bottom:6px">4. Générer le visuel</h3>
+        <p style="font-size:13px;color:#888;margin-bottom:16px">Claude va remplir ton template Canva automatiquement et exporter les images.</p>
+        <div class="postfb-actions">
+          <button class="btn-primary" id="postfb-generate-btn" style="width:auto;padding:12px 22px" onclick="postfbGenerate()">🎨 Générer le visuel Canva</button>
+          <button class="btn-ghost" onclick="postfbCopyText()">📋 Copier le texte Facebook</button>
+          <button class="btn-ghost" onclick="postfbReset()">🔄 Nouveau post</button>
+        </div>
+        <div class="loading" id="postfb-generate-loading" style="display:none;margin-top:12px">
+          <div class="spinner"></div> Génération en cours (~30 sec)…
+        </div>
+        <div id="postfb-gen-error" class="error-box"></div>
+        <div id="postfb-fb-text" class="postfb-text-result"></div>
+      </div>
+
+      <!-- Résultat -->
+      <div class="card" id="postfb-result-card" style="display:none">
+        <h3 style="margin-bottom:14px">✅ Visuel généré !</h3>
+        <div id="postfb-result-images"></div>
+      </div>
+
+    </div>
+  </div>
+
 
 <script>
 // ════════════════════════════════════════════════════════════
-// AUTH
+// AUTH — DÉSACTIVÉE TEMPORAIREMENT
 // ════════════════════════════════════════════════════════════
-if (sessionStorage.getItem('immo-auth') === 'true') {
-  document.getElementById('login-page').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-}
+document.getElementById('app').style.display = 'block';
+async function login() { document.getElementById('app').style.display = 'block'; }
+function logout() { /* désactivé */ }
 
-async function login() {
-  const pwd = document.getElementById('password-input').value;
-  const btn = document.getElementById('login-btn');
-  const errEl = document.getElementById('login-error');
-  const spinner = document.getElementById('login-spinner');
-  if (!pwd) return;
-  btn.disabled = true; errEl.style.display = 'none'; spinner.style.display = 'block';
-  try {
-    const res = await fetch('/api/auth', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ password: pwd }) });
-    const data = await res.json();
-    if (data.success) {
-      sessionStorage.setItem('immo-auth', 'true');
-      document.getElementById('login-page').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-    } else {
-      errEl.style.display = 'block';
-      document.getElementById('password-input').value = '';
-    }
-  } catch(e) {
-    errEl.textContent = '❌ Erreur de connexion, réessayez.';
-    errEl.style.display = 'block';
-  } finally { btn.disabled = false; spinner.style.display = 'none'; }
+// ════════════════════════════════════════════════════════════
+// SIDEBAR
+// ════════════════════════════════════════════════════════════
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.body.classList.toggle('sb-open');
 }
-
-function logout() {
-  sessionStorage.removeItem('immo-auth');
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('login-page').style.display = 'flex';
-  document.getElementById('password-input').value = '';
+function setSidebarActive(id) {
+  document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
+  const map = { 'dashboard':'sb-nav-dashboard', 'mention-tool':'sb-nav-mention' };
+  const el = document.getElementById(map[id] || 'sb-nav-dashboard');
+  if (el) el.classList.add('active');
 }
+const PAGE_NAMES = {
+  'dashboard':'Dashboard','mention-tool':'Mention IA',
+  'social-tool':'Réseaux Sociaux','compromis-tool':'Compromis de Vente',
+  'candidatures-tool':'Candidatures Locatives','postfb-tool':'Post Facebook'
+};
 
 // ════════════════════════════════════════════════════════════
 // NAVIGATION
 // ════════════════════════════════════════════════════════════
+const ALL_TOOLS = ['social-tool','compromis-tool','candidatures-tool','mention-tool','postfb-tool'];
 function showTool(id) {
-  ['social-tool', 'compromis-tool', 'candidatures-tool'].forEach(function(t) {
-    const el = document.getElementById(t);
-    if (el) el.style.display = 'none';
-  });
+  ALL_TOOLS.forEach(t => { const el=document.getElementById(t); if(el) el.style.display='none'; });
   document.getElementById('dashboard').style.display = 'none';
   const target = document.getElementById(id);
   if (target) target.style.display = 'block';
-  window.scrollTo(0, 0);
-  // Init candidatures
+  const pn = document.getElementById('tb-page-name');
+  if (pn) pn.textContent = PAGE_NAMES[id] || id;
+  setSidebarActive(id);
+  window.scrollTo(0,0);
   if (id === 'candidatures-tool') { switchTab('biens'); loadBiens(); }
 }
-
 function showDashboard() {
   if(typeof mentionToolReset==='function') mentionToolReset();
-  postfbReset();
-  ['social-tool', 'compromis-tool', 'candidatures-tool'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = 'none';
-  });
+  if(typeof postfbReset==='function') postfbReset();
+  ALL_TOOLS.forEach(id => { const el=document.getElementById(id); if(el) el.style.display='none'; });
   document.getElementById('dashboard').style.display = 'block';
-  // Reset social
-  document.getElementById('annonce-url').value = '';
-  document.getElementById('result-card').style.display = 'none';
-  document.getElementById('error-box').style.display = 'none';
-  window.scrollTo(0, 0);
+  const pn = document.getElementById('tb-page-name');
+  if (pn) pn.textContent = 'Dashboard';
+  setSidebarActive('dashboard');
+  window.scrollTo(0,0);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -965,11 +1355,9 @@ let allBiens = [];
 function switchTab(tab) {
   document.getElementById('tab-content-biens').style.display = tab==='biens'?'block':'none';
   document.getElementById('tab-content-cands').style.display = tab==='cands'?'block':'none';
-  document.getElementById('tab-biens').style.borderBottomColor = tab==='biens'?'#c9a84c':'transparent';
-  document.getElementById('tab-biens').style.color = tab==='biens'?'#1a1a2e':'#888';
-  document.getElementById('tab-cands').style.borderBottomColor = tab==='cands'?'#c9a84c':'transparent';
-  document.getElementById('tab-cands').style.color = tab==='cands'?'#1a1a2e':'#888';
-  if (tab==='cands') loadAllCandidatures();
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('tab-'+tab);
+  if (btn) btn.classList.add('active');
 }
 
 async function loadBiens() {
@@ -1900,355 +2288,5 @@ function postfbReset() {
 }
 
 </script>
-
-  <!-- ── CANDIDATURES TOOL ────────────────────────────────── -->
-  <div id="candidatures-tool" style="display:none">
-    <div class="content">
-      <div class="content-header">
-        <button class="back-btn" onclick="showDashboard()">← Retour</button>
-        <div>
-          <h2 class="content-title">🗂️ Candidatures Locatives</h2>
-          <p class="content-sub">Gérez vos biens et évaluez les dossiers avec l'IA</p>
-        </div>
-      </div>
-
-      <!-- Onglets -->
-      <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:2px solid #e8e0d4">
-        <button id="tab-biens" onclick="switchTab('biens')" style="padding:12px 24px;background:none;border:none;border-bottom:2px solid #c9a84c;margin-bottom:-2px;font-weight:700;font-size:14px;color:#1a1a2e;cursor:pointer">🏠 Biens</button>
-        <button id="tab-cands" onclick="switchTab('cands')" style="padding:12px 24px;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-weight:600;font-size:14px;color:#888;cursor:pointer">👥 Candidatures</button>
-      </div>
-
-      <!-- ── ONGLET BIENS ── -->
-      <div id="tab-content-biens">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-          <div style="font-size:12px;color:#aaa" id="biens-count"></div>
-          <button onclick="openBienModal()" style="padding:9px 18px;background:#c9a84c;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer">+ Ajouter un bien</button>
-        </div>
-        <div id="biens-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
-          <div style="text-align:center;padding:40px;color:#aaa;grid-column:1/-1">⏳ Chargement...</div>
-        </div>
-      </div>
-
-      <!-- ── ONGLET CANDIDATURES ── -->
-      <div id="tab-content-cands" style="display:none">
-        <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
-          <select id="filter-bien" onchange="filterCandidatures()" style="padding:8px 12px;border:1.5px solid #e8e0d4;border-radius:8px;font-size:13px;outline:none;background:#fff">
-            <option value="">Tous les biens</option>
-          </select>
-          <div style="font-size:12px;color:#aaa;margin-left:4px" id="cands-count"></div>
-          <div style="margin-left:auto;display:flex;gap:8px">
-            <button onclick="loadAllCandidatures()" style="padding:8px 14px;background:#f7f5f2;border:1px solid #e8e0d4;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600">🔄 Actualiser</button>
-            <button onclick="evaluerTous()" id="btn-eval-tous" style="padding:8px 14px;background:#c9a84c;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:700">✨ Tout évaluer</button>
-          </div>
-        </div>
-        <div id="cand-list" style="background:#fff;border-radius:16px;border:1px solid #e8e0d4;overflow:hidden;min-height:200px">
-          <div style="text-align:center;padding:60px;color:#aaa">Sélectionnez un bien ou chargez toutes les candidatures</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── MODALE AJOUT/EDIT BIEN ──────────────────────────────── -->
-  <div id="bien-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeBienModal()">
-    <div class="modal" style="max-width:500px">
-      <div class="modal-title" id="bien-modal-title">🏠 Ajouter un bien</div>
-      <div class="modal-subtitle">Les candidats pourront sélectionner ce bien dans le formulaire public</div>
-      <input type="hidden" id="bien-modal-id"/>
-      <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
-        <div>
-          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Adresse complète *</label>
-          <input id="bien-adresse" type="text" placeholder="Rue de la Paix 12, 4000 Liège" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none"/>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div>
-            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Loyer mensuel (€) *</label>
-            <input id="bien-loyer" type="number" placeholder="900" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none"/>
-          </div>
-          <div>
-            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Type de bien</label>
-            <select id="bien-type" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none;background:#fff">
-              <option>Appartement</option><option>Maison</option><option>Studio</option><option>Duplex</option><option>Penthouse</option>
-            </select>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div>
-            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Chambres</label>
-            <input id="bien-chambres" type="number" placeholder="2" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none"/>
-          </div>
-          <div>
-            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Surface (m²)</label>
-            <input id="bien-surface" type="number" placeholder="75" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none"/>
-          </div>
-        </div>
-        <div>
-          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Critères supplémentaires (optionnel)</label>
-          <textarea id="bien-criteres" placeholder="ex: Pas d'animaux, préférence non-fumeur, garant requis..." style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:13px;outline:none;resize:none;height:70px;font-family:inherit"></textarea>
-        </div>
-        <div>
-          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Statut</label>
-          <select id="bien-statut" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none;background:#fff">
-            <option value="actif">Actif — visible dans le formulaire public</option>
-            <option value="archive">Archivé — masqué du formulaire public</option>
-          </select>
-        </div>
-        <div id="bien-modal-error" style="color:#e74c3c;font-size:13px;display:none"></div>
-      </div>
-      <div class="modal-actions">
-        <button class="btn-modal-cancel" onclick="closeBienModal()">Annuler</button>
-        <button class="btn-modal-ok" onclick="saveBien()">💾 Enregistrer</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── MODALE DÉTAIL CANDIDATURE ──────────────────────────── -->
-  <div id="cand-detail-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeCandDetail()">
-    <div class="modal" style="max-width:720px">
-      <div id="cand-detail-body"></div>
-      <div class="modal-actions">
-        <button class="btn-modal-cancel" onclick="closeCandDetail()">← Fermer</button>
-        <button class="btn-modal-ok" id="btn-eval-single" onclick="evaluerCandidature(currentCandId)">✨ Évaluer avec l'IA</button>
-      </div>
-    </div>
-  </div>
-
-<!-- ── MODALE VÉRIFICATION ──────────────────────────────────────────────── -->
-<div id="verify-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this) closeVerifyModal()">
-  <div class="modal">
-    <div class="modal-title" id="verify-modal-title">🔍 Analyse du dossier</div>
-    <div class="modal-subtitle" id="verify-modal-subtitle">Vérification des documents et de la cohérence</div>
-    <div id="verify-modal-body"></div>
-    <div class="modal-actions">
-      <button class="btn-modal-cancel" onclick="closeVerifyModal()">← Revoir les documents</button>
-      <button class="btn-modal-ok" id="verify-modal-confirm" onclick="confirmVerifyAndFill()">Continuer quand même →</button>
-    </div>
-  </div>
-</div>
-
-
-  <!-- ── MENTION IA ─────────────────────────────────────────── -->
-  <div id="mention-tool" style="display:none">
-    <div class="tool-header">
-      <button class="back-btn" onclick="showDashboard()">←</button>
-      <h2>🏷️ Mention IA</h2>
-    </div>
-    <div class="content">
-      <div class="mention-tabs">
-        <button class="mention-tab active" onclick="switchMentionTab('ia',this)">🤖 Projet IA</button>
-        <button class="mention-tab" onclick="switchMentionTab('optim',this)">✨ Optimisation visuelle</button>
-        <button class="mention-tab" onclick="switchMentionTab('compress',this)">📦 Compression seule</button>
-      </div>
-
-      <div id="mention-panel-ia" class="mention-panel active">
-        <div class="card" style="margin-bottom:12px;padding:13px 16px;background:#f7f3ed;border:none">
-          <p style="font-size:13px;color:#666;line-height:1.6"><strong>Quand l'utiliser ?</strong> Pour toute image générée ou retravaillée par une IA (home staging virtuel, rendu 3D, meuble virtuel…).</p>
-        </div>
-        <div class="card" id="ia-drop-card">
-          <div class="drop-zone" id="ia-dropzone" onclick="document.getElementById('ia-file-input').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="mentionDrop(event,'ia')">
-            <div style="font-size:26px;margin-bottom:8px">🖼️</div>
-            <p style="font-weight:600;font-size:14px;color:#1a1a2e;margin-bottom:3px">Glissez vos images ici</p>
-            <small style="font-size:12px;color:#aaa">JPG, PNG, WEBP — plusieurs fichiers</small>
-          </div>
-          <input type="file" id="ia-file-input" accept="image/*" multiple style="display:none" onchange="mentionLoad(this.files,'ia')">
-        </div>
-        <div class="card" id="ia-opts" style="display:none">
-          <span class="sec-lbl">Aperçu</span>
-          <div class="img-preview-wrap"><canvas id="ia-canvas"></canvas></div>
-          <span class="sec-lbl">Fichiers</span>
-          <div id="ia-file-list" class="file-list" style="margin-bottom:16px"></div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn-primary" style="width:auto;padding:11px 20px" onclick="mentionProcess('ia')">⬇️ Télécharger tout</button>
-            <button class="btn-ghost" onclick="mentionReset('ia')">🔄 Recommencer</button>
-          </div>
-          <div class="m-progress" id="ia-progress"><div class="m-progress-bg"><div class="m-progress-bar" id="ia-pbar"></div></div><p class="m-progress-txt" id="ia-ptxt"></p></div>
-        </div>
-      </div>
-
-      <div id="mention-panel-optim" class="mention-panel">
-        <div class="card" style="margin-bottom:12px;padding:13px 16px;background:#f7f3ed;border:none">
-          <p style="font-size:13px;color:#666;line-height:1.6"><strong>Quand l'utiliser ?</strong> Pour les photos retouchées manuellement (luminosité, suppression d'objets, amélioration de couleurs…).</p>
-        </div>
-        <div class="card" id="optim-drop-card">
-          <div class="drop-zone" id="optim-dropzone" onclick="document.getElementById('optim-file-input').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="mentionDrop(event,'optim')">
-            <div style="font-size:26px;margin-bottom:8px">🖼️</div>
-            <p style="font-weight:600;font-size:14px;color:#1a1a2e;margin-bottom:3px">Glissez vos images ici</p>
-            <small style="font-size:12px;color:#aaa">JPG, PNG, WEBP — plusieurs fichiers</small>
-          </div>
-          <input type="file" id="optim-file-input" accept="image/*" multiple style="display:none" onchange="mentionLoad(this.files,'optim')">
-        </div>
-        <div class="card" id="optim-opts" style="display:none">
-          <span class="sec-lbl">Aperçu</span>
-          <div class="img-preview-wrap"><canvas id="optim-canvas"></canvas></div>
-          <span class="sec-lbl">Fichiers</span>
-          <div id="optim-file-list" class="file-list" style="margin-bottom:16px"></div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn-primary" style="width:auto;padding:11px 20px" onclick="mentionProcess('optim')">⬇️ Télécharger tout</button>
-            <button class="btn-ghost" onclick="mentionReset('optim')">🔄 Recommencer</button>
-          </div>
-          <div class="m-progress" id="optim-progress"><div class="m-progress-bg"><div class="m-progress-bar" id="optim-pbar"></div></div><p class="m-progress-txt" id="optim-ptxt"></p></div>
-        </div>
-      </div>
-
-      <div id="mention-panel-compress" class="mention-panel">
-        <div class="card" style="margin-bottom:12px;padding:13px 16px;background:#f7f3ed;border:none">
-          <p style="font-size:13px;color:#666;line-height:1.6"><strong>Quand l'utiliser ?</strong> Pour réduire vos photos 4K avant upload sur Whise. Compression automatique — fichier réduit à moins de 10 Mo.</p>
-        </div>
-        <div class="card" id="comp-drop-card">
-          <div class="drop-zone" id="comp-dropzone" onclick="document.getElementById('comp-file-input').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="compDrop(event)">
-            <div style="font-size:26px;margin-bottom:8px">📦</div>
-            <p style="font-weight:600;font-size:14px;color:#1a1a2e;margin-bottom:3px">Glissez vos images ici</p>
-            <small style="font-size:12px;color:#aaa">Compression automatique ≤ 10 Mo</small>
-          </div>
-          <input type="file" id="comp-file-input" accept="image/*" multiple style="display:none" onchange="compLoad(this.files)">
-        </div>
-        <div class="card" id="comp-opts" style="display:none">
-          <span class="sec-lbl">Aperçu</span>
-          <div class="img-preview-wrap"><canvas id="comp-canvas"></canvas></div>
-          <span class="sec-lbl">Fichiers</span>
-          <div id="comp-file-list" class="file-list" style="margin-bottom:16px"></div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn-primary" style="width:auto;padding:11px 20px" onclick="compProcess()">⬇️ Compresser tout</button>
-            <button class="btn-ghost" onclick="compReset()">🔄 Recommencer</button>
-          </div>
-          <div class="m-progress" id="comp-progress"><div class="m-progress-bg"><div class="m-progress-bar" id="comp-pbar"></div></div><p class="m-progress-txt" id="comp-ptxt"></p></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── POST FACEBOOK ──────────────────────────────────────── -->
-  <div id="postfb-tool" style="display:none">
-    <div class="tool-header">
-      <button class="back-btn" onclick="showDashboard()">←</button>
-      <h2>📸 Post Facebook</h2>
-    </div>
-    <div class="content">
-
-      <!-- Étape 1 : lien -->
-      <div class="card" id="postfb-step1">
-        <h3 style="margin-bottom:14px">1. Lien de l'annonce Trevi</h3>
-        <div class="postfb-scrape-row">
-          <input type="text" id="postfb-url" placeholder="https://www.trevi.be/fr/bien/..." onkeydown="if(event.key==='Enter') postfbScrape()">
-          <button class="btn-primary" id="postfb-scrape-btn" onclick="postfbScrape()">🔍 Analyser</button>
-        </div>
-        <div id="postfb-scrape-loading" style="display:none;margin-top:10px" class="loading">
-          <div class="spinner"></div> Analyse de l'annonce en cours…
-        </div>
-        <div id="postfb-scrape-error" class="error-box"></div>
-      </div>
-
-      <!-- Étape 2 : formulaire -->
-      <div class="card" id="postfb-step2" style="display:none">
-        <h3 style="margin-bottom:16px">2. Informations du bien <span style="font-size:11px;font-weight:600;letter-spacing:1px;color:#c9a84c;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.2);padding:3px 9px;border-radius:20px;margin-left:8px">Rempli automatiquement</span></h3>
-        <div class="postfb-form">
-          <div class="postfb-row">
-            <div class="postfb-field">
-              <label>Type de bien</label>
-              <select id="postfb-type" onchange="postfbUpdatePreview()">
-                <option value="MAISON">Maison</option>
-                <option value="APPARTEMENT">Appartement</option>
-                <option value="TERRAIN">Terrain</option>
-                <option value="ENTREPÔT">Entrepôt</option>
-                <option value="VIAGER">Viager</option>
-                <option value="BUREAU">Bureau</option>
-              </select>
-            </div>
-            <div class="postfb-field">
-              <label>Transaction</label>
-              <select id="postfb-transaction" onchange="postfbUpdatePreview()">
-                <option value="À VENDRE">À Vendre</option>
-                <option value="À LOUER">À Louer</option>
-              </select>
-            </div>
-          </div>
-          <div class="postfb-row">
-            <div class="postfb-field">
-              <label>Localité</label>
-              <input type="text" id="postfb-localite" placeholder="Verlaine" oninput="postfbUpdatePreview()">
-            </div>
-            <div class="postfb-field">
-              <label>Prix</label>
-              <input type="text" id="postfb-prix" placeholder="349 000" oninput="postfbUpdatePreview()">
-            </div>
-          </div>
-          <div class="postfb-row">
-            <div class="postfb-field">
-              <label>Formule prix</label>
-              <select id="postfb-prix-formule" onchange="postfbUpdatePreview()">
-                <option value="À PARTIR DE">À partir de</option>
-                <option value="AU PRIX DE">Au prix de</option>
-              </select>
-            </div>
-            <div class="postfb-field">
-              <label>Surface (m²)</label>
-              <input type="text" id="postfb-surface" placeholder="250" oninput="postfbUpdatePreview()">
-            </div>
-          </div>
-          <div class="postfb-row">
-            <div class="postfb-field">
-              <label>Chambres</label>
-              <input type="text" id="postfb-chambres" placeholder="3" oninput="postfbUpdatePreview()">
-            </div>
-            <div class="postfb-field">
-              <label>Salle(s) de bain</label>
-              <input type="text" id="postfb-sdb" placeholder="2" oninput="postfbUpdatePreview()">
-            </div>
-          </div>
-          <div class="postfb-row">
-            <div class="postfb-field">
-              <label>Garage</label>
-              <select id="postfb-garage" onchange="postfbUpdatePreview()">
-                <option value="">Sans garage</option>
-                <option value="1">1 garage</option>
-                <option value="2">2 garages</option>
-              </select>
-            </div>
-            <div class="postfb-field" style="align-self:end">
-              <label>&nbsp;</label>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Étape 3 : photos -->
-      <div class="card" id="postfb-step3" style="display:none">
-        <h3 style="margin-bottom:16px">3. Photo principale</h3>
-        <div class="postfb-photo-drop" id="postfb-photo-drop"
-             onclick="document.getElementById('postfb-photo-input').click()"
-             ondragover="event.preventDefault();this.classList.add('dragover')"
-             ondragleave="this.classList.remove('dragover')"
-             ondrop="postfbPhotoDrop(event)">
-          <div style="font-size:24px;margin-bottom:6px">📷</div>
-          <p>Cliquez ou glissez votre photo</p>
-          <small>JPG, PNG recommandé — format carré idéal</small>
-          <img id="postfb-photo-thumb" class="postfb-photo-thumb">
-        </div>
-        <input type="file" id="postfb-photo-input" accept="image/*" style="display:none" onchange="postfbPhotoLoad(this.files[0])">
-      </div>
-
-      <!-- Étape 4 : génération Canva -->
-      <div class="card" id="postfb-step4" style="display:none">
-        <h3 style="margin-bottom:6px">4. Générer le visuel</h3>
-        <p style="font-size:13px;color:#888;margin-bottom:16px">Claude va remplir ton template Canva automatiquement et exporter les images.</p>
-        <div class="postfb-actions">
-          <button class="btn-primary" id="postfb-generate-btn" style="width:auto;padding:12px 22px" onclick="postfbGenerate()">🎨 Générer le visuel Canva</button>
-          <button class="btn-ghost" onclick="postfbCopyText()">📋 Copier le texte Facebook</button>
-          <button class="btn-ghost" onclick="postfbReset()">🔄 Nouveau post</button>
-        </div>
-        <div class="loading" id="postfb-generate-loading" style="display:none;margin-top:12px">
-          <div class="spinner"></div> Génération en cours (~30 sec)…
-        </div>
-        <div id="postfb-gen-error" class="error-box"></div>
-        <div id="postfb-fb-text" class="postfb-text-result"></div>
-      </div>
-
-      <!-- Résultat -->
-      <div class="card" id="postfb-result-card" style="display:none">
-        <h3 style="margin-bottom:14px">✅ Visuel généré !</h3>
-        <div id="postfb-result-images"></div>
-      </div>
-
-    </div>
-  </div>
 </body>
 </html>
