@@ -39,8 +39,7 @@ Envoyé depuis Immo Pro · TREVI Rasquain
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
   if (!RESEND_API_KEY) {
-    console.error('RESEND_API_KEY manquant');
-    return res.status(500).json({ error: 'RESEND_API_KEY non configuré dans Vercel' });
+    return res.status(500).json({ error: 'RESEND_API_KEY non configuré' });
   }
 
   try {
@@ -52,14 +51,14 @@ Envoyé depuis Immo Pro · TREVI Rasquain
       },
       body: JSON.stringify({
         from: 'Immo Pro <onboarding@resend.dev>',
-        to: ['mathias@trevirasquain.be'],
+        to: ['matoutube13@gmail.com'],   // seule adresse autorisée en mode test
+        reply_to: 'mathias@trevirasquain.be',
         subject: sujet,
         text: corps
       })
     });
 
     const mailData = await mailRes.json();
-    console.log('Resend response:', mailRes.status, JSON.stringify(mailData));
 
     if (!mailRes.ok) {
       throw new Error(JSON.stringify(mailData));
