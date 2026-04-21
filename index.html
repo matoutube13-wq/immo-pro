@@ -139,7 +139,7 @@
     .tool-desc { font-size: 12px; color: #9ca3af; line-height: 1.55; }
 
     /* ── TOOL VIEW ── */
-    #social-tool, #compromis-tool, #candidatures-tool, #mention-tool, #postfb-tool { display: none; }
+    #social-tool, #compromis-tool, #candidatures-tool, #mention-tool, #postfb-tool, #demandepost-tool { display: none; }
     .tool-topbar { height: 56px; background: #fff; border-bottom: 1px solid #e8eaed; display: flex; align-items: center; gap: 14px; padding: 0 28px; margin-bottom: 28px; }
     .back-btn { width: 34px; height: 34px; background: #f3f4f6; border: none; border-radius: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #555; font-size: 16px; transition: background 0.15s; flex-shrink: 0; }
     .back-btn:hover { background: #e5e7eb; color: #1a1f2e; }
@@ -271,6 +271,58 @@
     .verify-banner { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; background: #fffdf5; border: 1px solid #f0e8cc; border-radius: 10px; padding: 14px; margin-bottom: 12px; color: #374151; }
     .verify-banner-icon { font-size: 20px; flex-shrink: 0; line-height: 1; }
 
+    /* ── DEMANDE POST FB ── */
+    .pack-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 4px; }
+    .pack-card {
+      border: 2px solid #e8eaed; border-radius: 12px; padding: 16px 18px;
+      cursor: pointer; transition: all 0.2s; position: relative; background: #fff;
+    }
+    .pack-card:hover { border-color: #c9a84c; }
+    .pack-card.selected { border-color: #c9a84c; background: #fffdf5; }
+    .pack-card input[type=radio] { position: absolute; opacity: 0; width: 0; height: 0; }
+    .pack-card-icon { font-size: 26px; margin-bottom: 8px; }
+    .pack-card-title { font-size: 14px; font-weight: 700; color: #1a1f2e; margin-bottom: 3px; }
+    .pack-card-desc { font-size: 12px; color: #9ca3af; line-height: 1.4; }
+    .pack-card.selected .pack-card-title { color: #c9a84c; }
+    /* ── MODAL SUCCÈS DEMANDE POST ── */
+    .dp-modal-overlay {
+      position: fixed; inset: 0; background: rgba(10,10,20,0.7);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 600; opacity: 0; transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .dp-modal-overlay.visible { opacity: 1; pointer-events: all; }
+    .dp-modal {
+      background: #fff; border-radius: 20px; padding: 36px 32px;
+      width: 90%; max-width: 440px; text-align: center;
+      transform: scale(0.85) translateY(20px);
+      transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.25);
+    }
+    .dp-modal-overlay.visible .dp-modal { transform: scale(1) translateY(0); }
+    .dp-modal-gif {
+      width: 180px; height: 180px; object-fit: cover;
+      border-radius: 16px; margin: 0 auto 20px; display: block;
+      border: 3px solid #f3f4f6;
+    }
+    .dp-modal-pack-badge {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.8px; text-transform: uppercase;
+      padding: 4px 12px; border-radius: 20px; margin-bottom: 14px;
+    }
+    .dp-modal-pack-badge.pauvre { background: #fef9c3; color: #a16207; }
+    .dp-modal-pack-badge.coeur  { background: #fce7f3; color: #be185d; }
+    .dp-modal-title { font-size: 20px; font-weight: 700; color: #1a1f2e; margin-bottom: 6px; letter-spacing: -0.3px; }
+    .dp-modal-sub { font-size: 13px; color: #6b7280; line-height: 1.6; margin-bottom: 20px; }
+    .dp-modal-sub strong { color: #1a1f2e; font-weight: 600; }
+    .dp-modal-close {
+      background: #1a1f2e; color: #fff; border: none; border-radius: 11px;
+      padding: 13px 28px; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s; font-family: inherit;
+    }
+    .dp-modal-close:hover { background: #252c40; }
+    .req-success { display: none; }
+
     /* ── POST FACEBOOK ── */
     .postfb-field { margin-bottom: 14px; }
     .postfb-field label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #9ca3af; }
@@ -333,10 +385,10 @@
         <span class="sb-label">Mention IA</span>
         <span class="sb-pill">ACTIF</span>
       </div>
-      <div class="sb-item sb-disabled">
-        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
-        <span class="sb-label">Réseaux Sociaux</span>
-        <span class="sb-pill">SOON</span>
+      <div class="sb-item" id="sb-nav-demandepost" onclick="showTool('demandepost-tool')">
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+        <span class="sb-label">Demande Post FB</span>
+        <span class="sb-pill">ACTIF</span>
       </div>
       <div class="sb-item sb-disabled">
         <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
@@ -429,11 +481,12 @@
         <div class="tool-title">Mention IA</div>
         <div class="tool-desc">Apposez une mention sur vos images ou compressez-les pour Whise</div>
       </div>
-      <div class="tool-card disabled">
-        <span class="tool-badge badge-dev">En développement</span>
-        <div class="tc-icon" style="background:#f3f4f6"><svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></div>
-        <div class="tool-title">Réseaux Sociaux</div>
-        <div class="tool-desc">Générez des posts Facebook à partir d'un lien d'annonce</div>
+      <div class="tool-card tc-active" onclick="showTool('demandepost-tool')">
+        <div class="tc-stripe"></div>
+        <span class="tool-badge badge-active">Disponible</span>
+        <div class="tc-icon" style="background:#fffbeb"><svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></div>
+        <div class="tool-title">Demande Post Facebook</div>
+        <div class="tool-desc">Envoie une demande de post à Mathias avec le lien et le type de publication</div>
       </div>
       <div class="tool-card disabled">
         <span class="tool-badge badge-dev">En développement</span>
@@ -880,6 +933,86 @@
     </div>
   </div>
 
+
+  <!-- ── DEMANDE POST FACEBOOK ─────────────────────────────── -->
+  <div id="demandepost-tool" style="display:none">
+    <div class="tool-topbar">
+      <button class="back-btn" onclick="showDashboard()">←</button>
+      <div class="tool-icon-sm">📱</div>
+      <div>
+        <div class="tool-header-text">Demande Post Facebook</div>
+        <div class="tool-header-sub">DEMANDE · MATHIAS</div>
+      </div>
+    </div>
+    <div class="content" style="max-width:700px">
+
+      <div class="card" id="demandepost-form-card">
+        <h3>👤 Qui fait la demande ?</h3>
+        <select id="dp-delegue" style="margin-bottom:4px">
+          <option value="">— Sélectionne ton nom —</option>
+              <option value="Julia Kongo">Julia Kongo</option>
+              <option value="Benoît Rasquain">Benoît Rasquain</option>
+              <option value="Quentin Delloye">Quentin Delloye</option>
+              <option value="Sarah Khounchi">Sarah Khounchi</option>
+              <option value="Caroline Gustin">Caroline Gustin</option>
+              <option value="Romain Marchandisse">Romain Marchandisse</option>
+              <option value="Marie Tilman">Marie Tilman</option>
+              <option value="Tim Fagot">Tim Fagot</option>
+              <option value="Venceslas Viseur">Venceslas Viseur</option>
+              <option value="Axel Bourgeois">Axel Bourgeois</option>
+              <option value="Thibault Bourgeois">Thibault Bourgeois</option>
+              <option value="Charlotte Dispa">Charlotte Dispa</option>
+              <option value="Thibaut Gustin">Thibaut Gustin</option>
+              <option value="Joëlle De Lattin">Joëlle De Lattin</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <h3>🔗 Lien de l'annonce</h3>
+        <input type="text" id="dp-url" placeholder="https://www.trevi.be/fr/bien/..." />
+        <p style="font-size:12px;color:#9ca3af;margin-top:8px">Copie le lien depuis le site Trevi</p>
+      </div>
+
+      <div class="card">
+        <h3>📦 Type de publication</h3>
+        <div class="pack-grid">
+          <label class="pack-card" id="pack-pauvre-card">
+            <input type="radio" name="dp-pack" value="Pack du pauvre" onchange="selectPack(this)">
+            <div class="pack-card-icon">📝</div>
+            <div class="pack-card-title">Pack du pauvre</div>
+            <div class="pack-card-desc">Post texte uniquement, sans visuel Canva</div>
+          </label>
+          <label class="pack-card" id="pack-coeur-card">
+            <input type="radio" name="dp-pack" value="Pack Coup de cœur" onchange="selectPack(this)">
+            <div class="pack-card-icon">❤️</div>
+            <div class="pack-card-title">Pack Coup de cœur</div>
+            <div class="pack-card-desc">Post texte + visuel Canva soigné</div>
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>💬 Remarques <span style="font-weight:400;color:#9ca3af;font-size:13px">(optionnel)</span></h3>
+        <textarea id="dp-remarques" rows="3" placeholder="Infos supplémentaires, urgence, demandes particulières..." style="resize:vertical"></textarea>
+      </div>
+
+      <div class="error-box" id="dp-error">Merci de remplir tous les champs obligatoires.</div>
+
+      <button class="btn-primary" id="dp-submit-btn" onclick="submitDemandePost()" style="margin-top:0">
+        📨 Envoyer la demande à Mathias
+      </button>
+
+      <div class="loading" id="dp-loading" style="margin-top:14px">
+        <div class="spinner"></div>
+        <span>Envoi en cours...</span>
+      </div>
+    </div>
+
+    <div class="content" style="max-width:700px">
+      <div class="req-success" id="dp-success"></div>
+    </div>
+  </div>
+
   <!-- ── POST FACEBOOK ──────────────────────────────────────── -->
   <div id="postfb-tool" style="display:none">
     <div class="tool-topbar"><button class="back-btn" onclick="showDashboard()">←</button><div class="tool-icon-sm">📸</div><div><div class="tool-header-text">Post Facebook</div><div class="tool-header-sub">VISUEL · CANVA</div></div></div>
@@ -1033,20 +1166,20 @@ function toggleSidebar() {
 }
 function setSidebarActive(id) {
   document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
-  const map = { 'dashboard':'sb-nav-dashboard', 'mention-tool':'sb-nav-mention' };
+  const map = { 'dashboard':'sb-nav-dashboard', 'mention-tool':'sb-nav-mention', 'demandepost-tool':'sb-nav-demandepost' };
   const el = document.getElementById(map[id] || 'sb-nav-dashboard');
   if (el) el.classList.add('active');
 }
 const PAGE_NAMES = {
   'dashboard':'Dashboard','mention-tool':'Mention IA',
-  'social-tool':'Réseaux Sociaux','compromis-tool':'Compromis de Vente',
+  'social-tool':'Réseaux Sociaux','demandepost-tool':'Demande Post Facebook','compromis-tool':'Compromis de Vente',
   'candidatures-tool':'Candidatures Locatives','postfb-tool':'Post Facebook'
 };
 
 // ════════════════════════════════════════════════════════════
 // NAVIGATION
 // ════════════════════════════════════════════════════════════
-const ALL_TOOLS = ['social-tool','compromis-tool','candidatures-tool','mention-tool','postfb-tool'];
+const ALL_TOOLS = ['social-tool','compromis-tool','candidatures-tool','mention-tool','postfb-tool','demandepost-tool'];
 function showTool(id) {
   ALL_TOOLS.forEach(t => { const el=document.getElementById(t); if(el) el.style.display='none'; });
   document.getElementById('dashboard').style.display = 'none';
@@ -2348,6 +2481,128 @@ function postfbReset() {
   });
 }
 
+// ════════════════════════════════════════════════════════════
+// DEMANDE POST FACEBOOK
+// ════════════════════════════════════════════════════════════
+function selectPack(radio) {
+  document.querySelectorAll('.pack-card').forEach(c => c.classList.remove('selected'));
+  radio.closest('.pack-card').classList.add('selected');
+}
+
+function resetDemandePost() {
+  document.getElementById('dp-delegue').value = '';
+  document.getElementById('dp-url').value = '';
+  document.getElementById('dp-remarques').value = '';
+  document.querySelectorAll('[name="dp-pack"]').forEach(function(r){ r.checked = false; });
+  document.querySelectorAll('.pack-card').forEach(function(c){ c.classList.remove('selected'); });
+  document.getElementById('dp-error').style.display = 'none';
+  document.getElementById('dp-loading').style.display = 'none';
+  document.getElementById('dp-submit-btn').disabled = false;
+}
+
+// GIFs via Giphy (URLs stables, pas de clé requise)
+var DP_MEDIA = {
+  pauvre: {
+    url: 'https://media.giphy.com/media/3o7TKwxYkeW0ZvTqsU/giphy.gif',
+    fallback: 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'
+  },
+  coeur: {
+    url: 'https://media.giphy.com/media/3otPoS81loriI9sO8o/giphy.gif',
+    fallback: 'https://media.giphy.com/media/26u4lOMA8JKSnL9Uk/giphy.gif'
+  }
+};
+
+function showDpModal(delegue, pack, url) {
+  var isPauvre = pack === 'Pack du pauvre';
+  var key = isPauvre ? 'pauvre' : 'coeur';
+  var media = DP_MEDIA[key];
+
+  // Image
+  var img = document.getElementById('dp-modal-img');
+  img.src = media.url;
+  img.onerror = function() { this.src = media.fallback; };
+
+  // Badge
+  var badge = document.getElementById('dp-modal-badge');
+  badge.textContent = pack;
+  badge.className = 'dp-modal-pack-badge ' + key;
+
+  // Titre
+  document.getElementById('dp-modal-title').textContent = isPauvre
+    ? '🪙 Budget serré assumé !'
+    : '❤️ Coup de cœur lancé !';
+
+  // Sous-titre
+  var annonce = url.split('/').filter(Boolean).pop() || 'l\'annonce';
+  var sub = isPauvre
+    ? '<strong>' + delegue + '</strong>, ta demande <em>Pack du pauvre</em> est bien transmise à Mathias 📨<br>Il va faire des miracles avec les moyens du bord ! 😄'
+    : '<strong>' + delegue + '</strong>, ta demande <em>Pack Coup de cœur</em> est bien transmise à Mathias 📨<br>Prépare-toi, ça va être beau ! ✨';
+  document.getElementById('dp-modal-sub').innerHTML = sub;
+
+  // Afficher
+  var overlay = document.getElementById('dp-modal-overlay');
+  overlay.style.display = 'flex';
+  setTimeout(function() { overlay.classList.add('visible'); }, 10);
+}
+
+function closeDpModal() {
+  var overlay = document.getElementById('dp-modal-overlay');
+  overlay.classList.remove('visible');
+  setTimeout(function() { overlay.style.display = 'none'; resetDemandePost(); }, 300);
+}
+
+async function submitDemandePost() {
+  var delegue   = document.getElementById('dp-delegue').value.trim();
+  var url       = document.getElementById('dp-url').value.trim();
+  var packEl    = document.querySelector('[name="dp-pack"]:checked');
+  var remarques = document.getElementById('dp-remarques').value.trim();
+  var errEl     = document.getElementById('dp-error');
+  var loadEl    = document.getElementById('dp-loading');
+  var submitBtn = document.getElementById('dp-submit-btn');
+
+  errEl.style.display = 'none';
+  if (!delegue || !url || !packEl) {
+    errEl.textContent = 'Merci de remplir ton nom, le lien et le type de publication.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  submitBtn.disabled = true;
+  loadEl.style.display = 'flex';
+
+  try {
+    var res = await fetch('/api/demande-post', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ delegue, url, pack: packEl.value, remarques })
+    });
+    var data = await res.json();
+    if (data.success || data.warning) {
+      loadEl.style.display = 'none';
+      submitBtn.disabled = false;
+      showDpModal(delegue, packEl.value, url);
+    } else {
+      throw new Error(data.error || 'Erreur serveur');
+    }
+  } catch(e) {
+    loadEl.style.display = 'none';
+    submitBtn.disabled = false;
+    errEl.textContent = '❌ Erreur lors de l\'envoi : ' + e.message;
+    errEl.style.display = 'block';
+  }
+}
+
 </script>
+
+<!-- ── MODAL SUCCÈS DEMANDE POST ── -->
+<div class="dp-modal-overlay" id="dp-modal-overlay">
+  <div class="dp-modal" id="dp-modal">
+    <img id="dp-modal-img" class="dp-modal-gif" src="" alt="">
+    <div id="dp-modal-badge" class="dp-modal-pack-badge"></div>
+    <div class="dp-modal-title" id="dp-modal-title">Demande envoyée !</div>
+    <div class="dp-modal-sub" id="dp-modal-sub"></div>
+    <button class="dp-modal-close" onclick="closeDpModal()">Parfait, merci !</button>
+  </div>
+</div>
 </body>
 </html>
