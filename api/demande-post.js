@@ -11,7 +11,6 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Champs manquants' });
   }
 
-  // ── Formatage du mail via Anthropic API (génère un résumé propre)
   const now = new Date().toLocaleString('fr-BE', {
     timeZone: 'Europe/Brussels',
     day: '2-digit', month: '2-digit', year: 'numeric',
@@ -37,17 +36,11 @@ ${remarques ? `💬 Remarques   : ${remarques}` : '💬 Remarques   : Aucune'}
 Envoyé depuis Immo Pro · TREVI Rasquain
   `.trim();
 
-  // ── Envoi via Resend API (service mail simple, gratuit jusqu'à 3000 mails/mois)
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
   if (!RESEND_API_KEY) {
-    // Fallback: log uniquement (si pas encore configuré)
-    console.log('DEMANDE POST FB:', { delegue, url, pack, remarques });
-    console.log('⚠️  RESEND_API_KEY non configuré — mail non envoyé');
-    return res.status(200).json({
-      success: true,
-      warning: 'Mail non envoyé (RESEND_API_KEY manquant), demande loguée.'
-    });
+    console.error('RESEND_API_KEY manquant');
+    return res.status(500).json({ error: 'RESEND_API_KEY non configuré dans Vercel' });
   }
 
   try {
@@ -66,15 +59,16 @@ Envoyé depuis Immo Pro · TREVI Rasquain
     });
 
     const mailData = await mailRes.json();
+    console.log('Resend response:', mailRes.status, JSON.stringify(mailData));
 
     if (!mailRes.ok) {
-      throw new Error(mailData.message || 'Erreur Resend');
+      throw new Error(JSON.stringify(mailData));
     }
 
     return res.status(200).json({ success: true, id: mailData.id });
 
   } catch (err) {
-    console.error('Erreur envoi mail:', err);
+    console.error('Erreur envoi mail:', err.message);
     return res.status(500).json({ error: err.message });
   }
 }
