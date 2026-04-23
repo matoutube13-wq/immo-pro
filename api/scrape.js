@@ -8,71 +8,52 @@ export default async function handler(req, res) {
   if (!url) return res.status(400).json({ error: "URL manquante" });
 
   try {
-    // ─── 1. SCRAPING DE LA PAGE ───────────────────────────────────────────────
+    // ─── 1. SCRAPING ──────────────────────────────────────────────────────────
     const pageRes = await fetch(url, {
       headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" }
     });
     const html = await pageRes.text();
 
-    // Extraction lien visite virtuelle Matterport
+    // Visite virtuelle Matterport
     const matterport = html.match(/https:\/\/my\.matterport\.com\/show\/\?m=[a-zA-Z0-9]+/);
     const virtualVisit = matterport ? matterport[0] : null;
 
-    // ─── 2. EXTRACTION DES IMAGES ─────────────────────────────────────────────
-    // On cherche les images hautes résolution de l'annonce (jpg/jpeg/png/webp)
+    // ─── 2. IMAGES ────────────────────────────────────────────────────────────
     const imageMatches = [...html.matchAll(/https?:\/\/[^\s"'<>]+\.(?:jpg|jpeg|png|webp)(?:\?[^\s"'<>]*)?/gi)];
     const allImages = [...new Set(imageMatches.map(m => m[0]))];
-
-    // Filtrer pour garder uniquement les images qui semblent être des photos de biens
-    // (exclure logos, icônes, tracking pixels, etc.)
     const propertyImages = allImages.filter(imgUrl => {
       const lower = imgUrl.toLowerCase();
       return (
-        !lower.includes("logo") &&
-        !lower.includes("icon") &&
-        !lower.includes("avatar") &&
-        !lower.includes("banner") &&
-        !lower.includes("pixel") &&
-        !lower.includes("tracking") &&
-        !lower.includes("sprite") &&
-        !lower.includes("thumbnail") &&
-        (lower.includes("photo") ||
-          lower.includes("image") ||
-          lower.includes("img") ||
-          lower.includes("media") ||
-          lower.includes("upload") ||
-          lower.includes("property") ||
-          lower.includes("bien") ||
-          lower.includes("trevi") ||
-          // Si aucun mot-clé, garder les images avec un chemin long (probablement des photos)
-          imgUrl.length > 80)
+        !lower.includes("logo") && !lower.includes("icon") && !lower.includes("avatar") &&
+        !lower.includes("banner") && !lower.includes("pixel") && !lower.includes("tracking") &&
+        !lower.includes("sprite") && !lower.includes("thumbnail") &&
+        (lower.includes("photo") || lower.includes("image") || lower.includes("img") ||
+         lower.includes("media") || lower.includes("upload") || lower.includes("property") ||
+         lower.includes("bien") || lower.includes("trevi") || imgUrl.length > 80)
       );
-    }).slice(0, 10); // Max 10 images
-
+    }).slice(0, 10);
     const mainImage = propertyImages[0] || null;
 
-    // ─── 3. DÉTECTION DU PRIX ─────────────────────────────────────────────────
-    // Cherche "à partir de" ou "au prix de" dans le HTML brut
+    // ─── 3. PRIX ──────────────────────────────────────────────────────────────
     const prixAPartirMatch = html.match(/à\s+partir\s+de\s+([\d\s.,]+)\s*€/i);
-    const prixAuPrixMatch = html.match(/au\s+prix\s+de\s+([\d\s.,]+)\s*€/i);
-    // Cherche aussi juste un prix seul (ex: 250.000 €)
-    const prixSeulMatch = html.match(/([\d]{2,3}[\s.][\d]{3})\s*€/);
+    const prixAuPrixMatch  = html.match(/au\s+prix\s+de\s+([\d\s.,]+)\s*€/i);
+    const prixSeulMatch    = html.match(/([\d]{2,3}[\s.][\d]{3})\s*€/);
+    const loyerMatch       = html.match(/([\d]{3,4})\s*€\s*\/\s*mois/i);
+    const viagerMatch      = html.match(/viager/i);
 
-    let prixDetecte = null;
-    let prixType = null;
+    let prixDetecte = null, prixType = null;
+    if (prixAPartirMatch)     { prixDetecte = prixAPartirMatch[1].trim().replace(/\s/g,""); prixType = "a_partir_de"; }
+    else if (prixAuPrixMatch) { prixDetecte = prixAuPrixMatch[1].trim().replace(/\s/g,"");  prixType = "au_prix_de"; }
+    else if (loyerMatch)      { prixDetecte = loyerMatch[1].trim();                         prixType = "loyer"; }
+    else if (prixSeulMatch)   { prixDetecte = prixSeulMatch[1].trim().replace(/\s/g,"");    prixType = "prix_fixe"; }
 
-    if (prixAPartirMatch) {
-      prixDetecte = prixAPartirMatch[1].trim().replace(/\s/g, "");
-      prixType = "a_partir_de";
-    } else if (prixAuPrixMatch) {
-      prixDetecte = prixAuPrixMatch[1].trim().replace(/\s/g, "");
-      prixType = "au_prix_de";
-    } else if (prixSeulMatch) {
-      prixDetecte = prixSeulMatch[1].trim().replace(/\s/g, "");
-      prixType = "prix_fixe";
-    }
+    const prixLabel =
+      prixType === "a_partir_de" ? `à partir de ${prixDetecte} €` :
+      prixType === "au_prix_de"  ? `au prix de ${prixDetecte} €`  :
+      prixType === "loyer"       ? `${prixDetecte} €/mois`        :
+      prixDetecte ? `${prixDetecte} €` : "[prix non détecté]";
 
-    // ─── 4. NETTOYAGE HTML POUR CLAUDE ────────────────────────────────────────
+    // ─── 4. NETTOYAGE HTML ────────────────────────────────────────────────────
     const text = html
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
@@ -82,12 +63,69 @@ export default async function handler(req, res) {
       .substring(0, 10000);
 
     // ─── 5. GÉNÉRATION VIA CLAUDE ─────────────────────────────────────────────
-    // Prix formaté pour le prompt
-    const prixLabel =
-      prixType === "a_partir_de" ? `à partir de ${prixDetecte} €` :
-      prixType === "au_prix_de" ? `au prix de ${prixDetecte} €` :
-      prixDetecte ? `${prixDetecte} €` :
-      "[prix non détecté]";
+    const systemPrompt = `Tu es expert en communication immobilière pour l'agence TREVI Rasquain en Belgique.
+Génère DEUX choses séparées par le délimiteur ---JSON--- :
+
+1. Un post Facebook qui suit EXACTEMENT ce format et ce style (caractères Unicode gras obligatoires) :
+
+${html.match(/\blouer\b|\blocation\b|\bloué\b/i) ? `🏡 𝗔 𝗟𝗢𝗨𝗘𝗥 – [Type de bien] à 𝗩𝗜𝗟𝗟𝗘 📌` : `🏡 𝗔 𝗩𝗘𝗡𝗗𝗥𝗘 – [Type de bien] à 𝗩𝗜𝗟𝗟𝗘 📌`}
+${virtualVisit ? `🎥 VISITE VIRTUELLE DISPONIBLE : ${virtualVisit}` : ""}
+
+[1-2 phrases d'accroche courtes et percutantes sur le bien et sa localisation]
+
+✨ 𝗖𝗼𝗺𝗽𝗼𝘀𝗶𝘁𝗶𝗼𝗻 𝗱𝘂 𝗯𝗶𝗲𝗻 :
+[Si infos détaillées par niveau disponibles :]
+✔️ 𝗦𝗼𝘂𝘀-𝘀𝗼𝗹 :        [SI APPLICABLE]
+– [élément]
+✔️ 𝗥𝗲𝘇-𝗱𝗲-𝗰𝗵𝗮𝘂𝘀𝘀𝗲́𝗲 :
+– [élément]
+✔️ 𝗘́𝘁𝗮𝗴𝗲 :           [SI APPLICABLE]
+– [élément]
+✔️ 𝟮𝗲 𝗲́𝘁𝗮𝗴𝗲 :        [SI APPLICABLE]
+– [élément]
+[Si pas d'infos détaillées par niveau :]
+✨ 𝗖𝗮𝗿𝗮𝗰𝘁𝗲́𝗿𝗶𝘀𝘁𝗶𝗾𝘂𝗲𝘀 𝗽𝗿𝗶𝗻𝗰𝗶𝗽𝗮𝗹𝗲𝘀 :
+– [élément]
+
+🌿 𝗘𝘅𝘁𝗲́𝗿𝗶𝗲𝘂𝗿𝘀 :      [SI jardin/terrasse/garage disponible uniquement]
+– [élément]
+
+⚡️ 𝗜𝗻𝗳𝗼𝘀 𝘁𝗲𝗰𝗵𝗻𝗶𝗾𝘂𝗲𝘀 :
+– PEB : [lettre] ([kWh/m²/an si disponible])
+– Chauffage : [type si disponible]
+– Châssis : [type si disponible]
+– [autres infos techniques disponibles]
+
+${prixType === "a_partir_de" ? `💰 Faire offre à partir de 𝗫𝗫𝗫.𝟬𝟬𝟬 €\n(sous réserve d'acceptation du propriétaire)` :
+  prixType === "loyer" ? `💰 Loyer : 𝗫.𝗫𝗫𝗫 €/mois` :
+  viagerMatch ? `💰 𝗩𝗶𝗮𝗴𝗲𝗿 𝗼𝗰𝗰𝘂𝗽𝗲́ – Bouquet : X € / Rente : X €/mois` :
+  `💰 Prix : 𝗫𝗫𝗫.𝟬𝟬𝟬 €\n(sous réserve d'acceptation du propriétaire)`}
+[Remplace X par le vrai prix détecté : ${prixLabel}]
+
+𝗣𝗼𝘂𝗿 𝗽𝗹𝘂𝘀 𝗱𝗲 𝗿𝗲𝗻𝘀𝗲𝗶𝗴𝗻𝗲𝗺𝗲𝗻𝘁𝘀 𝗼𝘂 𝗽𝗼𝘂𝗿 𝗽𝗹𝗮𝗻𝗶𝗳𝗶𝗲𝗿 𝘂𝗻𝗲 𝘃𝗶𝘀𝗶𝘁𝗲 🔑
+✉️ info@trevirasquain.be
+📞 085 25 39 03
+
+${url}
+
+RÈGLES STRICTES :
+- Utilise UNIQUEMENT les infos présentes dans le contenu fourni, n'invente rien
+- Garde les caractères Unicode gras (𝗔, 𝗩𝗘𝗡𝗗𝗥𝗘, etc.) exactement comme dans le format
+- La ville doit être en gras Unicode dans le titre
+- Omets les sections non applicables (sous-sol, étage, extérieurs) si pas d'info
+- Pour le prix, utilise le format gras Unicode avec les vrais chiffres détectés
+- Ne mets PAS de section "Atouts supplémentaires" séparée, intègre tout dans Composition ou Caractéristiques
+
+---JSON---
+2. Un objet JSON uniquement avec :
+{
+  "ville": "[ville du bien]",
+  "type_bien": "[Appartement/Maison/Villa/Terrain/etc.]",
+  "surface": "[m² ou null]",
+  "nb_chambres": "[nombre ou null]",
+  "sdb": "[nombre ou null]",
+  "peb": "[lettre PEB ou null]"
+}`;
 
     const aiRes = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -99,95 +137,43 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
         max_tokens: 2500,
-        system: `Tu es expert en communication immobilière pour l'agence TREVI Rasquain.
-Génère DEUX choses séparées par le délimiteur ---JSON--- :
-
-1. Un post Facebook professionnel et élégant uniquement avec les données fournies. N'invente rien.
-Format EXACT du post :
-A VENDRE – [Type de bien] au centre de 𝗩𝗜𝗟𝗟𝗘 🏡
-${virtualVisit ? `\nVISITE VIRTUELLE DISPONIBLE 🎥 : ${virtualVisit}\n` : ""}
-[Description courte 2-3 lignes]
-
-𝗖𝗼𝗺𝗽𝗼𝘀𝗶𝘁𝗶𝗼𝗻 𝗱𝘂 𝗯𝗶𝗲𝗻 🏠 :
-- [liste exacte des pièces]
-
-𝗔𝘁𝗼𝘂𝘁𝘀 𝘀𝘂𝗽𝗽𝗹𝗲́𝗺𝗲𝗻𝘁𝗮𝗶𝗿𝗲𝘀 ✨ :
-– [garage, parking, cave, jardin, etc.]
-
-𝗜𝗻𝗳𝗼𝘀 𝘁𝗲𝗰𝗵𝗻𝗶𝗾𝘂𝗲𝘀 ⚙️ :
-– PEB : [valeur exacte]
-– [chauffage]
-– [compteurs si mentionnés]
-
-💰 Prix : ${prixLabel}
-(sous réserve d'acceptation des propriétaires)
-
-𝗣𝗼𝘂𝗿 𝗽𝗹𝘂𝘀 𝗱𝗲 𝗿𝗲𝗻𝘀𝗲𝗶𝗴𝗻𝗲𝗺𝗲𝗻𝘁𝘀 𝗼𝘂 𝗽𝗹𝗮𝗻𝗶𝗳𝗶𝗲𝗿 𝘂𝗻𝗲 𝘃𝗶𝘀𝗶𝘁𝗲 👇
-📧 info@trevirasquain.be
-📞 085 25 39 03
-🔗 [lien annonce]
-
----JSON---
-2. Un objet JSON (et RIEN d'autre après) avec exactement ces champs :
-{
-  "ville": "[nom de la ville/commune du bien]",
-  "type_bien": "[ex: Appartement, Maison, Villa, Terrain...]",
-  "surface": "[surface habitable en m² si mentionnée, sinon null]",
-  "nb_chambres": "[nombre de chambres si mentionné, sinon null]",
-  "peb": "[valeur PEB si mentionnée, sinon null]"
-}`,
-        messages: [{ role: "user", content: `URL de l'annonce : ${url}\nContenu de l'annonce :\n${text}` }]
+        system: systemPrompt,
+        messages: [{ role: "user", content: `URL : ${url}\n\nContenu de l'annonce :\n${text}` }]
       })
     });
 
     const aiData = await aiRes.json();
     const fullResponse = aiData?.content?.[0]?.text || "";
 
-    // Séparation post Facebook / JSON
     const parts = fullResponse.split("---JSON---");
     const post = parts[0]?.trim() || "";
     let propertyData = {};
-    try {
-      const jsonRaw = parts[1]?.trim() || "{}";
-      propertyData = JSON.parse(jsonRaw);
-    } catch {
-      propertyData = {};
-    }
+    try { propertyData = JSON.parse(parts[1]?.trim() || "{}"); } catch { propertyData = {}; }
 
-    // ─── 6. ENVOI AU WEBHOOK MAKE.COM ─────────────────────────────────────────
+    // ─── 6. WEBHOOK MAKE.COM ──────────────────────────────────────────────────
     const webhookPayload = {
-      // Infos du bien
       url_annonce: url,
       ville: propertyData.ville || null,
       type_bien: propertyData.type_bien || null,
       surface: propertyData.surface || null,
       nb_chambres: propertyData.nb_chambres || null,
       peb: propertyData.peb || null,
-      // Prix
-      prix: prixDetecte,
-      prix_type: prixType,
-      prix_label: prixLabel,
-      // Visite virtuelle
+      prix: prixDetecte, prix_type: prixType, prix_label: prixLabel,
       visite_virtuelle: virtualVisit,
-      // Images
       image_principale: mainImage,
       images: propertyImages,
-      // Post Facebook généré
       post_facebook: post,
-      // Nom du dossier Google Drive
       nom_dossier: `${propertyData.ville || "Bien"} - ${propertyData.type_bien || "Immobilier"}`,
-      // Métadonnées
       timestamp: new Date().toISOString()
     };
 
-    // Envoi asynchrone (on n'attend pas la réponse pour ne pas bloquer l'UI)
     fetch("https://hook.eu1.make.com/tav9uan6dyis5s5ffeqjbpxezorf4rcr", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(webhookPayload)
-    }).catch(err => console.error("Webhook Make.com error:", err));
+    }).catch(err => console.error("Webhook error:", err));
 
-    // ─── 7. RÉPONSE AU FRONTEND ───────────────────────────────────────────────
+    // ─── 7. RÉPONSE ───────────────────────────────────────────────────────────
     return res.status(200).json({
       post,
       ville: propertyData.ville,
@@ -195,7 +181,7 @@ ${virtualVisit ? `\nVISITE VIRTUELLE DISPONIBLE 🎥 : ${virtualVisit}\n` : ""}
       prix_label: prixLabel,
       surface: propertyData.surface,
       nb_chambres: propertyData.nb_chambres,
-      sdb: propertyData.sdb || propertyData.salles_bain,
+      sdb: propertyData.sdb,
       image_principale: mainImage,
       images: propertyImages,
       webhook_sent: true
