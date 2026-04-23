@@ -2577,22 +2577,44 @@ async function submitDemandePost() {
   });
 
   try {
-    var message = [
-      '================================================',
-      '   IMMO PRO · TREVI RASQUAIN',
-      '   Nouvelle demande de post Facebook',
-      '================================================',
+    // Scraper le lien pour récupérer les infos du bien
+    var scrapeData = null;
+    try {
+      var scrapeRes = await fetch('/api/scrape?url=' + encodeURIComponent(url));
+      scrapeData = await scrapeRes.json();
+    } catch(se) { console.warn('Scrape échoué:', se); }
+
+    // Générer le texte du post via Claude si scrape OK
+    var postTexte = '';
+    if (scrapeData && scrapeData.post) {
+      postTexte = scrapeData.post;
+    }
+
+    // Construire le mail
+    var lines = [
+      '📋 NOUVELLE DEMANDE DE POST FACEBOOK',
+      '─────────────────────────────────────',
       '',
-      '  Délégué      : ' + delegue,
-      '  Pack         : ' + packEl.value,
-      '  Lien annonce : ' + url,
-      '  Date         : ' + now,
-      '  Remarques    : ' + (remarques || 'Aucune'),
-      '',
-      '================================================',
-      'Envoyé depuis Immo Pro · TREVI Rasquain',
-      '================================================'
-    ].join('\n');
+      '👤 *Délégué*    : ' + delegue,
+      '📦 *Pack*       : ' + packEl.value,
+      '🔗 *Annonce*    : ' + url,
+      '🕐 *Date*       : ' + now,
+    ];
+
+    if (remarques) {
+      lines.push('💬 *Remarques*  : ' + remarques);
+    }
+
+    if (postTexte) {
+      lines.push('');
+      lines.push('─────────────────────────────────────');
+      lines.push('✍️ TEXTE DU POST GÉNÉRÉ PAR IA');
+      lines.push('─────────────────────────────────────');
+      lines.push('');
+      lines.push(postTexte);
+    }
+
+    var message = lines.join('\n');
 
     await emailjs.send('service_0l08dg4', 'template_r0ucl4i', {
       name:        'Immo Pro',
