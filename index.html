@@ -2577,22 +2577,48 @@ async function submitDemandePost() {
   });
 
   try {
+    // ── Étape 1 : Scrape + génération Claude via API
     loadEl.querySelector('span').textContent = 'Génération du post en cours...';
 
-    // Appel API qui fait scrape + Claude + envoi mail en une seule fois
-    var res = await fetch('/api/demande-post', {
+    var apiRes = await fetch('/api/demande-post', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        delegue:  delegue,
-        url:      url,
-        pack:     packEl.value,
-        remarques: remarques || 'Aucune',
-        date:     now
-      })
+      body: JSON.stringify({ url: url })
     });
-    var data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Erreur serveur');
+    var apiData = await apiRes.json();
+    var postTexte = apiData.post || '';
+
+    // ── Étape 2 : Construire le message complet
+    var lines = [
+      '📋 NOUVELLE DEMANDE DE POST FACEBOOK',
+      '─────────────────────────────────────',
+      '',
+      '👤 Délégué    : ' + delegue,
+      '📦 Pack       : ' + packEl.value,
+      '🔗 Annonce    : ' + url,
+      '🕐 Date       : ' + now,
+    ];
+    if (remarques) lines.push('💬 Remarques  : ' + remarques);
+    if (postTexte) {
+      lines.push('');
+      lines.push('─────────────────────────────────────');
+      lines.push('✍️ TEXTE DU POST — PRÊT À PUBLIER');
+      lines.push('─────────────────────────────────────');
+      lines.push('');
+      lines.push(postTexte);
+    }
+
+    // ── Étape 3 : Envoi via EmailJS
+    loadEl.querySelector('span').textContent = 'Envoi du mail...';
+    await emailjs.send('service_0l08dg4', 'template_r0ucl4i', {
+      name:        'Immo Pro',
+      delegue:     delegue,
+      pack:        packEl.value,
+      url_annonce: url,
+      remarques:   remarques || 'Aucune',
+      date:        now,
+      message:     lines.join('\n')
+    });
 
     loadEl.style.display = 'none';
     submitBtn.disabled = false;
