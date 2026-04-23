@@ -353,6 +353,8 @@
       .form-grid { grid-template-columns: 1fr; }
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>emailjs.init('Qzhn8JS5Klds5QSjH');</script>
 </head>
 <body>
 
@@ -2570,24 +2572,27 @@ async function submitDemandePost() {
   submitBtn.disabled = true;
   loadEl.style.display = 'flex';
 
+  var now = new Date().toLocaleString('fr-BE', {
+    timeZone: 'Europe/Brussels',
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+
   try {
-    var res = await fetch('/api/demande-post', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ delegue, url, pack: packEl.value, remarques })
+    await emailjs.send('service_0l08dg4', 'template_r0ucl4i', {
+      delegue:     delegue,
+      pack:        packEl.value,
+      url_annonce: url,
+      remarques:   remarques || 'Aucune',
+      date:        now
     });
-    var data = await res.json();
-    if (data.success || data.warning) {
-      loadEl.style.display = 'none';
-      submitBtn.disabled = false;
-      showDpModal(delegue, packEl.value, url);
-    } else {
-      throw new Error(data.error || 'Erreur serveur');
-    }
+    loadEl.style.display = 'none';
+    submitBtn.disabled = false;
+    showDpModal(delegue, packEl.value, url);
   } catch(e) {
     loadEl.style.display = 'none';
     submitBtn.disabled = false;
-    errEl.textContent = '❌ Erreur lors de l\'envoi : ' + e.message;
+    errEl.textContent = '❌ Erreur lors de l\'envoi : ' + (e.text || e.message || JSON.stringify(e));
     errEl.style.display = 'block';
   }
 }
