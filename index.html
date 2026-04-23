@@ -2579,12 +2579,31 @@ async function submitDemandePost() {
   });
 
   try {
+    var message = [
+      '================================================',
+      '   IMMO PRO · TREVI RASQUAIN',
+      '   Nouvelle demande de post Facebook',
+      '================================================',
+      '',
+      '  Délégué      : ' + delegue,
+      '  Pack         : ' + packEl.value,
+      '  Lien annonce : ' + url,
+      '  Date         : ' + now,
+      '  Remarques    : ' + (remarques || 'Aucune'),
+      '',
+      '================================================',
+      'Envoyé depuis Immo Pro · TREVI Rasquain',
+      '================================================'
+    ].join('\n');
+
     await emailjs.send('service_0l08dg4', 'template_r0ucl4i', {
+      name:        'Immo Pro',
       delegue:     delegue,
       pack:        packEl.value,
       url_annonce: url,
       remarques:   remarques || 'Aucune',
-      date:        now
+      date:        now,
+      message:     message
     });
     loadEl.style.display = 'none';
     submitBtn.disabled = false;
