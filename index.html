@@ -2578,7 +2578,15 @@ async function submitDemandePost() {
 
   try {
     // ── Étape 1 : Scrape + génération Claude via API
-    loadEl.querySelector('span').textContent = 'Génération du post en cours...';
+    loadEl.querySelector('span').textContent = 'Analyse du bien en cours... (30 sec)';
+    // Alterner les messages pour rassurer
+    var msgIdx = 0;
+    var msgs = ['Analyse du bien en cours...', 'Génération du post Facebook...', 'Préparation du mail...'];
+    var msgInterval = setInterval(function() {
+      msgIdx = (msgIdx + 1) % msgs.length;
+      var spanEl = loadEl.querySelector('span');
+      if (spanEl) spanEl.textContent = msgs[msgIdx];
+    }, 5000);
 
     var apiRes = await fetch('/api/demande-post', {
       method: 'POST',
@@ -2609,6 +2617,7 @@ async function submitDemandePost() {
     }
 
     // ── Étape 3 : Envoi via EmailJS
+    clearInterval(msgInterval);
     loadEl.querySelector('span').textContent = 'Envoi du mail...';
     await emailjs.send('service_0l08dg4', 'template_r0ucl4i', {
       name:        'Immo Pro',
