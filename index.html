@@ -2576,27 +2576,8 @@ async function submitDemandePost() {
     hour: '2-digit', minute: '2-digit'
   });
 
-  try {
-    // ── Étape 1 : Scrape + génération Claude via API
-    loadEl.querySelector('span').textContent = 'Analyse du bien en cours... (30 sec)';
-    // Alterner les messages pour rassurer
-    var msgIdx = 0;
-    var msgs = ['Analyse du bien en cours...', 'Génération du post Facebook...', 'Préparation du mail...'];
-    var msgInterval = setInterval(function() {
-      msgIdx = (msgIdx + 1) % msgs.length;
-      var spanEl = loadEl.querySelector('span');
-      if (spanEl) spanEl.textContent = msgs[msgIdx];
-    }, 5000);
-
-    var apiRes = await fetch('/api/demande-post', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: url })
-    });
-    var apiData = await apiRes.json();
-    var postTexte = apiData.post || '';
-
-    // ── Étape 2 : Construire le message complet
+  // Envoyer immédiatement avec EmailJS — sans attendre le scrape
+  var sendMail = async function(postTexte) {
     var lines = [
       '📋 NOUVELLE DEMANDE DE POST FACEBOOK',
       '─────────────────────────────────────',
@@ -2615,19 +2596,30 @@ async function submitDemandePost() {
       lines.push('');
       lines.push(postTexte);
     }
-
-    // ── Étape 3 : Envoi via EmailJS
-    clearInterval(msgInterval);
-    loadEl.querySelector('span').textContent = 'Envoi du mail...';
     await emailjs.send('service_0l08dg4', 'template_r0ucl4i', {
-      name:        'Immo Pro',
-      delegue:     delegue,
-      pack:        packEl.value,
-      url_annonce: url,
-      remarques:   remarques || 'Aucune',
-      date:        now,
-      message:     lines.join('\n')
+      name: 'Immo Pro', delegue: delegue, pack: packEl.value,
+      url_annonce: url, remarques: remarques || 'Aucune', date: now,
+      message: lines.join('\n')
     });
+  };
+
+  try {
+    // Étape 1: scrape + Claude (max 25s)
+    var postTexte = '';
+    try {
+      var controller = new AbortController();
+      var timer = setTimeout(function() { controller.abort(); }, 25000);
+      var scrapeRes = await fetch('/api/scrape?url=' + encodeURIComponent(url), { signal: controller.signal });
+      clearTimeout(timer);
+      var scrapeData = await scrapeRes.json();
+      postTexte = scrapeData.post || '';
+    } catch(scrapeErr) {
+      console.warn('Scrape timeout ou erreur:', scrapeErr.message);
+    }
+
+    // Étape 2: envoi EmailJS avec ou sans texte
+    loadEl.querySelector('span').textContent = 'Envoi du mail...';
+    await sendMail(postTexte);
 
     loadEl.style.display = 'none';
     submitBtn.disabled = false;
