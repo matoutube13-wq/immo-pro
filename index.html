@@ -2577,61 +2577,30 @@ async function submitDemandePost() {
   });
 
   try {
-    // Scraper le lien pour récupérer les infos du bien
-    var scrapeData = null;
-    try {
-      var scrapeRes = await fetch('/api/scrape?url=' + encodeURIComponent(url));
-      scrapeData = await scrapeRes.json();
-    } catch(se) { console.warn('Scrape échoué:', se); }
+    loadEl.querySelector('span').textContent = 'Génération du post en cours...';
 
-    // Générer le texte du post via Claude si scrape OK
-    var postTexte = '';
-    if (scrapeData && scrapeData.post) {
-      postTexte = scrapeData.post;
-    }
-
-    // Construire le mail
-    var lines = [
-      '📋 NOUVELLE DEMANDE DE POST FACEBOOK',
-      '─────────────────────────────────────',
-      '',
-      '👤 *Délégué*    : ' + delegue,
-      '📦 *Pack*       : ' + packEl.value,
-      '🔗 *Annonce*    : ' + url,
-      '🕐 *Date*       : ' + now,
-    ];
-
-    if (remarques) {
-      lines.push('💬 *Remarques*  : ' + remarques);
-    }
-
-    if (postTexte) {
-      lines.push('');
-      lines.push('─────────────────────────────────────');
-      lines.push('✍️ TEXTE DU POST GÉNÉRÉ PAR IA');
-      lines.push('─────────────────────────────────────');
-      lines.push('');
-      lines.push(postTexte);
-    }
-
-    var message = lines.join('\n');
-
-    await emailjs.send('service_0l08dg4', 'template_r0ucl4i', {
-      name:        'Immo Pro',
-      delegue:     delegue,
-      pack:        packEl.value,
-      url_annonce: url,
-      remarques:   remarques || 'Aucune',
-      date:        now,
-      message:     message
+    // Appel API qui fait scrape + Claude + envoi mail en une seule fois
+    var res = await fetch('/api/demande-post', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        delegue:  delegue,
+        url:      url,
+        pack:     packEl.value,
+        remarques: remarques || 'Aucune',
+        date:     now
+      })
     });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erreur serveur');
+
     loadEl.style.display = 'none';
     submitBtn.disabled = false;
     showDpModal(delegue, packEl.value, url);
   } catch(e) {
     loadEl.style.display = 'none';
     submitBtn.disabled = false;
-    errEl.textContent = '❌ Erreur lors de l\'envoi : ' + (e.text || e.message || JSON.stringify(e));
+    errEl.textContent = '❌ Erreur : ' + (e.text || e.message || JSON.stringify(e));
     errEl.style.display = 'block';
   }
 }
