@@ -10,7 +10,7 @@
 
     /* ── LOGIN ─────────────────────────────────────────────── */
     #login-page {
-      min-height: 100vh; display: none; align-items: center; justify-content: center;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
       background: linear-gradient(135deg, #1a1a2e 0%, #2d2d4e 100%);
     }
     .login-box {
@@ -37,7 +37,7 @@
     .login-spinner { display: none; margin-top: 12px; color: #999; font-size: 13px; }
 
     /* ── APP SHELL ─────────────────────────────────────────── */
-    #app { display: block; }
+    #app { display: none; }
     .header { background: #1a1a2e; padding: 22px 40px; display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 100; }
     .logo { width: 40px; height: 40px; background: #c9a84c; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
     .logo-text { color: #fff; font-weight: 700; font-size: 18px; }
@@ -266,8 +266,7 @@
   #postfb-scrape-btn { width:auto !important; flex-shrink:0; white-space:nowrap; }
   .postfb-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:4px; }
   .postfb-text-result { background:#f7f3ed; border-radius:10px; padding:16px; font-size:13px; line-height:1.7; color:#1a1a2e; white-space:pre-wrap; display:none; margin-top:12px; border:1px solid #ede8e0; }
-
-    /* ── SIDEBAR ── */
+/* ── SIDEBAR ── */
     #sidebar { position:fixed; top:0; left:0; height:100vh; width:68px; background:#1a1f2e; display:flex; flex-direction:column; transition:width 0.25s cubic-bezier(.4,0,.2,1); z-index:200; overflow:hidden; }
     #sidebar.open { width:240px; }
     .sb-logo { height:64px; display:flex; align-items:center; gap:12px; padding:0 17px; border-bottom:1px solid rgba(255,255,255,0.07); flex-shrink:0; }
@@ -380,7 +379,7 @@
 </head>
 <body>
 
-<!-- ── LOGIN désactivé temporairement ── -->
+<!-- LOGIN desactive temporairement -->
 <!-- <div id="login-page">...</div> -->
 
 <div id="app">
@@ -402,16 +401,14 @@
       <div class="sb-section" style="margin-top:4px">Outils</div>
       <div class="sb-item" id="sb-nav-mention" onclick="showTool('mention-tool')">
         <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-        <span class="sb-label">Mention IA</span>
-        <span class="sb-pill">ACTIF</span>
+        <span class="sb-label">Mention IA</span><span class="sb-pill">ACTIF</span>
       </div>
       <div class="sb-item" id="sb-nav-demandepost" onclick="showTool('demandepost-tool')">
         <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
-        <span class="sb-label">Demande Post FB</span>
-        <span class="sb-pill">ACTIF</span>
+        <span class="sb-label">Demande Post FB</span><span class="sb-pill">ACTIF</span>
       </div>
       <div class="sb-item sb-disabled">
-        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14,2 14,8 20,8"/></svg>
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/></svg>
         <span class="sb-label">Compromis</span><span class="sb-pill">SOON</span>
       </div>
       <div class="sb-item sb-disabled">
@@ -422,7 +419,7 @@
     <div class="sb-bottom">
       <div class="sb-user">
         <div class="sb-avatar">TR</div>
-        <div class="sb-user-info"><div class="sb-user-name">TREVI Rasquain</div><div class="sb-user-role">Liège · Belgique</div></div>
+        <div class="sb-user-info"><div class="sb-user-name">TREVI Rasquain</div><div class="sb-user-role">Li&egrave;ge &middot; Belgique</div></div>
       </div>
     </div>
   </div>
@@ -442,23 +439,22 @@
   <!-- DASHBOARD -->
   <div id="dashboard">
     <div class="dash-header">
-      <div class="dash-title">Bonjour les bêta-testeurs &#x1F44B;</div>
-      <div class="dash-sub">Accédez à vos outils métiers en un clic.</div>
+      <div class="dash-title">Bonjour les b&ecirc;ta-testeurs &#x1F44B;</div>
+      <div class="dash-sub">Acc&eacute;dez &agrave; vos outils m&eacute;tiers en un clic.</div>
     </div>
 
-    <!-- BANDEAU ANNONCE -->
     <div class="announce-wrap" id="announce-wrap">
       <div class="announce-card">
-        <div class="announce-icon">🎉</div>
+        <div class="announce-icon">&#127881;</div>
         <div class="announce-body">
-          <span class="announce-tag">Nouveauté · Avril 2026</span>
+          <span class="announce-tag">Nouveaut&eacute; &middot; Avril 2026</span>
           <div class="announce-title">Nouveau design &amp; outils en ligne !</div>
           <div class="announce-text">
-            N'oublie pas : <strong>«&nbsp;Projet IA&nbsp;»</strong> sur tes images générées par IA, <strong>«&nbsp;Optimisation visuelle&nbsp;»</strong> quand tu as viré le bazar dans une pièce ou amélioré une photo. Simple comme bonjour 😎<br><br>
-            Un bug ? Une question existentielle ? <a href="mailto:mathias@trevirasquain.be">Écris-moi</a> — je ne mords pas (enfin, presque). <strong>Bonne utilisation &amp; amusez-vous bien !</strong> 🚀
+            N&apos;oublie pas : <strong>&laquo;&nbsp;Projet IA&nbsp;&raquo;</strong> sur tes images g&eacute;n&eacute;r&eacute;es par IA, <strong>&laquo;&nbsp;Optimisation visuelle&nbsp;&raquo;</strong> quand tu as vir&eacute; le bazar dans une pi&egrave;ce. Simple comme bonjour &#128526;<br><br>
+            Un bug ? <a href="mailto:mathias@trevirasquain.be">Ecris-moi</a> &mdash; je ne mords pas (enfin, presque). <strong>Bonne utilisation &amp; amusez-vous bien !</strong> &#128640;
           </div>
         </div>
-        <button class="announce-close" onclick="document.getElementById('announce-wrap').style.display='none'">✕</button>
+        <button class="announce-close" onclick="document.getElementById('announce-wrap').style.display='none'">&#x2715;</button>
       </div>
     </div>
 
@@ -469,23 +465,23 @@
         <span class="tool-badge" style="background:#dcfce7;color:#166534;display:inline-block;font-size:9px;font-weight:700;padding:3px 9px;border-radius:20px;margin-bottom:14px;text-transform:uppercase">Disponible</span>
         <div class="tc-icon" style="background:#fffbeb"><svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>
         <div class="tool-title">Mention IA</div>
-        <div class="tool-desc">Apposez une mention sur vos images ou compressez-les pour Whise</div>
+        <div class="tool-desc">Apposez une mention sur vos images ou compressez-les</div>
       </div>
       <div class="tool-card" style="border-color:#c9a84c;position:relative;overflow:hidden" onclick="showTool('demandepost-tool')">
         <div class="tc-stripe"></div>
         <span class="tool-badge" style="background:#dcfce7;color:#166534;display:inline-block;font-size:9px;font-weight:700;padding:3px 9px;border-radius:20px;margin-bottom:14px;text-transform:uppercase">Disponible</span>
         <div class="tc-icon" style="background:#fffbeb"><svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></div>
         <div class="tool-title">Demande Post Facebook</div>
-        <div class="tool-desc">Génère un post et crée une tâche dans Monday automatiquement</div>
+        <div class="tool-desc">G&eacute;n&egrave;re un post et cr&eacute;e une t&acirc;che dans Monday</div>
       </div>
       <div class="tool-card disabled">
-        <span class="tool-badge" style="background:#f3f4f6;color:#9ca3af;display:inline-block;font-size:9px;font-weight:700;padding:3px 9px;border-radius:20px;margin-bottom:14px;text-transform:uppercase">Bientôt</span>
-        <div class="tc-icon" style="background:#f3f4f6"><svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14,2 14,8 20,8"/></svg></div>
+        <span class="tool-badge" style="background:#f3f4f6;color:#9ca3af;display:inline-block;font-size:9px;font-weight:700;padding:3px 9px;border-radius:20px;margin-bottom:14px;text-transform:uppercase">Bient&ocirc;t</span>
+        <div class="tc-icon" style="background:#f3f4f6"><svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/></svg></div>
         <div class="tool-title">Compromis de Vente</div>
-        <div class="tool-desc">L'IA remplit et génère le compromis Word</div>
+        <div class="tool-desc">L&apos;IA remplit et g&eacute;n&egrave;re le compromis Word</div>
       </div>
       <div class="tool-card disabled">
-        <span class="tool-badge" style="background:#f3f4f6;color:#9ca3af;display:inline-block;font-size:9px;font-weight:700;padding:3px 9px;border-radius:20px;margin-bottom:14px;text-transform:uppercase">Bientôt</span>
+        <span class="tool-badge" style="background:#f3f4f6;color:#9ca3af;display:inline-block;font-size:9px;font-weight:700;padding:3px 9px;border-radius:20px;margin-bottom:14px;text-transform:uppercase">Bient&ocirc;t</span>
         <div class="tc-icon" style="background:#f3f4f6"><svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
         <div class="tool-title">Candidatures Locatives</div>
         <div class="tool-desc">Scoring IA des dossiers de location</div>
@@ -493,7 +489,7 @@
     </div>
   </div>
 
-  <!-- ── SOCIAL TOOL ─────────────────────────────────────── -->
+<!-- ── SOCIAL TOOL ─────────────────────────────────────── -->
   <div id="social-tool">
     <div class="tool-header">
       <button class="back-btn" onclick="showDashboard()">←</button>
@@ -532,7 +528,7 @@
     </div>
   </div>
 
-  <!-- ── COMPROMIS TOOL ───────────────────────────────────── -->
+<!-- ── COMPROMIS TOOL ───────────────────────────────────── -->
   <div id="compromis-tool">
     <div class="tool-header">
       <button class="back-btn" onclick="showDashboard()">←</button>
@@ -719,7 +715,133 @@
   </div>
 </div>
 
-  <!-- ── MENTION IA ─────────────────────────────────────────── -->
+
+
+  <!-- ── CANDIDATURES TOOL ────────────────────────────────── -->
+  <div id="candidatures-tool" style="display:none">
+    <div class="content">
+      <div class="content-header">
+        <button class="back-btn" onclick="showDashboard()">← Retour</button>
+        <div>
+          <h2 class="content-title">🗂️ Candidatures Locatives</h2>
+          <p class="content-sub">Gérez vos biens et évaluez les dossiers avec l'IA</p>
+        </div>
+      </div>
+
+      <!-- Onglets -->
+      <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:2px solid #e8e0d4">
+        <button id="tab-biens" onclick="switchTab('biens')" style="padding:12px 24px;background:none;border:none;border-bottom:2px solid #c9a84c;margin-bottom:-2px;font-weight:700;font-size:14px;color:#1a1a2e;cursor:pointer">🏠 Biens</button>
+        <button id="tab-cands" onclick="switchTab('cands')" style="padding:12px 24px;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-weight:600;font-size:14px;color:#888;cursor:pointer">👥 Candidatures</button>
+      </div>
+
+      <!-- ── ONGLET BIENS ── -->
+      <div id="tab-content-biens">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div style="font-size:12px;color:#aaa" id="biens-count"></div>
+          <button onclick="openBienModal()" style="padding:9px 18px;background:#c9a84c;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer">+ Ajouter un bien</button>
+        </div>
+        <div id="biens-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
+          <div style="text-align:center;padding:40px;color:#aaa;grid-column:1/-1">⏳ Chargement...</div>
+        </div>
+      </div>
+
+      <!-- ── ONGLET CANDIDATURES ── -->
+      <div id="tab-content-cands" style="display:none">
+        <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+          <select id="filter-bien" onchange="filterCandidatures()" style="padding:8px 12px;border:1.5px solid #e8e0d4;border-radius:8px;font-size:13px;outline:none;background:#fff">
+            <option value="">Tous les biens</option>
+          </select>
+          <div style="font-size:12px;color:#aaa;margin-left:4px" id="cands-count"></div>
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <button onclick="loadAllCandidatures()" style="padding:8px 14px;background:#f7f5f2;border:1px solid #e8e0d4;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600">🔄 Actualiser</button>
+            <button onclick="evaluerTous()" id="btn-eval-tous" style="padding:8px 14px;background:#c9a84c;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:700">✨ Tout évaluer</button>
+          </div>
+        </div>
+        <div id="cand-list" style="background:#fff;border-radius:16px;border:1px solid #e8e0d4;overflow:hidden;min-height:200px">
+          <div style="text-align:center;padding:60px;color:#aaa">Sélectionnez un bien ou chargez toutes les candidatures</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODALE AJOUT/EDIT BIEN ──────────────────────────────── -->
+  <div id="bien-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeBienModal()">
+    <div class="modal" style="max-width:500px">
+      <div class="modal-title" id="bien-modal-title">🏠 Ajouter un bien</div>
+      <div class="modal-subtitle">Les candidats pourront sélectionner ce bien dans le formulaire public</div>
+      <input type="hidden" id="bien-modal-id"/>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
+        <div>
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Adresse complète *</label>
+          <input id="bien-adresse" type="text" placeholder="Rue de la Paix 12, 4000 Liège" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none"/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Loyer mensuel (€) *</label>
+            <input id="bien-loyer" type="number" placeholder="900" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none"/>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Type de bien</label>
+            <select id="bien-type" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none;background:#fff">
+              <option>Appartement</option><option>Maison</option><option>Studio</option><option>Duplex</option><option>Penthouse</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Chambres</label>
+            <input id="bien-chambres" type="number" placeholder="2" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none"/>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Surface (m²)</label>
+            <input id="bien-surface" type="number" placeholder="75" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none"/>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Critères supplémentaires (optionnel)</label>
+          <textarea id="bien-criteres" placeholder="ex: Pas d'animaux, préférence non-fumeur, garant requis..." style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:13px;outline:none;resize:none;height:70px;font-family:inherit"></textarea>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Statut</label>
+          <select id="bien-statut" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none;background:#fff">
+            <option value="actif">Actif — visible dans le formulaire public</option>
+            <option value="archive">Archivé — masqué du formulaire public</option>
+          </select>
+        </div>
+        <div id="bien-modal-error" style="color:#e74c3c;font-size:13px;display:none"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" onclick="closeBienModal()">Annuler</button>
+        <button class="btn-modal-ok" onclick="saveBien()">💾 Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODALE DÉTAIL CANDIDATURE ──────────────────────────── -->
+  <div id="cand-detail-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeCandDetail()">
+    <div class="modal" style="max-width:720px">
+      <div id="cand-detail-body"></div>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" onclick="closeCandDetail()">← Fermer</button>
+        <button class="btn-modal-ok" id="btn-eval-single" onclick="evaluerCandidature(currentCandId)">✨ Évaluer avec l'IA</button>
+      </div>
+    </div>
+  </div>
+
+<!-- ── MODALE VÉRIFICATION ──────────────────────────────────────────────── -->
+<div id="verify-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this) closeVerifyModal()">
+  <div class="modal">
+    <div class="modal-title" id="verify-modal-title">🔍 Analyse du dossier</div>
+    <div class="modal-subtitle" id="verify-modal-subtitle">Vérification des documents et de la cohérence</div>
+    <div id="verify-modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeVerifyModal()">← Revoir les documents</button>
+      <button class="btn-modal-ok" id="verify-modal-confirm" onclick="confirmVerifyAndFill()">Continuer quand même →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MENTION IA ─────────────────────────────────────────── -->
   <div id="mention-tool" style="display:none">
     <div class="tool-header">
       <button class="back-btn" onclick="showDashboard()">←</button>
@@ -809,7 +931,7 @@
     </div>
   </div>
 
-  <!-- ── POST FACEBOOK ──────────────────────────────────────── -->
+<!-- ── POST FACEBOOK ──────────────────────────────────────── -->
   <div id="postfb-tool" style="display:none">
     <div class="tool-header">
       <button class="back-btn" onclick="showDashboard()">←</button>
@@ -946,19 +1068,17 @@
 </body>
 </html>
 
-
-  <!-- ── DEMANDE POST FACEBOOK ── -->
+  <!-- ── DEMANDE POST FACEBOOK ────────────────────────── -->
   <div id="demandepost-tool" style="display:none">
     <div class="tool-topbar">
-      <button class="back-btn" onclick="showDashboard()">←</button>
-      <div class="tool-icon-sm">📱</div>
-      <div><div class="tool-header-text">Demande Post Facebook</div><div class="tool-header-sub">POST FB · MONDAY</div></div>
+      <button class="back-btn" onclick="showDashboard()">&#8592;</button>
+      <div class="tool-icon-sm">&#128241;</div>
+      <div><div class="tool-header-text">Demande Post Facebook</div><div class="tool-header-sub">POST FB &middot; MONDAY</div></div>
     </div>
     <div class="content" style="max-width:700px">
-      <div class="card">
-        <h3>👤 Qui fait la demande ?</h3>
+      <div class="card"><h3>&#128100; Qui fait la demande ?</h3>
         <select id="dp-delegue" style="margin-bottom:4px">
-          <option value="">— Sélectionne ton nom —</option>
+          <option value="">&#8212; S&eacute;lectionne ton nom &#8212;</option>
           <option value="Julia Kongo">Julia Kongo</option>
           <option value="Benoît Rasquain">Benoît Rasquain</option>
           <option value="Quentin Delloye">Quentin Delloye</option>
@@ -975,27 +1095,24 @@
           <option value="Joëlle De Lattin">Joëlle De Lattin</option>
         </select>
       </div>
-      <div class="card">
-        <h3>🔗 Lien de l'annonce</h3>
+      <div class="card"><h3>&#128279; Lien de l&apos;annonce</h3>
         <input type="text" id="dp-url" placeholder="https://www.trevi.be/fr/bien/..." />
         <p style="font-size:12px;color:#9ca3af;margin-top:8px">Copie le lien depuis le site Trevi</p>
       </div>
-      <div class="card">
-        <h3>📦 Type de publication</h3>
+      <div class="card"><h3>&#128230; Type de publication</h3>
         <label class="pack-card selected" id="pack-pauvre-card">
           <input type="radio" name="dp-pack" value="Pack du pauvre" onchange="selectPack(this)" checked>
-          <div class="pack-card-icon">📝</div>
+          <div class="pack-card-icon">&#128221;</div>
           <div class="pack-card-title">Pack du pauvre</div>
-          <div class="pack-card-desc">Post texte + visuel Canva générique</div>
+          <div class="pack-card-desc">Post texte + visuel Canva g&eacute;n&eacute;rique</div>
         </label>
       </div>
-      <div class="card">
-        <h3>💬 Remarques <span style="font-weight:400;color:#9ca3af;font-size:13px">(optionnel)</span></h3>
-        <textarea id="dp-remarques" rows="3" placeholder="Infos supplémentaires, urgence..." style="resize:vertical"></textarea>
+      <div class="card"><h3>&#128172; Remarques <span style="font-weight:400;color:#9ca3af;font-size:13px">(optionnel)</span></h3>
+        <textarea id="dp-remarques" rows="3" placeholder="Infos suppl&eacute;mentaires, urgence..." style="resize:vertical"></textarea>
       </div>
       <div class="error-box" id="dp-error"></div>
       <button class="btn-primary" id="dp-submit-btn" onclick="submitDemandePost()" style="margin-top:0">
-        🚀 Générer et créer dans Monday
+        &#128640; G&eacute;n&eacute;rer et cr&eacute;er dans Monday
       </button>
       <div class="loading" id="dp-loading" style="margin-top:14px">
         <div class="spinner"></div>
@@ -1004,316 +1121,24 @@
     </div>
   </div>
 
-  <!-- MODAL SUCCÈS DEMANDE POST -->
+  <!-- MODAL SUCCES DEMANDE POST -->
   <div class="dp-modal-overlay" id="dp-modal-overlay">
     <div class="dp-modal">
       <img id="dp-modal-img" class="dp-modal-gif" src="" alt="">
-      <div id="dp-modal-badge" class="dp-modal-pack-badge"></div>
+      <div id="dp-modal-badge" class="dp-modal-pack-badge pauvre"></div>
       <div class="dp-modal-title" id="dp-modal-title"></div>
       <div class="dp-modal-sub" id="dp-modal-sub"></div>
       <button class="dp-modal-close" onclick="closeDpModal()">Parfait, merci !</button>
     </div>
   </div>
 
-
   </div><!-- /#main-wrapper -->
 
 </div><!-- /#app -->
 
-<script>emailjs.init('Qzhn8JS5Klds5QSjH');</script>
-</head>
-<body>
-
-<!-- ── LOGIN ──────────────────────────────────────────────────────────────── -->
-<div id="login-page">
-  <div class="login-box">
-    <div class="login-logo">🏠</div>
-    <div class="login-title">Immo Pro</div>
-    <div class="login-sub">Accès réservé aux collaborateurs</div>
-    <input type="password" id="password-input" placeholder="Mot de passe" onkeydown="if(event.key==='Enter') login()"/>
-    <button class="login-btn" id="login-btn" onclick="login()">Connexion →</button>
-    <div class="login-error" id="login-error">❌ Mot de passe incorrect</div>
-    <div class="login-spinner" id="login-spinner">⏳ Vérification...</div>
-  </div>
-</div>
-
-<!-- ── APP ────────────────────────────────────────────────────────────────── -->
-<div id="app">
-  <div class="header">
-    <div class="logo">🏠</div>
-    <div>
-      <div class="logo-text">Immo Pro</div>
-      <div class="logo-sub">PLATEFORME COLLABORATEURS</div>
-    </div>
-    <button class="logout-btn" onclick="logout()">🔒 Déconnexion</button>
-  </div>
-
-  <!-- DASHBOARD -->
-  <div id="dashboard">
-    <div class="welcome">
-      <h1>Bonjour 👋</h1>
-      <p>Accédez à vos outils métiers en un clic.</p>
-    </div>
-    <div class="tools-grid">
-      <div class="tool-card" onclick="showTool('social-tool')">
-        <div class="tool-icon">📱</div>
-        <div class="tool-title">Réseaux Sociaux</div>
-        <div class="tool-desc">Générez des posts Facebook à partir d'un lien d'annonce</div>
-      </div>
-      <div class="tool-card" onclick="showTool('compromis-tool')">
-        <span class="tool-badge new">NOUVEAU</span>
-        <div class="tool-icon">📄</div>
-        <div class="tool-title">Compromis de Vente</div>
-        <div class="tool-desc">Importez les documents — l'IA remplit et génère le compromis Word</div>
-      </div>
-      <div class="tool-card" onclick="showTool('candidatures-tool')">
-        <span class="tool-badge new">NOUVEAU</span>
-        <div class="tool-icon">🗂️</div>
-        <div class="tool-title">Candidatures Locatives</div>
-        <div class="tool-desc">Triez et évaluez automatiquement les dossiers de location avec l'IA</div>
-      </div>
-      <div class="tool-card" onclick="showTool('mention-tool')">
-        <span class="tool-badge new">NOUVEAU</span>
-        <div class="tool-icon">🏷️</div>
-        <div class="tool-title">Mention IA</div>
-        <div class="tool-desc">Apposez une mention sur vos images modifiées par IA ou compressez-les pour Whise</div>
-      </div>
-      <div class="tool-card" onclick="showTool('postfb-tool')">
-        <span class="tool-badge new">NOUVEAU</span>
-        <div class="tool-icon">📸</div>
-        <div class="tool-title">Post Facebook</div>
-        <div class="tool-desc">Générez votre visuel post Facebook depuis un lien Trevi en quelques secondes</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── SOCIAL TOOL ─────────────────────────────────────── -->
-  <div id="social-tool">
-    <div class="tool-header">
-      <button class="back-btn" onclick="showDashboard()">←</button>
-      <div class="tool-icon-sm">📱</div>
-      <div>
-        <div class="tool-header-text">Générateur de Posts</div>
-        <div class="tool-header-sub">FACEBOOK · PROFESSIONNEL</div>
-      </div>
-    </div>
-    <div class="content" style="max-width:700px">
-      <div class="card">
-        <label>🔗 Lien de l'annonce immobilière</label>
-        <input type="text" id="annonce-url" placeholder="https://www.trevi.be/fr/bien/..." onkeydown="if(event.key==='Enter') generate()"/>
-        <div class="error-box" id="error-box"></div>
-        <div class="loading" id="loading-box">
-          <div class="spinner"></div>
-          <span id="loading-text">Récupération de l'annonce...</span>
-        </div>
-        <button class="btn-primary" id="gen-btn" onclick="generate()">✨ Générer le post Facebook</button>
-      </div>
-      <div class="card" id="result-card" style="display:none">
-        <div class="result-header">
-          <div class="avatar">IP</div>
-          <div>
-            <div style="font-weight:700;font-size:13px;color:#1a1a2e">Immo Pro</div>
-            <div style="font-size:11px;color:#999">Publication Facebook · maintenant</div>
-          </div>
-          <div class="fb-badge">f</div>
-        </div>
-        <div class="post-text" id="post-output"></div>
-        <div class="result-actions">
-          <button class="btn-copy" id="copy-btn" onclick="copyPost()">📋 Copier le post</button>
-          <button class="btn-regen" onclick="generate()">🔄 Régénérer</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── COMPROMIS TOOL ───────────────────────────────────── -->
-  <div id="compromis-tool">
-    <div class="tool-header">
-      <button class="back-btn" onclick="showDashboard()">←</button>
-      <div class="tool-icon-sm">📄</div>
-      <div>
-        <div class="tool-header-text">Compromis de Vente</div>
-        <div class="tool-header-sub">ANALYSE IA · GÉNÉRATION WORD</div>
-      </div>
-    </div>
-    <div class="content">
-
-      <!-- ÉTAPE 1 : Upload -->
-      <div class="card">
-        <h3>📁 Étape 1 — Importer les documents <span class="badge-ai">✨ IA</span></h3>
-        <p style="font-size:13px;color:#888;margin-bottom:16px;">
-          Glissez-déposez tous les documents officiels. L'IA analysera chaque fichier et remplira automatiquement le formulaire.
-        </p>
-        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
-          <div class="drop-zone-icon">📂</div>
-          <p><strong>Cliquez ou glissez vos fichiers ici</strong></p>
-          <small>PEB · Contrôle électrique · Attestation sol · Renseignements urbanistiques · Fiche Whise · etc.</small>
-          <input type="file" id="file-input" multiple accept=".pdf,.jpg,.jpeg,.png" style="display:none">
-        </div>
-        <div id="file-list" class="file-list"></div>
-
-        <!-- Progression IA -->
-        <div id="ai-progress" style="display:none; margin-top:20px;">
-          <div style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:12px;">Analyse en cours...</div>
-          <div class="ai-steps">
-            <div class="ai-step" id="step-read"><div class="ai-step-icon">📖</div>Lecture des documents</div>
-            <div class="ai-step" id="step-extract"><div class="ai-step-icon">🔍</div>Extraction des informations</div>
-            <div class="ai-step" id="step-fill"><div class="ai-step-icon">✍️</div>Remplissage automatique du formulaire</div>
-          </div>
-        </div>
-
-        <button class="btn-primary" id="btn-analyze" onclick="analyzeDocuments()" style="margin-top:20px;" disabled>
-          ✨ Analyser avec l'IA
-        </button>
-        <div class="error-box" id="analyze-error"></div>
-      </div>
-
-      <!-- ÉTAPE 2 : Formulaire -->
-      <div class="card" id="form-card">
-        <h3>✏️ Étape 2 — Vérifier et compléter <span class="badge-ai">✨ Pré-rempli par IA</span></h3>
-        <p style="font-size:13px;color:#888;margin-bottom:24px;">
-          Les champs en <span style="color:#a07c20;font-weight:700;">or</span> ont été remplis automatiquement. Vérifiez et complétez si nécessaire.
-        </p>
-
-        <!-- VENDEUR(S) -->
-        <div class="form-section">
-          <div class="form-section-title">👤 Vendeur(s)</div>
-          <div id="vendeurs-container"></div>
-          <button class="btn-add-person" onclick="addPersonBlock('vendeurs-container', 'vendeur')">
-            <span>＋</span> Ajouter un co-vendeur
-          </button>
-        </div>
-
-        <!-- ACQUÉREUR(S) -->
-        <div class="form-section">
-          <div class="form-section-title">👤 Acquéreur(s)</div>
-          <div id="acquereurs-container"></div>
-          <button class="btn-add-person" onclick="addPersonBlock('acquereurs-container', 'acquereur')">
-            <span>＋</span> Ajouter un co-acquéreur
-          </button>
-        </div>
-
-        <!-- LE BIEN -->
-        <div class="form-section">
-          <div class="form-section-title">🏠 Le bien vendu</div>
-          <div class="form-grid">
-            <div class="form-group full"><label>Adresse complète</label><input type="text" id="f_adresseBien" placeholder="Rue Thier du Moulin, 45A – 4530 Villers-le-Bouillet"></div>
-            <div class="form-group"><label>Commune</label><input type="text" id="f_commune" placeholder="Villers-le-Bouillet"></div>
-            <div class="form-group"><label>Division cadastrale</label><input type="text" id="f_division" placeholder="1ère DIVISION"></div>
-            <div class="form-group"><label>Section</label><input type="text" id="f_section" placeholder="B"></div>
-            <div class="form-group"><label>Numéro parcelle</label><input type="text" id="f_numero" placeholder="1114 D2 P0000"></div>
-            <div class="form-group"><label>Contenance</label><input type="text" id="f_contenance" placeholder="3 ares 92 centiares"></div>
-            <div class="form-group full"><label>Inclus dans la vente</label><input type="text" id="f_inclus" placeholder="immeubles par incorporation, citerne d'eau de pluie..."></div>
-          </div>
-        </div>
-
-        <!-- PRIX -->
-        <div class="form-section">
-          <div class="form-section-title">💰 Prix et paiement</div>
-          <div class="form-grid">
-            <div class="form-group full"><label>Prix en lettres</label><input type="text" id="f_prixLettres" placeholder="deux cent cinquante mille euros"></div>
-            <div class="form-group"><label>Prix en chiffres</label><input type="text" id="f_prixChiffres" placeholder="250.000"></div>
-            <div class="form-group"><label>Montant garantie (EUR)</label><input type="text" id="f_montantGarantie" placeholder="25.000"></div>
-            <div class="form-group"><label>IBAN acquéreur</label><input type="text" id="f_ibanAcquereur" placeholder="BE12 XXXX XXXX XXXX"></div>
-            <div class="form-group"><label>IBAN agence (Trevi)</label><input type="text" id="f_ibanAgence" value="BE12 0689 0274 6792"></div>
-            <div class="form-group full">
-              <label>Condition suspensive financement</label>
-              <select id="f_conditionFinancement">
-                <option value="non">Non — vente sans condition de financement</option>
-                <option value="oui">Oui — sous condition d'obtenir un crédit</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- NOTAIRES -->
-        <div class="form-section">
-          <div class="form-section-title">⚖️ Notaires</div>
-          <div class="form-grid">
-            <div class="form-group"><label>Notaire du vendeur</label><input type="text" id="f_notaireVendeur" placeholder="Maître Moïra PLENEVAUX à Wanze"></div>
-            <div class="form-group"><label>Notaire de l'acquéreur</label><input type="text" id="f_notaireAcquereur" placeholder="Maître Thérèse DE NIJS à Wanze"></div>
-          </div>
-        </div>
-
-        <!-- INFOS TECHNIQUES -->
-        <div class="form-section">
-          <div class="form-section-title">⚙️ Informations techniques</div>
-          <div class="form-grid">
-            <div class="form-group"><label>Revenu cadastral (EUR)</label><input type="text" id="f_revenuCadastral" placeholder="671"></div>
-            <div class="form-group"><label>Classe PEB</label>
-              <select id="f_pebClasse">
-                <option value="">Sélectionner</option>
-                <option>A++</option><option>A+</option><option>A</option>
-                <option>B</option><option>C</option><option>D</option>
-                <option>E</option><option>F</option><option>G</option>
-              </select>
-            </div>
-            <div class="form-group"><label>Numéro certificat PEB</label><input type="text" id="f_pebNumero" placeholder="20251212009588"></div>
-            <div class="form-group"><label>Expert PEB</label><input type="text" id="f_pebExpert" placeholder="PIERARD Rémy"></div>
-            <div class="form-group"><label>Date certificat PEB</label><input type="text" id="f_pebDate" placeholder="12/12/2025"></div>
-            <div class="form-group"><label>Contrôle électrique</label>
-              <select id="f_elecConforme">
-                <option value="conforme">Conforme</option>
-                <option value="non conforme">Non conforme</option>
-              </select>
-            </div>
-            <div class="form-group"><label>Organisme contrôle élec.</label><input type="text" id="f_elecOrganisme" placeholder="BTV"></div>
-            <div class="form-group"><label>Date contrôle élec.</label><input type="text" id="f_elecDate" placeholder="19/11/2008"></div>
-            <div class="form-group"><label>Citerne présente</label>
-              <select id="f_citiernePresent">
-                <option value="non">Non</option>
-                <option value="oui">Oui</option>
-              </select>
-            </div>
-            <div class="form-group"><label>Type citerne</label>
-              <select id="f_citierneType">
-                <option value="gaz">Gaz</option>
-                <option value="mazout">Mazout</option>
-              </select>
-            </div>
-            <div class="form-group"><label>Zone inondable</label>
-              <select id="f_zoneInondable">
-                <option value="non">Non</option>
-                <option value="oui">Oui</option>
-              </select>
-            </div>
-            <div class="form-group"><label>Date extrait sol (BDES)</label><input type="text" id="f_solDate" placeholder="28/01/2026"></div>
-            <div class="form-group full"><label>Zone urbanistique</label><input type="text" id="f_urbanismeZone" placeholder="habitat à caractère rural au plan de secteur"></div>
-            <div class="form-group"><label>Description permis urbanisme</label><input type="text" id="f_urbanismePermis" placeholder="construction d'une habitation"></div>
-            <div class="form-group"><label>Date permis urbanisme</label><input type="text" id="f_urbanismeDate" placeholder="21/08/2007"></div>
-          </div>
-        </div>
-
-        <!-- DATE & LIEU -->
-        <div class="form-section">
-          <div class="form-section-title">📅 Signature</div>
-          <div class="form-grid">
-            <div class="form-group"><label>Date de signature</label><input type="text" id="f_dateSignature" placeholder="27/02/2026"></div>
-            <div class="form-group"><label>Lieu de signature</label><input type="text" id="f_lieuSignature" value="Huy"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ÉTAPE 3 : Générer -->
-      <div class="card">
-        <h3>📥 Étape 3 — Générer le compromis</h3>
-        <p style="font-size:13px;color:#888;margin-bottom:16px;">Le document Word sera généré et téléchargé automatiquement.</p>
-        <div class="loading" id="gen-loading">
-          <div class="spinner"></div>
-          <span id="gen-loading-text">Génération du compromis...</span>
-        </div>
-        <div class="error-box" id="gen-error"></div>
-        <div class="success-box" id="gen-success">✅ Compromis généré et téléchargé !</div>
-        <button class="download-btn" id="btn-generate" onclick="generateCompromis()">
-          📄 Générer le Compromis de Vente (.docx)
-        </button>
-      </div>
-
-    </div>
-  </div>
-</div>
-
 <script>
+
+
 // ════════════════════════════════════════════════════════════
 // AUTH
 // ════════════════════════════════════════════════════════════
@@ -1354,7 +1179,7 @@ function logout() {
 // NAVIGATION
 // ════════════════════════════════════════════════════════════
 function showTool(id) {
-  ['social-tool', 'compromis-tool', 'candidatures-tool', 'mention-tool', 'postfb-tool', 'demandepost-tool'].forEach(function(t) {
+  ['social-tool','compromis-tool','candidatures-tool','mention-tool','postfb-tool','demandepost-tool'].forEach(function(t) {
     const el = document.getElementById(t);
     if (el) el.style.display = 'none';
   });
@@ -1369,7 +1194,7 @@ function showTool(id) {
 function showDashboard() {
   if(typeof mentionToolReset==='function') mentionToolReset();
   postfbReset();
-  ['social-tool', 'compromis-tool', 'candidatures-tool', 'mention-tool', 'postfb-tool', 'demandepost-tool'].forEach(id => {
+  ['social-tool','compromis-tool','candidatures-tool','mention-tool','postfb-tool','demandepost-tool'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
@@ -1930,13 +1755,12 @@ async function evaluerTous() {
 // UTILITAIRES IMAGES PARTAGÉS
 // ════════════════════════════════════════════════════════════
 var STAMP_SRC = {
-  ia:    'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjkgNTQiPjxnIGZpbHRlcj0iZHJvcC1zaGFkb3coMXB4IDJweCA0cHggcmdiYSgwLDAsMCwwLjcpKSI+PGcgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLjM2NzI1LCAzOC43MTA5NTEpIj48Zz48cGF0aCBkPSJNIDcuMDQyOTY5IDAgTCA3LjA0Mjk2OSAtMTEuNTkzNzUgTCAxNS4xMzY3MTkgLTExLjU5Mzc1IEMgMjAuOTEwMTU2IC0xMS41OTM3NSAyNC4yODEyNSAtMTUuNjE3MTg4IDI0LjI4MTI1IC0yMC4zODY3MTkgQyAyNC4yODEyNSAtMjUuMTU2MjUgMjEgLTI5LjE3OTY4OCAxNS4xMzY3MTkgLTI5LjE3OTY4OCBMIDMuNDE0MDYyIC0yOS4xNzk2ODggTCAzLjQxNDA2MiAwIFogTSAyMC41MTk1MzEgLTIwLjM4NjcxOSBDIDIwLjUxOTUzMSAtMTcuMTA1NDY5IDE4LjE1NjI1IC0xNC44MzIwMzEgMTQuNjk5MjE5IC0xNC44MzIwMzEgTCA3LjA0Mjk2OSAtMTQuODMyMDMxIEwgNy4wNDI5NjkgLTI1Ljk0MTQwNiBMIDE0LjY5OTIxOSAtMjUuOTQxNDA2IEMgMTguMTU2MjUgLTI1Ljk0MTQwNiAyMC41MTk1MzEgLTIzLjY2Nzk2OSAyMC41MTk1MzEgLTIwLjM4NjcxOSBaIE0gMjAuNTE5NTMxIC0yMC4zODY3MTkgIi8+PC9nPjwvZz48L2c+PGcgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyNi4wNDU5NDMsIDM4LjcxMDk1MSkiPjxnPjxwYXRoIGQ9Ik0gNi41NjI1IDAgTCA2LjU2MjUgLTE0Ljk2MDkzOCBDIDcuNTIzNDM4IC0xNi42Njc5NjkgMTAuMjgxMjUgLTE4LjMzMjAzMSAxMi4yOTI5NjkgLTE4LjMzMjAzMSBDIDEyLjgxNjQwNiAtMTguMzMyMDMxIDEzLjIxMDkzOCAtMTguMjg1MTU2IDEzLjYwNTQ2OSAtMTguMTk5MjE5IEwgMTMuNjA1NDY5IC0yMS41NjY0MDYgQyAxMC43MTg3NSAtMjEuNTY2NDA2IDguMjY5NTMxIC0xOS45NDkyMTkgNi41NjI1IC0xNy43MTg3NSBMIDYuNTYyNSAtMjEuMTI4OTA2IEwgMy4yODEyNSAtMjEuMTI4OTA2IEwgMy4yODEyNSAwIFogTSA2LjU2MjUgMCAiLz48L2c+PC9nPjwvZz48ZyBmaWxsPSIjZmZmZmZmIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDQwLjQ4MTk5NSwgMzguNzEwOTUxKSI+PGc+PHBhdGggZD0iTSAxMi41MTE3MTkgMC41MjM0MzggQyAxOC45NDE0MDYgMC41MjM0MzggMjIuOTY4NzUgLTQuNDYwOTM4IDIyLjk2ODc1IC0xMC41ODU5MzggQyAyMi45Njg3NSAtMTYuNzEwOTM4IDE4Ljk0MTQwNiAtMjEuNjU2MjUgMTIuNTExNzE5IC0yMS42NTYyNSBDIDYuMDgyMDMxIC0yMS42NTYyNSAyLjA1NDY4OCAtMTYuNzEwOTM4IDIuMDU0Njg4IC0xMC41ODU5MzggQyAyLjA1NDY4OCAtNC40NjA5MzggNi4wODIwMzEgMC41MjM0MzggMTIuNTExNzE5IDAuNTIzNDM4IFogTSAxMi41MTE3MTkgLTIuNDA2MjUgQyA4LjAwNzgxMiAtMi40MDYyNSA1LjQ2ODc1IC02LjI1NzgxMiA1LjQ2ODc1IC0xMC41ODU5MzggQyA1LjQ2ODc1IC0xNC44NzUgOC4wMDc4MTIgLTE4LjcyMjY1NiAxMi41MTE3MTkgLTE4LjcyMjY1NiBDIDE3LjAxOTUzMSAtMTguNzIyNjU2IDE5LjUxMTcxOSAtMTQuODc1IDE5LjUxMTcxOSAtMTAuNTg1OTM4IEMgMTkuNTExNzE5IC02LjI1NzgxMiAxNy4wMTk1MzEgLTIuNDA2MjUgMTIuNTExNzE5IC0yLjQwNjI1IFogTSAxMi41MTE3MTkgLTIuNDA2MjUgIi8+PC9nPjwvZz48L2c+PGcgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NS41MDQ1MDcsIDM4LjcxMDk1MSkiPjxnPjxwYXRoIGQ9Ik0gNC44OTg0MzggLTI0LjY3NTc4MSBDIDYuMTI1IC0yNC42NzU3ODEgNy4xMzI4MTIgLTI1LjY3OTY4OCA3LjEzMjgxMiAtMjYuOTA2MjUgQyA3LjEzMjgxMiAtMjguMTI4OTA2IDYuMTI1IC0yOS4wOTM3NSA0Ljg5ODQzOCAtMjkuMDkzNzUgQyAzLjcxODc1IC0yOS4wOTM3NSAyLjcxMDkzOCAtMjguMTI4OTA2IDIuNzEwOTM4IC0yNi45MDYyNSBDIDIuNzEwOTM4IC0yNS42Nzk2ODggMy43MTg3NSAtMjQuNjc1NzgxIDQuODk4NDM4IC0yNC42NzU3ODEgWiBNIDMuMjgxMjUgLTIxLjEyODkwNiBMIDMuMjgxMjUgMi4wNTQ2ODggQyAzLjI4MTI1IDQuNzI2NTYyIDEuOTI1NzgxIDUuNzMwNDY5IDAgNS43MzA0NjkgQyAtMC41MjM0MzggNS43MzA0NjkgLTEuMTM2NzE5IDUuNjg3NSAtMS41NzQyMTkgNS41MTE3MTkgTCAtMi4wMTE3MTkgOC4yNjk1MzEgQyAtMS4zMTI1IDguNDg4MjgxIC0wLjU3MDMxMiA4LjU3NDIxOSAwLjM1MTU2MiA4LjU3NDIxOSBDIDQuMzMyMDMxIDguNTc0MjE5IDYuNTYyNSA2LjIxMDkzOCA2LjU2MjUgMi4wNTQ2ODggTCA2LjU2MjUgLTIxLjEyODkwNiBaIE0gMy4yODEyNSAtMjEuMTI4OTA2ICIvPjwvZz48L2c+PC9nPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMSI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNzUuMzQ3MjY5LCAzOC43MTA5NTEpIj48Zz48cGF0aCBkPSJNIDIuMDU0Njg4IC0xMC41ODU5MzggQyAyLjA1NDY4OCAtMy45ODA0NjkgNi41NjI1IDAuNTIzNDM4IDEyLjgxNjQwNiAwLjUyMzQzOCBDIDE2LjI3MzQzOCAwLjUyMzQzOCAxOS4xMTcxODggLTAuNjEzMjgxIDIxLjIxODc1IC0yLjcxMDkzOCBMIDE5LjY0NDUzMSAtNC44NTU0NjkgQyAxNy45ODA0NjkgLTMuMTQ4NDM4IDE1LjUzMTI1IC0yLjE4NzUgMTMuMTI1IC0yLjE4NzUgQyA4LjU3NDIxOSAtMi4xODc1IDUuNzczNDM4IC01LjUxMTcxOSA1LjUxMTcxOSAtOS40OTIxODggTCAyMi42MTcxODggLTkuNDkyMTg4IEwgMjIuNjE3MTg4IC0xMC4zMjQyMTkgQyAyMi42MTcxODggLTE2LjY2Nzk2OSAxOC44NTU0NjkgLTIxLjY1NjI1IDEyLjQ2ODc1IC0yMS42NTYyNSBDIDYuNDI5Njg4IC0yMS42NTYyNSAyLjA1NDY4OCAtMTYuNzEwOTM4IDIuMDU0Njg4IC0xMC41ODU5MzggWiBNIDEyLjQyNTc4MSAtMTguOTQxNDA2IEMgMTcuMjM4MjgxIC0xOC45NDE0MDYgMTkuMzM1OTM4IC0xNS4wNTA3ODEgMTkuMzc4OTA2IC0xMS44OTg0MzggTCA1LjUxMTcxOSAtMTEuODk4NDM4IEMgNS42ODc1IC0xNS4xMzY3MTkgNy45MTc5NjkgLTE4Ljk0MTQwNiAxMi40MjU3ODEgLTE4Ljk0MTQwNiBaIE0gMTIuNDI1NzgxIC0xOC45NDE0MDYgIi8+PC9nPjwvZz48L2c+PGcgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg5OS45NzYwNzEsIDM4LjcxMDk1MSkiPjxnPjxwYXRoIGQ9Ik0gOC42MTcxODggMC41MjM0MzggQyAxMC41NDI5NjkgMC41MjM0MzggMTEuNzIyNjU2IC0wLjA0Mjk2ODggMTIuNTU0Njg4IC0wLjgzMjAzMSBMIDExLjU5Mzc1IC0zLjI4MTI1IEMgMTEuMTU2MjUgLTIuODAwNzgxIDEwLjI4MTI1IC0yLjQwNjI1IDkuMzYzMjgxIC0yLjQwNjI1IEMgNy45MTc5NjkgLTIuNDA2MjUgNy4yMTg3NSAtMy41NDI5NjkgNy4yMTg3NSAtNS4xMTcxODggTCA3LjIxODc1IC0xOC4yNDIxODggTCAxMS41MDM5MDYgLTE4LjI0MjE4OCBMIDExLjUwMzkwNiAtMjEuMTI4OTA2IEwgNy4yMTg3NSAtMjEuMTI4OTA2IEwgNy4yMTg3NSAtMjYuOTA2MjUgTCAzLjkzNzUgLTI2LjkwNjI1IEwgMy45Mzc1IC0yMS4xMjg5MDYgTCAwLjQzNzUgLTIxLjEyODkwNiBMIDAuNDM3NSAtMTguMjQyMTg4IEwgMy45Mzc1IC0xOC4yNDIxODggTCAzLjkzNzUgLTQuNDE3OTY5IEMgMy45Mzc1IC0xLjI2OTUzMSA1LjUxMTcxOSAwLjUyMzQzOCA4LjYxNzE4OCAwLjUyMzQzOCBaIE0gOC42MTcxODggMC41MjM0MzggIi8+PC9nPjwvZz48L2c+PGcgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMTIuODUwMzE1LCAzOC43MTA5NTEpIj48Zy8+PC9nPjwvZz48ZyBmaWxsPSIjZmZmZmZmIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDEyNC4wNDkxOTgsIDM4LjcxMDk1MSkiPjxnPjxwYXRoIGQ9Ik0gOS4wOTc2NTYgMCBMIDkuMDk3NjU2IC0yOS4xNzk2ODggTCAyLjg4NjcxOSAtMjkuMTc5Njg4IEwgMi44ODY3MTkgMCBaIE0gOS4wOTc2NTYgMCAiLz48L2c+PC9nPjwvZz48ZyBmaWxsPSIjZmZmZmZmIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDEzNi4wMzU0OTksIDM4LjcxMDk1MSkiPjxnPjxwYXRoIGQ9Ik0gMzAuMDk3NjU2IDAgTCAxOC44NTU0NjkgLTI5LjE3OTY4OCBMIDExLjA2NjQwNiAtMjkuMTc5Njg4IEwgLTAuMjE4NzUgMCBMIDYuNjA1NDY5IDAgTCA4LjQ0NTMxMiAtNS4wMzEyNSBMIDIxLjQ4MDQ2OSAtNS4wMzEyNSBMIDIzLjMxNjQwNiAwIFogTSAxOS43NzM0MzggLTEwLjQxMDE1NiBMIDEwLjEwNTQ2OSAtMTAuNDEwMTU2IEwgMTQuOTYwOTM4IC0yMy44MDA3ODEgWiBNIDE5Ljc3MzQzOCAtMTAuNDEwMTU2ICIvPjwvZz48L2c+PC9nPjwvZz48L3N2Zz4=',
-  optim: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTggMzQiPjxnIGZpbHRlcj0iZHJvcC1zaGFkb3coMXB4IDJweCA0cHggcmdiYSgwLDAsMCwwLjcpKSI+PGcgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLjQxMjkxOSwgMjQuNDYyMzI4KSI+PGc+PHBhdGggZD0iTSAwLjkxNzk2OSAtOS4wMDc4MTIgQyAwLjkxNzk2OSAtMy41NzAzMTIgNC44OTg0MzggMC4zMjQyMTkgMTAuMzM1OTM4IDAuMzI0MjE5IEMgMTUuODAwNzgxIDAuMzI0MjE5IDE5Ljc3NzM0NCAtMy41NzAzMTIgMTkuNzc3MzQ0IC05LjAwNzgxMiBDIDE5Ljc3NzM0NCAtMTQuNDQ1MzEyIDE1LjgwMDc4MSAtMTguMzQzNzUgMTAuMzM1OTM4IC0xOC4zNDM3NSBDIDQuODk4NDM4IC0xOC4zNDM3NSAwLjkxNzk2OSAtMTQuNDQ1MzEyIDAuOTE3OTY5IC05LjAwNzgxMiBaIE0gMTUuODI0MjE5IC05LjAwNzgxMiBDIDE1LjgyNDIxOSAtNS42NTIzNDQgMTMuNjYwMTU2IC0zLjA4NTkzOCAxMC4zMzU5MzggLTMuMDg1OTM4IEMgNy4wMDc4MTIgLTMuMDg1OTM4IDQuODcxMDk0IC01LjY1MjM0NCA0Ljg3MTA5NCAtOS4wMDc4MTIgQyA0Ljg3MTA5NCAtMTIuMzkwNjI1IDcuMDA3ODEyIC0xNC45MzM1OTQgMTAuMzM1OTM4IC0xNC45MzM1OTQgQyAxMy42NjAxNTYgLTE0LjkzMzU5NCAxNS44MjQyMTkgLTEyLjM5MDYyNSAxNS44MjQyMTkgLTkuMDA3ODEyIFogTSAxNS44MjQyMTkgLTkuMDA3ODEyICIvPjwvZz48L2c+PC9nPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMSI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjEuMTA3NDg5LCAyNC40NjIzMjgpIj48Zz48cGF0aCBkPSJNIDUuMTQwNjI1IC0xLjY3NTc4MSBDIDYuMTk1MzEyIC0wLjMyNDIxOSA3LjYyODkwNiAwLjMyNDIxOSA5LjE3MTg3NSAwLjMyNDIxOSBDIDEyLjUyNzM0NCAwLjMyNDIxOSAxNC45NjA5MzggLTIuMTkxNDA2IDE0Ljk2MDkzOCAtNi41NDY4NzUgQyAxNC45NjA5MzggLTEwLjkwMjM0NCAxMi41MjczNDQgLTEzLjM5MDYyNSA5LjE3MTg3NSAtMTMuMzkwNjI1IEMgNy41NzQyMTkgLTEzLjM5MDYyNSA2LjE0MDYyNSAtMTIuNjg3NSA1LjE0MDYyNSAtMTEuNDE3OTY5IEwgNS4xNDA2MjUgLTEzLjA2NjQwNiBMIDEuNzAzMTI1IC0xMy4wNjY0MDYgTCAxLjcwMzEyNSA0Ljk3NjU2MiBMIDUuMTQwNjI1IDQuOTc2NTYyIFogTSAxMS4zOTA2MjUgLTYuNTQ2ODc1IEMgMTEuMzkwNjI1IC00LjI3MzQzOCAxMC4wNjI1IC0yLjczMDQ2OSA4LjA4OTg0NCAtMi43MzA0NjkgQyA2Ljk4MDQ2OSAtMi43MzA0NjkgNS43MDcwMzEgLTMuNDEwMTU2IDUuMTQwNjI1IC00LjIxODc1IEwgNS4xNDA2MjUgLTguODQ3NjU2IEMgNS43MDcwMzEgLTkuNjgzNTk0IDYuOTgwNDY5IC0xMC4zMzU5MzggOC4wODk4NDQgLTEwLjMzNTkzOCBDIDEwLjA2MjUgLTEwLjMzNTkzOCAxMS4zOTA2MjUgLTguNzkyOTY5IDExLjM5MDYyNSAtNi41NDY4NzUgWiBNIDExLjM5MDYyNSAtNi41NDY4NzUgIi8+PC9nPjwvZz48L2c+PGcgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzNi45MzI3NDYsIDI0LjQ2MjMyOCkiPjxnPjxwYXRoIGQ9Ik0gNi4wODU5MzggMC4zMjQyMTkgQyA3LjUxOTUzMSAwLjMyNDIxOSA4LjQ0MTQwNiAtMC4wNTQ2ODc1IDguOTUzMTI1IC0wLjUxNTYyNSBMIDguMjIyNjU2IC0zLjEwOTM3NSBDIDguMDM1MTU2IC0yLjkyMTg3NSA3LjU0Njg3NSAtMi43MzA0NjkgNy4wMzUxNTYgLTIuNzMwNDY5IEMgNi4yNzczNDQgLTIuNzMwNDY5IDUuODQzNzUgLTMuMzU1NDY5IDUuODQzNzUgLTQuMTY3OTY5IEwgNS44NDM3NSAtMTAuMDYyNSBMIDguNDk2MDk0IC0xMC4wNjI1IEwgOC40OTYwOTQgLTEzLjA2NjQwNiBMIDUuODQzNzUgLTEzLjA2NjQwNiBMIDUuODQzNzUgLTE2LjYzNjcxOSBMIDIuMzc4OTA2IC0xNi42MzY3MTkgTCAyLjM3ODkwNiAtMTMuMDY2NDA2IEwgMC4yMTQ4NDQgLTEzLjA2NjQwNiBMIDAuMjE0ODQ0IC0xMC4wNjI1IEwgMi4zNzg5MDYgLTEwLjA2MjUgTCAyLjM3ODkwNiAtMy4yNDYwOTQgQyAyLjM3ODkwNiAtMC45MTc5NjkgMy42Nzk2ODggMC4zMjQyMTkgNi4wODU5MzggMC4zMjQyMTkgWiBNIDYuMDg1OTM4IDAuMzI0MjE5ICIvPjwvZz48L2c+PC9nPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMSI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDYuMDc2MjI2LCAyNC40NjIzMjgpIj48Zz48cGF0aCBkPSJNIDMuNDEwMTU2IC0xNC45ODgyODEgQyA0LjU0Njg3NSAtMTQuOTg4MjgxIDUuNDY0ODQ0IC0xNS45MDYyNSA1LjQ2NDg0NCAtMTcuMDQyOTY5IEMgNS40NjQ4NDQgLTE4LjE3OTY4OCA0LjU0Njg3NSAtMTkuMDk3NjU2IDMuNDEwMTU2IC0xOS4wOTc2NTYgQyAyLjMwMDc4MSAtMTkuMDk3NjU2IDEuMzUxNTYyIC0xOC4xNzk2ODggMS4zNTE1NjIgLTE3LjA0Mjk2OSBDIDEuMzUxNTYyIC0xNS45MDYyNSAyLjMwMDc4MSAtMTQuOTg4MjgxIDMuNDEwMTU2IC0xNC45ODgyODEgWiBNIDUuMTQwNjI1IDAgTCA1LjE0MDYyNSAtMTMuMDY2NDA2IEwgMS43MDMxMjUgLTEzLjA2NjQwNiBMIDEuNzAzMTI1IDAgWiBNIDUuMTQwNjI1IDAgIi8+PC9nPjwvZz48L2c+PGcgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg1Mi45MjAzMTMsIDI0LjQ2MjMyOCkiPjxnPjxwYXRoIGQ9Ik0gMjEuMzcxMDk0IDAgTCAyMS4zNzEwOTQgLTkuNDQxNDA2IEMgMjEuMzcxMDk0IC0xMi4xMjEwOTQgMTkuOTM3NSAtMTMuMzkwNjI1IDE3LjUzMTI1IC0xMy4zOTA2MjUgQyAxNS41MjczNDQgLTEzLjM5MDYyNSAxMy43OTY4NzUgLTEyLjE5OTIxOSAxMy4wMzkwNjIgLTExLjAxMTcxOSBDIDEyLjU1MDc4MSAtMTIuNSAxMS4zMzU5MzggLTEzLjM5MDYyNSA5LjQxNDA2MiAtMTMuMzkwNjI1IEMgNy40MTQwNjIgLTEzLjM5MDYyNSA1LjY3OTY4OCAtMTIuMTQ4NDM4IDUuMTQwNjI1IC0xMS4zNjMyODEgTCA1LjE0MDYyNSAtMTMuMDY2NDA2IEwgMS43MDMxMjUgLTEzLjA2NjQwNiBMIDEuNzAzMTI1IDAgTCA1LjE0MDYyNSAwIEwgNS4xNDA2MjUgLTguNzkyOTY5IEMgNS42NTIzNDQgLTkuNTIzNDM4IDYuNjU2MjUgLTEwLjMzNTkzOCA3Ljg0Mzc1IC0xMC4zMzU5MzggQyA5LjI1MzkwNiAtMTAuMzM1OTM4IDkuNzkyOTY5IC05LjQ2ODc1IDkuNzkyOTY5IC04LjI1IEwgOS43OTI5NjkgMCBMIDEzLjI1NzgxMiAwIEwgMTMuMjU3ODEyIC04LjgyMDMxMiBDIDEzLjc0MjE4OCAtOS41MjM0MzggMTQuNzQyMTg4IC0xMC4zMzU5MzggMTUuOTYwOTM4IC0xMC4zMzU5MzggQyAxNy4zNjcxODggLTEwLjMzNTkzOCAxNy45MTAxNTYgLTkuNDY4NzUgMTcuOTEwMTU2IC04LjI1IEwgMTcuOTEwMTU2IDAgWiBNIDIxLjM3MTA5NCAwICIvPjwvZz48L2c+PC9nPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMSI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNzUuOTY4Mzg0LCAyNC40NjIzMjgpIj48Zz48cGF0aCBkPSJNIDMuNDEwMTU2IC0xNC45ODgyODEgQyA0LjU0Njg3NSAtMTQuOTg4MjgxIDUuNDY0ODQ0IC0xNS45MDYyNSA1LjQ2NDg0NCAtMTcuMDQyOTY5IEMgNS40NjQ4NDQgLTE4LjE3OTY4OCA0LjU0Njg3NSAtMTkuMDk3NjU2IDMuNDEwMTU2IC0xOS4wOTc2NTYgQyAyLjMwMDc4MSAtMTkuMDk3NjU2IDEuMzUxNTYyIC0xOC4xNzk2ODggMS4zNTE1NjIgLTE3LjA0Mjk2OSBDIDEuMzUxNTYyIC0xNS45MDYyNSAyLjMwMDc4MSAtMTQuOTg4MjgxIDMuNDEwMTU2IC0xNC45ODgyODEgWiBNIDUuMTQwNjI1IDAgTCA1LjE0MDYyNSAtMTMuMDY2NDA2IEwgMS43MDMxMjUgLTEzLjA2NjQwNiBMIDEuNzAzMTI1IDAgWiBNIDUuMTQwNjI1IDAgIi8+PC9nPjwvZz48L2c+PGcgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg4Mi44MTI0NywgMjQuNDYyMzI4KSI+PGc+PHBhdGggZD0iTSAwLjU2NjQwNiAtMS43MDMxMjUgQyAxLjk0OTIxOSAtMC40MzM1OTQgNC4xNDA2MjUgMC4zMjQyMTkgNi40MTAxNTYgMC4zMjQyMTkgQyAxMC4wMzUxNTYgMC4zMjQyMTkgMTIuMDY2NDA2IC0xLjQ2MDkzOCAxMi4wNjY0MDYgLTMuODY3MTg4IEMgMTIuMDY2NDA2IC03LjExMzI4MSA5LjA2MjUgLTcuNzEwOTM4IDYuODE2NDA2IC04LjE0NDUzMSBDIDUuMzU1NDY5IC04LjQ0MTQwNiA0LjMyODEyNSAtOC43MzgyODEgNC4zMjgxMjUgLTkuNTUwNzgxIEMgNC4zMjgxMjUgLTEwLjMwODU5NCA1LjE0MDYyNSAtMTAuNzY1NjI1IDYuMzgyODEyIC0xMC43NjU2MjUgQyA3Ljk4MDQ2OSAtMTAuNzY1NjI1IDkuNDY4NzUgLTEwLjA4OTg0NCAxMC4yNTM5MDYgLTkuMjUzOTA2IEwgMTEuNjA1NDY5IC0xMS42MDU0NjkgQyAxMC4zMzU5MzggLTEyLjYzMjgxMiA4LjU3NDIxOSAtMTMuMzkwNjI1IDYuMzU5Mzc1IC0xMy4zOTA2MjUgQyAyLjkyMTg3NSAtMTMuMzkwNjI1IDEgLTExLjQ2ODc1IDEgLTkuMjc3MzQ0IEMgMSAtNi4xNjc5NjkgMy44OTQ1MzEgLTUuNjI4OTA2IDYuMTQwNjI1IC01LjE5NTMxMiBDIDcuNjI4OTA2IC00Ljg5ODQzOCA4Ljc2NTYyNSAtNC41NzAzMTIgOC43NjU2MjUgLTMuNjUyMzQ0IEMgOC43NjU2MjUgLTIuODM5ODQ0IDguMDYyNSAtMi4zMjgxMjUgNi41NzQyMTkgLTIuMzI4MTI1IEMgNC45NDkyMTkgLTIuMzI4MTI1IDMuMDAzOTA2IC0zLjIxODc1IDIuMDU0Njg4IC00LjExMzI4MSBaIE0gMC41NjY0MDYgLTEuNzAzMTI1ICIvPjwvZz48L2c+PC9nPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMSI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTUuNzE2MTQzLCAyNC40NjIzMjgpIj48Zz48cGF0aCBkPSJNIDEyLjk4NDM3NSAwIEwgMTIuOTg0Mzc1IC04LjQ0MTQwNiBDIDEyLjk4NDM3NSAtMTIuMTk5MjE5IDEwLjI1MzkwNiAtMTMuMzkwNjI1IDcuMjc3MzQ0IC0xMy4zOTA2MjUgQyA1LjIyMjY1NiAtMTMuMzkwNjI1IDMuMTY0MDYyIC0xMi43NDIxODggMS41NzAzMTIgLTExLjMzNTkzOCBMIDIuODY3MTg4IC05LjAzNTE1NiBDIDMuOTc2NTYyIC0xMC4wNjI1IDUuMjczNDM4IC0xMC41NzgxMjUgNi42ODM1OTQgLTEwLjU3ODEyNSBDIDguNDE0MDYyIC0xMC41NzgxMjUgOS41NTA3ODEgLTkuNzEwOTM4IDkuNTUwNzgxIC04LjM4NjcxOSBMIDkuNTUwNzgxIC02LjU3NDIxOSBDIDguNjgzNTk0IC03LjYyODkwNiA3LjE0MDYyNSAtOC4xNzE4NzUgNS40MTAxNTYgLTguMTcxODc1IEMgMy4zMjgxMjUgLTguMTcxODc1IDAuODY3MTg4IC03LjA2MjUgMC44NjcxODggLTQuMDAzOTA2IEMgMC44NjcxODggLTEuMDgyMDMxIDMuMzI4MTI1IDAuMzI0MjE5IDUuNDEwMTU2IDAuMzI0MjE5IEMgNy4xMTMyODEgMC4zMjQyMTkgOC42NTYyNSAtMC4yOTY4NzUgOS41NTA3ODEgLTEuMzUxNTYyIEwgOS41NTA3ODEgMCBaIE0gOS41NTA3ODEgLTMuMTM2NzE5IEMgOC45ODA0NjkgLTIuMzc4OTA2IDcuODk4NDM4IC0yIDYuNzg5MDYyIC0yIEMgNS40Mzc1IC0yIDQuMzI4MTI1IC0yLjcwNzAzMSA0LjMyODEyNSAtMy45MjE4NzUgQyA0LjMyODEyNSAtNS4xNjc5NjkgNS40Mzc1IC01Ljg5ODQzOCA2Ljc4OTA2MiAtNS44OTg0MzggQyA3Ljg5ODQzOCAtNS44OTg0MzggOC45ODA0NjkgLTUuNTE5NTMxIDkuNTUwNzgxIC00Ljc2MTcxOSBaIE0gOS41NTA3ODEgLTMuMTM2NzE5ICIvPjwvZz48L2c+PC9nPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMSI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTEwLjQwNTIzNCwgMjQuNDYyMzI4KSI+PGc+PHBhdGggZD0iTSA2LjA4NTkzOCAwLjMyNDIxOSBDIDcuNTE5NTMxIDAuMzI0MjE5IDguNDQxNDA2IC0wLjA1NDY4NzUgOC45NTMxMjUgLTAuNTE1NjI1IEwgOC4yMjI2NTYgLTMuMTA5Mzc1IEMgOC4wMzUxNTYgLTIuOTIxODc1IDcuNTQ2ODc1IC0yLjczMDQ2OSA3LjAzNTE1NiAtMi43MzA0NjkgQyA2LjI3NzM0NCAtMi43MzA0NjkgNS44NDM3NSAtMy4zNTU0NjkgNS44NDM3NSAtNC4xNjc5NjkgTCA1Ljg0Mzc1IC0xMC4wNjI1IEwgOC40OTYwOTQgLTEwLjA2MjUgTCA4LjQ5NjA5NCAtMTMuMDY2NDA2IEwgNS44NDM3NSAtMTMuMDY2NDA2IEwgNS44NDM3NSAtMTYuNjM2NzE5IEwgMi4zNzg5MDYgLTE2LjYzNjcxOSBMIDIuMzc4OTA2IC0xMy4wNjY0MDYgTCAwLjIxNDg0NCAtMTMuMDY2NDA2IEwgMC4yMTQ4NDQgLTEwLjA2MjUgTCAyLjM3ODkwNiAtMTAuMDYyNSBMIDIuMzc4OTA2IC0zLjI0NjA5NCBDIDIuMzc4OTA2IC0wLjkxNzk2OSAzLjY3OTY4OCAwLjMyNDIxOSA2LjA4NTkzOCAwLjMyNDIxOSBaIE0gNi4wODU5MzggMC4zMjQyMTkgIi8+PC9nPjwvZz48L2c+PGcgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMTkuNTQ4NzE0LCAyNC40NjIzMjgpIj48Zz48cGF0aCBkPSJNIDMuNDEwMTU2IC0xNC45ODgyODEgQyA0LjU0Njg3NSAtMTQuOTg4MjgxIDUuNDY0ODQ0IC0xNS45MDYyNSA1LjQ2NDg0NCAtMTcuMDQyOTY5IEMgNS40NjQ4NDQgLTE4LjE3OTY4OCA0LjU0Njg3NSAtMTkuMDk3NjU2IDMuNDEwMTU2IC0xOS4wOTc2NTYgQyAyLjMwMDc4MSAtMTkuMDk3NjU2IDEuMzUxNTYyIC0xOC4xNzk2ODggMS4zNTE1NjIgLTE3LjA0Mjk2OSBDIDEuMzUxNTYyIC0xNS45MDYyNSAyLjMwMDc4MSAtMTQuOTg4MjgxIDMuNDEwMTU2IC0xNC45ODgyODEgWiBNIDUuMTQwNjI1IDAgTCA1LjE0MDYyNSAtMTMuMDY2NDA2IEwgMS43MDMxMjUgLTEzLjA2NjQwNiBMIDEuNzAzMTI1IDAgWiBNIDUuMTQwNjI1IDAgIi8+PC9nPjwvZz48L2c+PGcgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjYuMzkyODAxLCAyNC40NjIzMjgpIj48Zz48cGF0aCBkPSJNIDcuNzY1NjI1IDAuMzI0MjE5IEMgMTIuMDkzNzUgMC4zMjQyMTkgMTQuNjkxNDA2IC0yLjgxMjUgMTQuNjkxNDA2IC02LjU0Njg3NSBDIDE0LjY5MTQwNiAtMTAuMjUzOTA2IDEyLjA5Mzc1IC0xMy4zOTA2MjUgNy43NjU2MjUgLTEzLjM5MDYyNSBDIDMuNDYwOTM4IC0xMy4zOTA2MjUgMC44NjcxODggLTEwLjI1MzkwNiAwLjg2NzE4OCAtNi41NDY4NzUgQyAwLjg2NzE4OCAtMi44MTI1IDMuNDYwOTM4IDAuMzI0MjE5IDcuNzY1NjI1IDAuMzI0MjE5IFogTSA3Ljc2NTYyNSAtMi43MzA0NjkgQyA1LjYyODkwNiAtMi43MzA0NjkgNC40Mzc1IC00LjQ5MjE4OCA0LjQzNzUgLTYuNTQ2ODc1IEMgNC40Mzc1IC04LjU3NDIxOSA1LjYyODkwNiAtMTAuMzM1OTM4IDcuNzY1NjI1IC0xMC4zMzU5MzggQyA5LjkwMjM0NCAtMTAuMzM1OTM4IDExLjExNzE4OCAtOC41NzQyMTkgMTEuMTE3MTg4IC02LjU0Njg3NSBDIDExLjExNzE4OCAtNC40OTIxODggOS45MDIzNDQgLTIuNzMwNDY5IDcuNzY1NjI1IC0yLjczMDQ2OSBaIE0gNy43NjU2MjUgLTIuNzMwNDY5ICIvPjwvZz48L2c+PC9nPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMSI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTQxLjkyMDQ4NywgMjQuNDYyMzI4KSI+PGc+PHBhdGggZD0iTSAxMy45NjA5MzggMCBMIDEzLjk2MDkzOCAtOS4yMjY1NjIgQyAxMy45NjA5MzggLTExLjc2OTUzMSAxMi41NzgxMjUgLTEzLjM5MDYyNSA5LjcxMDkzOCAtMTMuMzkwNjI1IEMgNy41NzQyMTkgLTEzLjM5MDYyNSA1Ljk4MDQ2OSAtMTIuMzYzMjgxIDUuMTQwNjI1IC0xMS4zNjMyODEgTCA1LjE0MDYyNSAtMTMuMDY2NDA2IEwgMS43MDMxMjUgLTEzLjA2NjQwNiBMIDEuNzAzMTI1IDAgTCA1LjE0MDYyNSAwIEwgNS4xNDA2MjUgLTguNzkyOTY5IEMgNS43MDcwMzEgLTkuNTc4MTI1IDYuNzYxNzE5IC0xMC4zMzU5MzggOC4xMTcxODggLTEwLjMzNTkzOCBDIDkuNTc4MTI1IC0xMC4zMzU5MzggMTAuNTIzNDM4IC05LjcxMDkzOCAxMC41MjM0MzggLTcuODk4NDM4IEwgMTAuNTIzNDM4IDAgWiBNIDEzLjk2MDkzOCAwICIvPjwvZz48L2c+PC9nPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMSI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTU3LjU4MzQzNSwgMjQuNDYyMzI4KSI+PGcvPjwvZz48L2c+PGcgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxNjQuNTA4Njc3LCAyNC40NjIzMjgpIj48Zz48cGF0aCBkPSJNIDguNzkyOTY5IDAgTCAxNC4wMzkwNjIgLTEzLjA2NjQwNiBMIDEwLjMzNTkzOCAtMTMuMDY2NDA2IEwgNi45MjU3ODEgLTMuOTc2NTYyIEwgMy41MTU2MjUgLTEzLjA2NjQwNiBMIC0wLjE2NDA2MiAtMTMuMDY2NDA2IEwgNS4wODU5MzggMCBaIE0gOC43OTI5NjkgMCAiLz48L2c+PC9nPjwvZz48ZyBmaWxsPSIjZmZmZmZmIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE3OC4zODYyMDcsIDI0LjQ2MjMyOCkiPjxnPjxwYXRoIGQ9Ik0gMy40MTAxNTYgLTE0Ljk4ODI4MSBDIDQuNTQ2ODc1IC0xNC45ODgyODEgNS40NjQ4NDQgLTE1LjkwNjI1IDUuNDY0ODQ0IC0xNy4wNDI5NjkgQyA1LjQ2NDg0NCAtMTguMTc5Njg4IDQuNTQ2ODc1IC0xOS4wOTc2NTYgMy40MTAxNTYgLTE5LjA5NzY1NiBDIDIuMzAwNzgxIC0xOS4wOTc2NTYgMS4zNTE1NjIgLTE4LjE3OTY4OCAxLjM1MTU2MiAtMTcuMDQyOTY5IEMgMS4zNTE1NjIgLTE1LjkwNjI1IDIuMzAwNzgxIC0xNC45ODgyODEgMy40MTAxNTYgLTE0Ljk4ODI4MSBaIE0gNS4xNDA2MjUgMCBMIDUuMTQwNjI1IC0xMy4wNjY0MDYgTCAxLjcwMzEyNSAtMTMuMDY2NDA2IEwgMS43MDMxMjUgMCBaIE0gNS4xNDA2MjUgMCAiLz48L2c+PC9nPjwvZz48ZyBmaWxsPSIjZmZmZmZmIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE4NS4yMzAyOTQsIDI0LjQ2MjMyOCkiPjxnPjxwYXRoIGQ9Ik0gMC41NjY0MDYgLTEuNzAzMTI1IEMgMS45NDkyMTkgLTAuNDMzNTk0IDQuMTQwNjI1IDAuMzI0MjE5IDYuNDEwMTU2IDAuMzI0MjE5IEMgMTAuMDM1MTU2IDAuMzI0MjE5IDEyLjA2NjQwNiAtMS40NjA5MzggMTIuMDY2NDA2IC0zLjg2NzE4OCBDIDEyLjA2NjQwNiAtNy4xMTMyODEgOS4wNjI1IC03LjcxMDkzOCA2LjgxNjQwNiAtOC4xNDQ1MzEgQyA1LjM1NTQ2OSAtOC40NDE0MDYgNC4zMjgxMjUgLTguNzM4MjgxIDQuMzI4MTI1IC05LjU1MDc4MSBDIDQuMzI4MTI1IC0xMC4zMDg1OTQgNS4xNDA2MjUgLTEwLjc2NTYyNSA2LjM4MjgxMiAtMTAuNzY1NjI1IEMgNy45ODA0NjkgLTEwLjc2NTYyNSA5LjQ2ODc1IC0xMC4wODk4NDQgMTAuMjUzOTA2IC05LjI1MzkwNiBMIDExLjYwNTQ2OSAtMTEuNjA1NDY5IEMgMTAuMzM1OTM4IC0xMi42MzI4MTIgOC41NzQyMTkgLTEzLjM5MDYyNSA2LjM1OTM3NSAtMTMuMzkwNjI1IEMgMi45MjE4NzUgLTEzLjM5MDYyNSAxIC0xMS40Njg3NSAxIC05LjI3NzM0NCBDIDEgLTYuMTY3OTY5IDMuODk0NTMxIC01LjYyODkwNiA2LjE0MDYyNSAtNS4xOTUzMTIgQyA3LjYyODkwNiAtNC44OTg0MzggOC43NjU2MjUgLTQuNTcwMzEyIDguNzY1NjI1IC0zLjY1MjM0NCBDIDguNzY1NjI1IC0yLjgzOTg0NCA4LjA2MjUgLTIuMzI4MTI1IDYuNTc0MjE5IC0yLjMyODEyNSBDIDQuOTQ5MjE5IC0yLjMyODEyNSAzLjAwMzkwNiAtMy4yMTg3NSAyLjA1NDY4OCAtNC4xMTMyODEgWiBNIDAuNTY2NDA2IC0xLjcwMzEyNSAiLz48L2c+PC9nPjwvZz48ZyBmaWxsPSIjZmZmZmZmIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE5OC4xMzM5NjcsIDI0LjQ2MjMyOCkiPjxnPjxwYXRoIGQ9Ik0gMTMuOTYwOTM4IDAgTCAxMy45NjA5MzggLTEzLjA2NjQwNiBMIDEwLjUyMzQzOCAtMTMuMDY2NDA2IEwgMTAuNTIzNDM4IC00LjIxODc1IEMgOS45Mjk2ODggLTMuNDYwOTM4IDguODc1IC0yLjczMDQ2OSA3LjU0Njg3NSAtMi43MzA0NjkgQyA2LjA4NTkzOCAtMi43MzA0NjkgNS4xNDA2MjUgLTMuMzI4MTI1IDUuMTQwNjI1IC01LjE0MDYyNSBMIDUuMTQwNjI1IC0xMy4wNjY0MDYgTCAxLjcwMzEyNSAtMTMuMDY2NDA2IEwgMS43MDMxMjUgLTMuNzg5MDYyIEMgMS43MDMxMjUgLTEuMjQ2MDk0IDMuMDU4NTk0IDAuMzI0MjE5IDUuOTI1NzgxIDAuMzI0MjE5IEMgOC4wNjI1IDAuMzI0MjE5IDkuNjMyODEyIC0wLjY0ODQzOCAxMC41MjM0MzggLTEuNjQ4NDM4IEwgMTAuNTIzNDM4IDAgWiBNIDEzLjk2MDkzOCAwICIvPjwvZz48L2c+PC9nPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMSI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjEzLjc5NjkyNywgMjQuNDYyMzI4KSI+PGc+PHBhdGggZD0iTSAwLjg2NzE4OCAtNi41NDY4NzUgQyAwLjg2NzE4OCAtMi4zNTU0NjkgMy44NjcxODggMC4zMjQyMTkgNy44NDM3NSAwLjMyNDIxOSBDIDkuODc1IDAuMzI0MjE5IDExLjkwMjM0NCAtMC4yNjk1MzEgMTMuMjMwNDY5IC0xLjQ4ODI4MSBMIDExLjcxNDg0NCAtMy43MDcwMzEgQyAxMC44NzUgLTIuODk0NTMxIDkuNDQxNDA2IC0yLjQwNjI1IDguMjIyNjU2IC0yLjQwNjI1IEMgNi4wMDM5MDYgLTIuNDA2MjUgNC42Nzk2ODggLTMuNzg5MDYyIDQuNDY0ODQ0IC01LjQzNzUgTCAxNC4xNzU3ODEgLTUuNDM3NSBMIDE0LjE3NTc4MSAtNi4xOTUzMTIgQyAxNC4xNzU3ODEgLTEwLjQ2ODc1IDExLjUyMzQzOCAtMTMuMzkwNjI1IDcuNjI4OTA2IC0xMy4zOTA2MjUgQyAzLjY1MjM0NCAtMTMuMzkwNjI1IDAuODY3MTg4IC0xMC4zMzU5MzggMC44NjcxODggLTYuNTQ2ODc1IFogTSA3LjYyODkwNiAtMTAuNjYwMTU2IEMgOS45MDIzNDQgLTEwLjY2MDE1NiAxMC43NjU2MjUgLTkuMDA3ODEyIDEwLjg0NzY1NiAtNy43NjU2MjUgTCA0LjQxMDE1NiAtNy43NjU2MjUgQyA0LjU3MDMxMiAtOS4wNjI1IDUuNDkyMTg4IC0xMC42NjAxNTYgNy42Mjg5MDYgLTEwLjY2MDE1NiBaIE0gNy42Mjg5MDYgLTEwLjY2MDE1NiAiLz48L2c+PC9nPjwvZz48ZyBmaWxsPSIjZmZmZmZmIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDIyOC43NTY1MTcsIDI0LjQ2MjMyOCkiPjxnPjxwYXRoIGQ9Ik0gNS4xNDA2MjUgMCBMIDUuMTQwNjI1IC0xOC4wNDI5NjkgTCAxLjcwMzEyNSAtMTguMDQyOTY5IEwgMS43MDMxMjUgMCBaIE0gNS4xNDA2MjUgMCAiLz48L2c+PC9nPjwvZz48ZyBmaWxsPSIjZmZmZmZmIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDIzNS42MDA2MDQsIDI0LjQ2MjMyOCkiPjxnPjxwYXRoIGQ9Ik0gNS4xNDA2MjUgMCBMIDUuMTQwNjI1IC0xOC4wNDI5NjkgTCAxLjcwMzEyNSAtMTguMDQyOTY5IEwgMS43MDMxMjUgMCBaIE0gNS4xNDA2MjUgMCAiLz48L2c+PC9nPjwvZz48ZyBmaWxsPSIjZmZmZmZmIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI0Mi40NDQ2OSwgMjQuNDYyMzI4KSI+PGc+PHBhdGggZD0iTSAwLjg2NzE4OCAtNi41NDY4NzUgQyAwLjg2NzE4OCAtMi4zNTU0NjkgMy44NjcxODggMC4zMjQyMTkgNy44NDM3NSAwLjMyNDIxOSBDIDkuODc1IDAuMzI0MjE5IDExLjkwMjM0NCAtMC4yNjk1MzEgMTMuMjMwNDY5IC0xLjQ4ODI4MSBMIDExLjcxNDg0NCAtMy43MDcwMzEgQyAxMC44NzUgLTIuODk0NTMxIDkuNDQxNDA2IC0yLjQwNjI1IDguMjIyNjU2IC0yLjQwNjI1IEMgNi4wMDM5MDYgLTIuNDA2MjUgNC42Nzk2ODggLTMuNzg5MDYyIDQuNDY0ODQ0IC01LjQzNzUgTCAxNC4xNzU3ODEgLTUuNDM3NSBMIDE0LjE3NTc4MSAtNi4xOTUzMTIgQyAxNC4xNzU3ODEgLTEwLjQ2ODc1IDExLjUyMzQzOCAtMTMuMzkwNjI1IDcuNjI4OTA2IC0xMy4zOTA2MjUgQyAzLjY1MjM0NCAtMTMuMzkwNjI1IDAuODY3MTg4IC0xMC4zMzU5MzggMC44NjcxODggLTYuNTQ2ODc1IFogTSA3LjYyODkwNiAtMTAuNjYwMTU2IEMgOS45MDIzNDQgLTEwLjY2MDE1NiAxMC43NjU2MjUgLTkuMDA3ODEyIDEwLjg0NzY1NiAtNy43NjU2MjUgTCA0LjQxMDE1NiAtNy43NjU2MjUgQyA0LjU3MDMxMiAtOS4wNjI1IDUuNDkyMTg4IC0xMC42NjAxNTYgNy42Mjg5MDYgLTEwLjY2MDE1NiBaIE0gNy42Mjg5MDYgLTEwLjY2MDE1NiAiLz48L2c+PC9nPjwvZz48L2c+PC9zdmc+'
+  ia:    'data:image/png;base64,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',
+  optim: 'data:image/png;base64,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'
 };
-
 var STAMP_CFG = {
-  ia:    { wPct: 0.12,   marginRPct: 0.018, marginBPct: 0.028, aspect: 54/169 },
-  optim: { wPct: 0.185,  marginRPct: 0.015, marginBPct: 0.025, aspect: 34/258 }
+  ia:    { wPct: 0.1095, marginRPct: 0.0175, marginBPct: 0.027 },
+  optim: { wPct: 0.170,  marginRPct: 0.0145, marginBPct: 0.024 }
 };
 var _stampCache = {};
 
@@ -1982,29 +1806,13 @@ function readImg(file, cb) {
 function drawPreview(img, canvasId, type) {
   var canvas = document.getElementById(canvasId);
   if (!canvas) return;
-  var dpr = window.devicePixelRatio || 1;
-  var parent = canvas.parentElement;
-  var maxW = parent.clientWidth - 4;
-  if (!maxW) { var c = canvas.closest('.content') || canvas.closest('.card') || document.body; maxW = (c ? c.clientWidth : 800) - 60; }
-  maxW = Math.max(maxW, 200);
-  var ratio = img.height / img.width;
+  var maxW = canvas.parentElement.clientWidth - 4;
   var scale = Math.min(1, maxW / img.width);
-  var cssW = Math.round(img.width * scale);
-  var cssH = Math.round(cssW * ratio);
-  canvas.width = cssW * dpr;
-  canvas.height = cssH * dpr;
-  canvas.style.width = cssW + 'px';
-  canvas.style.height = cssH + 'px';
-  canvas.style.maxWidth = '100%';
-  function render(stamp) {
-    var ctx = canvas.getContext('2d');
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    ctx.scale(dpr, dpr);
-    ctx.drawImage(img, 0, 0, cssW, cssH);
-    if (stamp) drawStamp(ctx, cssW, cssH, type, stamp);
-  }
-  if (type) { getStamp(type, function(stamp) { render(stamp); }); } else { render(null); }
+  canvas.width = Math.round(img.width * scale);
+  canvas.height = Math.round(img.height * scale);
+  var ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  if (type) { getStamp(type, function(stamp){ drawStamp(ctx, canvas.width, canvas.height, type, stamp); }); }
 }
 function buildList(files, listId, pfx) {
   document.getElementById(listId).innerHTML = files.map(function(f,i){
@@ -2626,520 +2434,23 @@ function postfbReset() {
   });
 }
 
-// ════════════════════════════════════════════════════════════
-// SIDEBAR
-// ════════════════════════════════════════════════════════════
-var PAGE_NAMES = {
-  'dashboard':'Dashboard','mention-tool':'Mention IA',
-  'social-tool':'Réseaux Sociaux','compromis-tool':'Compromis de Vente',
-  'candidatures-tool':'Candidatures Locatives','postfb-tool':'Post Facebook',
-  'demandepost-tool':'Demande Post Facebook'
-};
-var ALL_TOOLS = ['social-tool','compromis-tool','candidatures-tool','mention-tool','postfb-tool','demandepost-tool'];
 
-function setSidebarActive(id) {
-  document.querySelectorAll('.sb-item').forEach(function(el){ el.classList.remove('active'); });
-  var map = { 'dashboard':'sb-nav-dashboard', 'mention-tool':'sb-nav-mention', 'demandepost-tool':'sb-nav-demandepost' };
-  var el = document.getElementById(map[id] || 'sb-nav-dashboard');
-  if (el) el.classList.add('active');
-}
+// ════ SIDEBAR ════
+var PAGE_NAMES={'dashboard':'Dashboard','mention-tool':'Mention IA','social-tool':'Réseaux Sociaux','compromis-tool':'Compromis','candidatures-tool':'Candidatures','postfb-tool':'Post Facebook','demandepost-tool':'Demande Post FB'};
+function setSidebarActive(id){document.querySelectorAll('.sb-item').forEach(function(el){el.classList.remove('active');});var map={'dashboard':'sb-nav-dashboard','mention-tool':'sb-nav-mention','demandepost-tool':'sb-nav-demandepost'};var el=document.getElementById(map[id]||'sb-nav-dashboard');if(el)el.classList.add('active');}
+function showDashboard(){['social-tool','compromis-tool','candidatures-tool','mention-tool','postfb-tool','demandepost-tool'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});document.getElementById('dashboard').style.display='block';var pn=document.getElementById('tb-page-name');if(pn)pn.textContent='Dashboard';setSidebarActive('dashboard');window.scrollTo(0,0);}
+function showTool(id){['social-tool','compromis-tool','candidatures-tool','mention-tool','postfb-tool','demandepost-tool'].forEach(function(t){var el=document.getElementById(t);if(el)el.style.display='none';});document.getElementById('dashboard').style.display='none';var target=document.getElementById(id);if(target)target.style.display='block';var pn=document.getElementById('tb-page-name');if(pn)pn.textContent=PAGE_NAMES[id]||id;setSidebarActive(id);window.scrollTo(0,0);if(id==='candidatures-tool'){if(typeof switchTab==='function')switchTab('biens');if(typeof loadBiens==='function')loadBiens();}}
 
-function showDashboard() {
-  ALL_TOOLS.forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
-  document.getElementById('dashboard').style.display = 'block';
-  var pn = document.getElementById('tb-page-name'); if(pn) pn.textContent = 'Dashboard';
-  setSidebarActive('dashboard');
-  window.scrollTo(0,0);
-}
+// ════ DEMANDE POST ════
+function selectPack(radio){document.querySelectorAll('.pack-card').forEach(function(c){c.classList.remove('selected');});radio.closest('.pack-card').classList.add('selected');}
+function resetDemandePost(){document.getElementById('dp-delegue').value='';document.getElementById('dp-url').value='';document.getElementById('dp-remarques').value='';var r=document.querySelector('[name="dp-pack"]');if(r)r.checked=true;document.querySelectorAll('.pack-card').forEach(function(c){c.classList.remove('selected');});var dc=document.getElementById('pack-pauvre-card');if(dc)dc.classList.add('selected');document.getElementById('dp-error').style.display='none';document.getElementById('dp-loading').style.display='none';document.getElementById('dp-submit-btn').disabled=false;}
+var DP_MEDIA={pauvre:{url:'https://media.giphy.com/media/xT5LMzIK1AdZJ4cYW4/giphy.gif',fallback:'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'}};
+function showDpModal(delegue,pack,url){var media=DP_MEDIA['pauvre'];var img=document.getElementById('dp-modal-img');img.src=media.url;img.onerror=function(){this.src=media.fallback;};document.getElementById('dp-modal-badge').textContent=pack;document.getElementById('dp-modal-badge').className='dp-modal-pack-badge pauvre';document.getElementById('dp-modal-title').textContent='Tache creee dans Monday !';document.getElementById('dp-modal-sub').innerHTML='<strong>'+delegue+'</strong>, ta demande a ete creee dans Monday avec le texte du post.';var overlay=document.getElementById('dp-modal-overlay');overlay.style.display='flex';setTimeout(function(){overlay.classList.add('visible');},10);}
+function closeDpModal(){var overlay=document.getElementById('dp-modal-overlay');overlay.classList.remove('visible');setTimeout(function(){overlay.style.display='none';resetDemandePost();},300);}
+async function submitDemandePost(){var delegue=document.getElementById('dp-delegue').value.trim();var url=document.getElementById('dp-url').value.trim();var packEl=document.querySelector('[name="dp-pack"]:checked');var remarques=document.getElementById('dp-remarques').value.trim();var errEl=document.getElementById('dp-error');var loadEl=document.getElementById('dp-loading');var submitBtn=document.getElementById('dp-submit-btn');errEl.style.display='none';if(!delegue||!url||!packEl){errEl.textContent='Merci de remplir ton nom et le lien.';errEl.style.display='block';return;}submitBtn.disabled=true;loadEl.style.display='flex';var setMsg=function(m){var s=loadEl.querySelector('span');if(s)s.textContent=m;};try{setMsg('Lecture de l\'annonce...');var postTexte='',ville='';try{var sr=await fetch('/api/scrape?url='+encodeURIComponent(url));if(sr.ok){var sd=await sr.json();postTexte=sd.post||'';ville=sd.ville||'';}}catch(se){console.warn('scrape:',se.message);}if(!postTexte){setMsg('Generation du post...');try{var pr=await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(url));var pd=await pr.json();var ph=pd.contents||'';if(ph.length>500){var isLoc=/louer|location/i.test(ph);var up=url.split('/').filter(Boolean);ville=up[up.length-1]||'';var pxAP=ph.match(/partir\s+de\s+([\d\s.,]+)\s*€/i);var pxL=ph.match(/([\d]{3,4})\s*€\s*\/\s*mois/i);var pxS=ph.match(/([\d]{2,3}[\s.][\d]{3})\s*€/);var pT=null,pV='';if(pxAP){pV=pxAP[1].trim().replace(/\s/g,'');pT='ap';}else if(pxL){pV=pxL[1].trim();pT='loyer';}else if(pxS){pV=pxS[1].trim().replace(/\s/g,'');pT='prix';}var pL=pT==='ap'?'a partir de '+pV+' EUR':pT==='loyer'?pV+' EUR/mois':pV?pV+' EUR':'non detecte';var tn=ph.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().substring(0,8000);var sm='Expert immobilier TREVI Rasquain. Type:'+(isLoc?'A LOUER':'A VENDRE')+'. Prix:'+pL+'. Post Facebook caracteres Unicode gras, emojis, composition niveaux, infos techniques, prix, contact info@trevirasquain.be 085 25 39 03, lien '+url+'.';var cr=await fetch('/api/claude-proxy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:2000,system:sm,messages:[{role:'user',content:tn}]})});var cd=await cr.json();if(cd&&cd.content&&cd.content[0])postTexte=cd.content[0].text.trim();}}catch(ce){console.warn('claude:',ce.message);}}setMsg('Creation dans Monday...');var mr=await fetch('/api/monday-post',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({delegue:delegue,url:url,pack:packEl.value,remarques:remarques,postTexte:postTexte,ville:ville})});var md=await mr.json();if(!mr.ok||!md.success)throw new Error(md.error||'Erreur Monday');loadEl.style.display='none';submitBtn.disabled=false;showDpModal(delegue,packEl.value,url);}catch(e){loadEl.style.display='none';submitBtn.disabled=false;errEl.textContent='Erreur: '+(e.text||e.message||JSON.stringify(e));errEl.style.display='block';}}
 
-function showTool(id) {
-  ALL_TOOLS.forEach(function(t){ var el=document.getElementById(t); if(el) el.style.display='none'; });
-  document.getElementById('dashboard').style.display = 'none';
-  var target = document.getElementById(id);
-  if (target) target.style.display = 'block';
-  var pn = document.getElementById('tb-page-name'); if(pn) pn.textContent = PAGE_NAMES[id] || id;
-  setSidebarActive(id);
-  window.scrollTo(0,0);
-  if (id === 'candidatures-tool') { if(typeof switchTab==='function') switchTab('biens'); if(typeof loadBiens==='function') loadBiens(); }
-}
 
-// ════════════════════════════════════════════════════════════
-// DEMANDE POST FACEBOOK
-// ════════════════════════════════════════════════════════════
-function selectPack(radio) {
-  document.querySelectorAll('.pack-card').forEach(function(c){ c.classList.remove('selected'); });
-  radio.closest('.pack-card').classList.add('selected');
-}
-
-function resetDemandePost() {
-  document.getElementById('dp-delegue').value = '';
-  document.getElementById('dp-url').value = '';
-  document.getElementById('dp-remarques').value = '';
-  var r = document.querySelector('[name="dp-pack"]');
-  if (r) r.checked = true;
-  document.querySelectorAll('.pack-card').forEach(function(c){ c.classList.remove('selected'); });
-  var dc = document.getElementById('pack-pauvre-card'); if(dc) dc.classList.add('selected');
-  document.getElementById('dp-error').style.display = 'none';
-  document.getElementById('dp-loading').style.display = 'none';
-  document.getElementById('dp-submit-btn').disabled = false;
-}
-
-var DP_MEDIA = {
-  pauvre: { url:'https://media.giphy.com/media/xT5LMzIK1AdZJ4cYW4/giphy.gif', fallback:'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif' },
-  coeur:  { url:'https://media.giphy.com/media/xT5LMzIK1AdZJ4cYW4/giphy.gif', fallback:'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif' }
-};
-
-function showDpModal(delegue, pack, url) {
-  var key = 'pauvre';
-  var media = DP_MEDIA[key];
-  var img = document.getElementById('dp-modal-img');
-  img.src = media.url; img.onerror = function(){ this.src = media.fallback; };
-  document.getElementById('dp-modal-badge').textContent = pack;
-  document.getElementById('dp-modal-badge').className = 'dp-modal-pack-badge pauvre';
-  document.getElementById('dp-modal-title').textContent = '🪙 Tâche créée dans Monday !';
-  document.getElementById('dp-modal-sub').innerHTML = '<strong>' + delegue + '</strong>, ta demande a été créée dans Monday avec le texte du post 📋<br>Mathias va prendre ça en charge !';
-  var overlay = document.getElementById('dp-modal-overlay');
-  overlay.style.display = 'flex';
-  setTimeout(function(){ overlay.classList.add('visible'); }, 10);
-}
-
-function closeDpModal() {
-  var overlay = document.getElementById('dp-modal-overlay');
-  overlay.classList.remove('visible');
-  setTimeout(function(){ overlay.style.display='none'; resetDemandePost(); }, 300);
-}
-
-async function submitDemandePost() {
-  var delegue   = document.getElementById('dp-delegue').value.trim();
-  var url       = document.getElementById('dp-url').value.trim();
-  var packEl    = document.querySelector('[name="dp-pack"]:checked');
-  var remarques = document.getElementById('dp-remarques').value.trim();
-  var errEl     = document.getElementById('dp-error');
-  var loadEl    = document.getElementById('dp-loading');
-  var submitBtn = document.getElementById('dp-submit-btn');
-
-  errEl.style.display = 'none';
-  if (!delegue || !url || !packEl) {
-    errEl.textContent = 'Merci de remplir ton nom et le lien.';
-    errEl.style.display = 'block';
-    return;
-  }
-
-  submitBtn.disabled = true;
-  loadEl.style.display = 'flex';
-  var setMsg = function(m){ var s=loadEl.querySelector('span'); if(s) s.textContent=m; };
-
-  try {
-    setMsg('Lecture de l\'annonce...');
-    var postTexte = '';
-    var ville = '';
-
-    // Scrape via /api/scrape (proxy Vercel)
-    try {
-      var scrapeRes = await fetch('/api/scrape?url=' + encodeURIComponent(url));
-      if (scrapeRes.ok) {
-        var scrapeData = await scrapeRes.json();
-        postTexte = scrapeData.post || '';
-        ville = scrapeData.ville || '';
-      }
-    } catch(se) { console.warn('scrape:', se.message); }
-
-    // Fallback: allorigins + claude-proxy
-    if (!postTexte) {
-      setMsg('Génération du post IA...');
-      try {
-        var pr = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url));
-        var pd = await pr.json();
-        var ph = pd.contents || '';
-        if (ph.length > 500) {
-          var isLoc = /louer|location/i.test(ph);
-          var up = url.split('/').filter(Boolean);
-          ville = up[up.length-1]?.replace(/-/g,' ') || '';
-          var pxAP = ph.match(/partir\s+de\s+([\d\s.,]+)\s*€/i);
-          var pxL  = ph.match(/([\d]{3,4})\s*€\s*\/\s*mois/i);
-          var pxS  = ph.match(/([\d]{2,3}[\s.][\d]{3})\s*€/);
-          var pT=null,pV='';
-          if(pxAP){pV=pxAP[1].trim().replace(/\s/g,'');pT='a_partir_de';}
-          else if(pxL){pV=pxL[1].trim();pT='loyer';}
-          else if(pxS){pV=pxS[1].trim().replace(/\s/g,'');pT='prix';}
-          var pL = pT==='a_partir_de'?'a partir de '+pV+' EUR':pT==='loyer'?pV+' EUR/mois':pV?pV+' EUR':'non detecte';
-          var tn = ph.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().substring(0,8000);
-          var sm = 'Tu es expert immobilier TREVI Rasquain Belgique. Type: '+(isLoc?'A LOUER':'A VENDRE')+'. Prix: '+pL+'. Genere post Facebook avec caracteres Unicode gras, emojis, composition par niveaux, infos techniques, prix, contact info@trevirasquain.be 085 25 39 03, lien '+url+'. UNIQUEMENT les infos presentes.';
-          var cr = await fetch('/api/claude-proxy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:2000,system:sm,messages:[{role:'user',content:tn}]})});
-          var cd = await cr.json();
-          if(cd&&cd.content&&cd.content[0]) postTexte = cd.content[0].text.trim();
-        }
-      } catch(ce){ console.warn('claude:', ce.message); }
-    }
-
-    setMsg('Création dans Monday...');
-    var mr = await fetch('/api/monday-post',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({delegue,url,pack:packEl.value,remarques,postTexte,ville})});
-    var md = await mr.json();
-    if (!mr.ok || !md.success) throw new Error(md.error || 'Erreur Monday');
-
-    loadEl.style.display = 'none';
-    submitBtn.disabled = false;
-    showDpModal(delegue, packEl.value, url);
-
-  } catch(e) {
-    loadEl.style.display = 'none';
-    submitBtn.disabled = false;
-    errEl.textContent = 'Erreur : ' + (e.text || e.message || JSON.stringify(e));
-    errEl.style.display = 'block';
-  }
-}
 
 </script>
-
-  <!-- ── CANDIDATURES TOOL ────────────────────────────────── -->
-  <div id="candidatures-tool" style="display:none">
-    <div class="content">
-      <div class="content-header">
-        <button class="back-btn" onclick="showDashboard()">← Retour</button>
-        <div>
-          <h2 class="content-title">🗂️ Candidatures Locatives</h2>
-          <p class="content-sub">Gérez vos biens et évaluez les dossiers avec l'IA</p>
-        </div>
-      </div>
-
-      <!-- Onglets -->
-      <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:2px solid #e8e0d4">
-        <button id="tab-biens" onclick="switchTab('biens')" style="padding:12px 24px;background:none;border:none;border-bottom:2px solid #c9a84c;margin-bottom:-2px;font-weight:700;font-size:14px;color:#1a1a2e;cursor:pointer">🏠 Biens</button>
-        <button id="tab-cands" onclick="switchTab('cands')" style="padding:12px 24px;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-weight:600;font-size:14px;color:#888;cursor:pointer">👥 Candidatures</button>
-      </div>
-
-      <!-- ── ONGLET BIENS ── -->
-      <div id="tab-content-biens">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-          <div style="font-size:12px;color:#aaa" id="biens-count"></div>
-          <button onclick="openBienModal()" style="padding:9px 18px;background:#c9a84c;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer">+ Ajouter un bien</button>
-        </div>
-        <div id="biens-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
-          <div style="text-align:center;padding:40px;color:#aaa;grid-column:1/-1">⏳ Chargement...</div>
-        </div>
-      </div>
-
-      <!-- ── ONGLET CANDIDATURES ── -->
-      <div id="tab-content-cands" style="display:none">
-        <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
-          <select id="filter-bien" onchange="filterCandidatures()" style="padding:8px 12px;border:1.5px solid #e8e0d4;border-radius:8px;font-size:13px;outline:none;background:#fff">
-            <option value="">Tous les biens</option>
-          </select>
-          <div style="font-size:12px;color:#aaa;margin-left:4px" id="cands-count"></div>
-          <div style="margin-left:auto;display:flex;gap:8px">
-            <button onclick="loadAllCandidatures()" style="padding:8px 14px;background:#f7f5f2;border:1px solid #e8e0d4;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600">🔄 Actualiser</button>
-            <button onclick="evaluerTous()" id="btn-eval-tous" style="padding:8px 14px;background:#c9a84c;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:700">✨ Tout évaluer</button>
-          </div>
-        </div>
-        <div id="cand-list" style="background:#fff;border-radius:16px;border:1px solid #e8e0d4;overflow:hidden;min-height:200px">
-          <div style="text-align:center;padding:60px;color:#aaa">Sélectionnez un bien ou chargez toutes les candidatures</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── MODALE AJOUT/EDIT BIEN ──────────────────────────────── -->
-  <div id="bien-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeBienModal()">
-    <div class="modal" style="max-width:500px">
-      <div class="modal-title" id="bien-modal-title">🏠 Ajouter un bien</div>
-      <div class="modal-subtitle">Les candidats pourront sélectionner ce bien dans le formulaire public</div>
-      <input type="hidden" id="bien-modal-id"/>
-      <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
-        <div>
-          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Adresse complète *</label>
-          <input id="bien-adresse" type="text" placeholder="Rue de la Paix 12, 4000 Liège" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none"/>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div>
-            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Loyer mensuel (€) *</label>
-            <input id="bien-loyer" type="number" placeholder="900" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none"/>
-          </div>
-          <div>
-            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Type de bien</label>
-            <select id="bien-type" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none;background:#fff">
-              <option>Appartement</option><option>Maison</option><option>Studio</option><option>Duplex</option><option>Penthouse</option>
-            </select>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div>
-            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Chambres</label>
-            <input id="bien-chambres" type="number" placeholder="2" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none"/>
-          </div>
-          <div>
-            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Surface (m²)</label>
-            <input id="bien-surface" type="number" placeholder="75" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none"/>
-          </div>
-        </div>
-        <div>
-          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Critères supplémentaires (optionnel)</label>
-          <textarea id="bien-criteres" placeholder="ex: Pas d'animaux, préférence non-fumeur, garant requis..." style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:13px;outline:none;resize:none;height:70px;font-family:inherit"></textarea>
-        </div>
-        <div>
-          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#888;display:block;margin-bottom:5px">Statut</label>
-          <select id="bien-statut" style="width:100%;padding:10px 13px;border:1.5px solid #e8e0d4;border-radius:9px;font-size:14px;outline:none;background:#fff">
-            <option value="actif">Actif — visible dans le formulaire public</option>
-            <option value="archive">Archivé — masqué du formulaire public</option>
-          </select>
-        </div>
-        <div id="bien-modal-error" style="color:#e74c3c;font-size:13px;display:none"></div>
-      </div>
-      <div class="modal-actions">
-        <button class="btn-modal-cancel" onclick="closeBienModal()">Annuler</button>
-        <button class="btn-modal-ok" onclick="saveBien()">💾 Enregistrer</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── MODALE DÉTAIL CANDIDATURE ──────────────────────────── -->
-  <div id="cand-detail-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeCandDetail()">
-    <div class="modal" style="max-width:720px">
-      <div id="cand-detail-body"></div>
-      <div class="modal-actions">
-        <button class="btn-modal-cancel" onclick="closeCandDetail()">← Fermer</button>
-        <button class="btn-modal-ok" id="btn-eval-single" onclick="evaluerCandidature(currentCandId)">✨ Évaluer avec l'IA</button>
-      </div>
-    </div>
-  </div>
-
-<!-- ── MODALE VÉRIFICATION ──────────────────────────────────────────────── -->
-<div id="verify-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this) closeVerifyModal()">
-  <div class="modal">
-    <div class="modal-title" id="verify-modal-title">🔍 Analyse du dossier</div>
-    <div class="modal-subtitle" id="verify-modal-subtitle">Vérification des documents et de la cohérence</div>
-    <div id="verify-modal-body"></div>
-    <div class="modal-actions">
-      <button class="btn-modal-cancel" onclick="closeVerifyModal()">← Revoir les documents</button>
-      <button class="btn-modal-ok" id="verify-modal-confirm" onclick="confirmVerifyAndFill()">Continuer quand même →</button>
-    </div>
-  </div>
-</div>
-
-
-  <!-- ── MENTION IA ─────────────────────────────────────────── -->
-  <div id="mention-tool" style="display:none">
-    <div class="tool-header">
-      <button class="back-btn" onclick="showDashboard()">←</button>
-      <h2>🏷️ Mention IA</h2>
-    </div>
-    <div class="content">
-      <div class="mention-tabs">
-        <button class="mention-tab active" onclick="switchMentionTab('ia',this)">🤖 Projet IA</button>
-        <button class="mention-tab" onclick="switchMentionTab('optim',this)">✨ Optimisation visuelle</button>
-        <button class="mention-tab" onclick="switchMentionTab('compress',this)">📦 Compression seule</button>
-      </div>
-
-      <div id="mention-panel-ia" class="mention-panel active">
-        <div class="card" style="margin-bottom:12px;padding:13px 16px;background:#f7f3ed;border:none">
-          <p style="font-size:13px;color:#666;line-height:1.6"><strong>Quand l'utiliser ?</strong> Pour toute image générée ou retravaillée par une IA (home staging virtuel, rendu 3D, meuble virtuel…).</p>
-        </div>
-        <div class="card" id="ia-drop-card">
-          <div class="drop-zone" id="ia-dropzone" onclick="document.getElementById('ia-file-input').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="mentionDrop(event,'ia')">
-            <div style="font-size:26px;margin-bottom:8px">🖼️</div>
-            <p style="font-weight:600;font-size:14px;color:#1a1a2e;margin-bottom:3px">Glissez vos images ici</p>
-            <small style="font-size:12px;color:#aaa">JPG, PNG, WEBP — plusieurs fichiers</small>
-          </div>
-          <input type="file" id="ia-file-input" accept="image/*" multiple style="display:none" onchange="mentionLoad(this.files,'ia')">
-        </div>
-        <div class="card" id="ia-opts" style="display:none">
-          <span class="sec-lbl">Aperçu</span>
-          <div class="img-preview-wrap"><canvas id="ia-canvas"></canvas></div>
-          <span class="sec-lbl">Fichiers</span>
-          <div id="ia-file-list" class="file-list" style="margin-bottom:16px"></div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn-primary" style="width:auto;padding:11px 20px" onclick="mentionProcess('ia')">⬇️ Télécharger tout</button>
-            <button class="btn-ghost" onclick="mentionReset('ia')">🔄 Recommencer</button>
-          </div>
-          <div class="m-progress" id="ia-progress"><div class="m-progress-bg"><div class="m-progress-bar" id="ia-pbar"></div></div><p class="m-progress-txt" id="ia-ptxt"></p></div>
-        </div>
-      </div>
-
-      <div id="mention-panel-optim" class="mention-panel">
-        <div class="card" style="margin-bottom:12px;padding:13px 16px;background:#f7f3ed;border:none">
-          <p style="font-size:13px;color:#666;line-height:1.6"><strong>Quand l'utiliser ?</strong> Pour les photos retouchées manuellement (luminosité, suppression d'objets, amélioration de couleurs…).</p>
-        </div>
-        <div class="card" id="optim-drop-card">
-          <div class="drop-zone" id="optim-dropzone" onclick="document.getElementById('optim-file-input').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="mentionDrop(event,'optim')">
-            <div style="font-size:26px;margin-bottom:8px">🖼️</div>
-            <p style="font-weight:600;font-size:14px;color:#1a1a2e;margin-bottom:3px">Glissez vos images ici</p>
-            <small style="font-size:12px;color:#aaa">JPG, PNG, WEBP — plusieurs fichiers</small>
-          </div>
-          <input type="file" id="optim-file-input" accept="image/*" multiple style="display:none" onchange="mentionLoad(this.files,'optim')">
-        </div>
-        <div class="card" id="optim-opts" style="display:none">
-          <span class="sec-lbl">Aperçu</span>
-          <div class="img-preview-wrap"><canvas id="optim-canvas"></canvas></div>
-          <span class="sec-lbl">Fichiers</span>
-          <div id="optim-file-list" class="file-list" style="margin-bottom:16px"></div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn-primary" style="width:auto;padding:11px 20px" onclick="mentionProcess('optim')">⬇️ Télécharger tout</button>
-            <button class="btn-ghost" onclick="mentionReset('optim')">🔄 Recommencer</button>
-          </div>
-          <div class="m-progress" id="optim-progress"><div class="m-progress-bg"><div class="m-progress-bar" id="optim-pbar"></div></div><p class="m-progress-txt" id="optim-ptxt"></p></div>
-        </div>
-      </div>
-
-      <div id="mention-panel-compress" class="mention-panel">
-        <div class="card" style="margin-bottom:12px;padding:13px 16px;background:#f7f3ed;border:none">
-          <p style="font-size:13px;color:#666;line-height:1.6"><strong>Quand l'utiliser ?</strong> Pour réduire vos photos 4K avant upload sur Whise. Compression automatique — fichier réduit à moins de 10 Mo.</p>
-        </div>
-        <div class="card" id="comp-drop-card">
-          <div class="drop-zone" id="comp-dropzone" onclick="document.getElementById('comp-file-input').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="compDrop(event)">
-            <div style="font-size:26px;margin-bottom:8px">📦</div>
-            <p style="font-weight:600;font-size:14px;color:#1a1a2e;margin-bottom:3px">Glissez vos images ici</p>
-            <small style="font-size:12px;color:#aaa">Compression automatique ≤ 10 Mo</small>
-          </div>
-          <input type="file" id="comp-file-input" accept="image/*" multiple style="display:none" onchange="compLoad(this.files)">
-        </div>
-        <div class="card" id="comp-opts" style="display:none">
-          <span class="sec-lbl">Aperçu</span>
-          <div class="img-preview-wrap"><canvas id="comp-canvas"></canvas></div>
-          <span class="sec-lbl">Fichiers</span>
-          <div id="comp-file-list" class="file-list" style="margin-bottom:16px"></div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn-primary" style="width:auto;padding:11px 20px" onclick="compProcess()">⬇️ Compresser tout</button>
-            <button class="btn-ghost" onclick="compReset()">🔄 Recommencer</button>
-          </div>
-          <div class="m-progress" id="comp-progress"><div class="m-progress-bg"><div class="m-progress-bar" id="comp-pbar"></div></div><p class="m-progress-txt" id="comp-ptxt"></p></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── POST FACEBOOK ──────────────────────────────────────── -->
-  <div id="postfb-tool" style="display:none">
-    <div class="tool-header">
-      <button class="back-btn" onclick="showDashboard()">←</button>
-      <h2>📸 Post Facebook</h2>
-    </div>
-    <div class="content">
-
-      <!-- Étape 1 : lien -->
-      <div class="card" id="postfb-step1">
-        <h3 style="margin-bottom:14px">1. Lien de l'annonce Trevi</h3>
-        <div class="postfb-scrape-row">
-          <input type="text" id="postfb-url" placeholder="https://www.trevi.be/fr/bien/..." onkeydown="if(event.key==='Enter') postfbScrape()">
-          <button class="btn-primary" id="postfb-scrape-btn" onclick="postfbScrape()">🔍 Analyser</button>
-        </div>
-        <div id="postfb-scrape-loading" style="display:none;margin-top:10px" class="loading">
-          <div class="spinner"></div> Analyse de l'annonce en cours…
-        </div>
-        <div id="postfb-scrape-error" class="error-box"></div>
-      </div>
-
-      <!-- Étape 2 : formulaire -->
-      <div class="card" id="postfb-step2" style="display:none">
-        <h3 style="margin-bottom:16px">2. Informations du bien <span style="font-size:11px;font-weight:600;letter-spacing:1px;color:#c9a84c;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.2);padding:3px 9px;border-radius:20px;margin-left:8px">Rempli automatiquement</span></h3>
-        <div class="postfb-form">
-          <div class="postfb-row">
-            <div class="postfb-field">
-              <label>Type de bien</label>
-              <select id="postfb-type" onchange="postfbUpdatePreview()">
-                <option value="MAISON">Maison</option>
-                <option value="APPARTEMENT">Appartement</option>
-                <option value="TERRAIN">Terrain</option>
-                <option value="ENTREPÔT">Entrepôt</option>
-                <option value="VIAGER">Viager</option>
-                <option value="BUREAU">Bureau</option>
-              </select>
-            </div>
-            <div class="postfb-field">
-              <label>Transaction</label>
-              <select id="postfb-transaction" onchange="postfbUpdatePreview()">
-                <option value="À VENDRE">À Vendre</option>
-                <option value="À LOUER">À Louer</option>
-              </select>
-            </div>
-          </div>
-          <div class="postfb-row">
-            <div class="postfb-field">
-              <label>Localité</label>
-              <input type="text" id="postfb-localite" placeholder="Verlaine" oninput="postfbUpdatePreview()">
-            </div>
-            <div class="postfb-field">
-              <label>Prix</label>
-              <input type="text" id="postfb-prix" placeholder="349 000" oninput="postfbUpdatePreview()">
-            </div>
-          </div>
-          <div class="postfb-row">
-            <div class="postfb-field">
-              <label>Formule prix</label>
-              <select id="postfb-prix-formule" onchange="postfbUpdatePreview()">
-                <option value="À PARTIR DE">À partir de</option>
-                <option value="AU PRIX DE">Au prix de</option>
-              </select>
-            </div>
-            <div class="postfb-field">
-              <label>Surface (m²)</label>
-              <input type="text" id="postfb-surface" placeholder="250" oninput="postfbUpdatePreview()">
-            </div>
-          </div>
-          <div class="postfb-row">
-            <div class="postfb-field">
-              <label>Chambres</label>
-              <input type="text" id="postfb-chambres" placeholder="3" oninput="postfbUpdatePreview()">
-            </div>
-            <div class="postfb-field">
-              <label>Salle(s) de bain</label>
-              <input type="text" id="postfb-sdb" placeholder="2" oninput="postfbUpdatePreview()">
-            </div>
-          </div>
-          <div class="postfb-row">
-            <div class="postfb-field">
-              <label>Garage</label>
-              <select id="postfb-garage" onchange="postfbUpdatePreview()">
-                <option value="">Sans garage</option>
-                <option value="1">1 garage</option>
-                <option value="2">2 garages</option>
-              </select>
-            </div>
-            <div class="postfb-field" style="align-self:end">
-              <label>&nbsp;</label>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Étape 3 : photos -->
-      <div class="card" id="postfb-step3" style="display:none">
-        <h3 style="margin-bottom:16px">3. Photo principale</h3>
-        <div class="postfb-photo-drop" id="postfb-photo-drop"
-             onclick="document.getElementById('postfb-photo-input').click()"
-             ondragover="event.preventDefault();this.classList.add('dragover')"
-             ondragleave="this.classList.remove('dragover')"
-             ondrop="postfbPhotoDrop(event)">
-          <div style="font-size:24px;margin-bottom:6px">📷</div>
-          <p>Cliquez ou glissez votre photo</p>
-          <small>JPG, PNG recommandé — format carré idéal</small>
-          <img id="postfb-photo-thumb" class="postfb-photo-thumb">
-        </div>
-        <input type="file" id="postfb-photo-input" accept="image/*" style="display:none" onchange="postfbPhotoLoad(this.files[0])">
-      </div>
-
-      <!-- Étape 4 : génération Canva -->
-      <div class="card" id="postfb-step4" style="display:none">
-        <h3 style="margin-bottom:6px">4. Générer le visuel</h3>
-        <p style="font-size:13px;color:#888;margin-bottom:16px">Claude va remplir ton template Canva automatiquement et exporter les images.</p>
-        <div class="postfb-actions">
-          <button class="btn-primary" id="postfb-generate-btn" style="width:auto;padding:12px 22px" onclick="postfbGenerate()">🎨 Générer le visuel Canva</button>
-          <button class="btn-ghost" onclick="postfbCopyText()">📋 Copier le texte Facebook</button>
-          <button class="btn-ghost" onclick="postfbReset()">🔄 Nouveau post</button>
-        </div>
-        <div class="loading" id="postfb-generate-loading" style="display:none;margin-top:12px">
-          <div class="spinner"></div> Génération en cours (~30 sec)…
-        </div>
-        <div id="postfb-gen-error" class="error-box"></div>
-        <div id="postfb-fb-text" class="postfb-text-result"></div>
-      </div>
-
-      <!-- Résultat -->
-      <div class="card" id="postfb-result-card" style="display:none">
-        <h3 style="margin-bottom:14px">✅ Visuel généré !</h3>
-        <div id="postfb-result-images"></div>
-      </div>
-
-    </div>
-  </div>
 </body>
-
 </html>
