@@ -63,7 +63,7 @@
 
     /* ── TOOL SHELLS ───────────────────────────────────────── */
     #social-tool, #compromis-tool, #mention-tool, #postfb-tool, #demandepost-tool, #candidatures-tool { display: none; }
-    .tool-header { background: #1a1a2e; padding: 18px 40px; display: flex; align-items: center; gap: 14px; position:sticky; top:64px; z-index:90; }
+    .tool-header { background: #1a1a2e; padding: 14px 28px; display: flex; align-items: center; gap: 14px; position:fixed; top:64px; left:68px; right:0; z-index:90; height:50px; }
     .back-btn { background: none; border: none; color: #c9a84c; cursor: pointer; font-size: 20px; padding: 0; line-height: 1; }
     .tool-icon-sm { width: 34px; height: 34px; background: #c9a84c; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
     .tool-header-text { color: #fff; font-weight: 700; font-size: 16px; }
@@ -299,6 +299,7 @@
     /* ── TOPBAR ── */
     #topbar { position:fixed; top:0; left:68px; right:0; height:64px; background:#fff; border-bottom:1px solid #e8eaed; display:flex; align-items:center; padding:0 28px; gap:14px; z-index:100; transition:left 0.25s cubic-bezier(.4,0,.2,1); }
     body.sb-open #topbar { left:240px; }
+    body.sb-open .tool-topbar, body.sb-open .tool-header { left:240px; }
     .tb-toggle { width:36px; height:36px; border:none; background:none; cursor:pointer; display:flex; align-items:center; justify-content:center; border-radius:8px; color:#888; transition:background 0.15s; flex-shrink:0; }
     .tb-toggle:hover { background:#f0f2f5; }
     .tb-toggle svg { width:18px; height:18px; }
@@ -327,13 +328,23 @@
     .tc-icon { width:42px; height:42px; border-radius:11px; display:flex; align-items:center; justify-content:center; margin-bottom:14px; }
     .tc-icon svg { width:22px; height:22px; }
     /* ── TOOL TOPBAR ── */
-    .tool-topbar { height:56px; background:#fff; border-bottom:1px solid #e8eaed; display:flex; align-items:center; gap:14px; padding:0 28px; position:sticky; top:64px; z-index:90; }
+    .tool-topbar { height:56px; background:#fff; border-bottom:1px solid #e8eaed; display:flex; align-items:center; gap:14px; padding:0 28px; position:fixed; top:64px; left:68px; right:0; z-index:90; }
 
-    /* Réduire l'espace sous la toolbar des outils */
+    /* Espace sous les deux barres fixes (topbar 64px + tool-topbar 56px) */
     #social-tool .content, #compromis-tool .content, #mention-tool .content,
     #demandepost-tool .content, #postfb-tool .content, #candidatures-tool .content {
-      padding-top: 20px;
+      padding-top: 24px;
     }
+    /* Pour les tools qui n'ont pas de .content direct */
+    #social-tool > :not(.tool-topbar):not(.tool-header),
+    #compromis-tool > :not(.tool-topbar):not(.tool-header),
+    #mention-tool > :not(.tool-topbar):not(.tool-header),
+    #demandepost-tool > :not(.tool-topbar):not(.tool-header),
+    #postfb-tool > :not(.tool-topbar):not(.tool-header) {
+      padding-top: 0;
+    }
+    /* main-wrapper compensation pour les tool-topbar fixed */
+    body.tool-open #main-wrapper { padding-top: 120px; }
     /* ── PACK CARDS ── */
     .pack-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:4px; }
     .pack-card { border:2px solid #e8eaed; border-radius:12px; padding:16px 18px; cursor:pointer; transition:all 0.2s; position:relative; background:#fff; }
@@ -1200,6 +1211,9 @@ function showTool(id) {
   document.documentElement.scrollTop = 0;
   document.body.scrollTop = 0;
   window.scrollTo({ top: 0, behavior: 'instant' });
+  // Forcer le scroll même si le navigateur résiste
+  setTimeout(function(){ window.scrollTo(0,0); document.documentElement.scrollTop=0; }, 50);
+  document.body.classList.add('tool-open');
   setSidebarActive(id);
   const pn = document.getElementById('tb-page-name');
   if (pn) pn.textContent = PAGE_NAMES[id] || id;
@@ -1223,6 +1237,8 @@ function showDashboard() {
   document.documentElement.scrollTop = 0;
   document.body.scrollTop = 0;
   window.scrollTo({ top: 0, behavior: 'instant' });
+  setTimeout(function(){ window.scrollTo(0,0); document.documentElement.scrollTop=0; }, 50);
+  document.body.classList.remove('tool-open');
   setSidebarActive('dashboard');
   const pnd = document.getElementById('tb-page-name');
   if (pnd) pnd.textContent = 'Dashboard';
