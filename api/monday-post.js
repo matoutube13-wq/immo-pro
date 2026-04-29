@@ -21,85 +21,112 @@ export default async function handler(req, res) {
     'Joëlle De Lattin': 15, 'Axel Bourgeois': 16, 'Julia Kongo': null
   };
 
-  // Agence : index Monday (color_mkv6tmwp) — plus fiable que le label
-  // index 2 = HUY, index 1 = LIÈGE (d'après get_board_info)
-  const MOTS_HUY   = ['huy', 'amay', 'wanze', 'ben-ahin', 'tihange', 'engis', 'andenne'];
-  const MOTS_LIEGE = ['liege', 'seraing', 'ans-', 'ans/', 'grace', 'hollogne', 'flemalle', 'herstal', 'saint-nicolas', 'ougree', 'grivegnee', 'chenee', 'wandre', 'jupille'];
+  const MOTS_HUY   = ['huy', 'amay', 'wanze', 'ben-ahin', 'tihange', 'engis'];
+  const MOTS_LIEGE = ['liege', 'seraing', 'grace', 'hollogne', 'flemalle', 'herstal', 'saint-nicolas', 'ougree', 'jupille', 'grivegnee'];
 
-  function capitalise(s) {
-    return String(s || '').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+  function cap(s) {
+    return String(s||'').split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join(' ');
+  }
+
+  async function mondayQuery(query) {
+    const r = await fetch('https://api.monday.com/v2', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': MONDAY_TOKEN, 'API-Version': '2024-01' },
+      body: JSON.stringify({ query })
+    });
+    return r.json();
   }
 
   try {
-    // ── 1. SCRAPE DIRECT (Vercel → trevi.be) ────────────────────────────────
+    // ── ÉTAPE 1 : CRÉER L'ITEM MONDAY IMMÉDIATEMENT ──────────────────────────
+    // On crée l'item tout de suite pour ne pas bloquer si le scrape est long
+
+    // Titre provisoire depuis l'URL
+    const urlSlug = url.split('/').filter(Boolean).pop()?.replace(/-/g,' ') || 'Bien';
+    const titreProv = `Post FB – ${cap(urlSlug)}`;
+
+    const delegueId = DELEGUE_MAP[delegue];
+    const searchNorm = url.toLowerCase().replace(/[éèêë]/g,'e').replace(/[àâ]/g,'a').replace(/[îï]/g,'i').replace(/[ôö]/g,'o').replace(/[ùûü]/g,'u');
+    let agenceIndex = null;
+    if (MOTS_HUY.some(k => searchNorm.includes(k)))   agenceIndex = 2;
+    else if (MOTS_LIEGE.some(k => searchNorm.includes(k))) agenceIndex = 1;
+
+    const colVals = {
+      dropdown_mkv6q0jr: { ids: [1] },
+      dropdown_mkxvvrvk: { ids: [1] },
+      project_status:    { label: 'A faire' },
+      project_owner:     { personsAndTeams: [{ id: TREVI_USER_ID, kind: 'person' }] }
+    };
+    if (delegueId) colVals.dropdown_mkxvwsdj = { ids: [delegueId] };
+    if (agenceIndex !== null) colVals.color_mkv6tmwp = { index: agenceIndex };
+
+    const createData = await mondayQuery(`mutation {
+      create_item(
+        board_id: ${BOARD_ID},
+        group_id: "${GROUP_ID}",
+        item_name: ${JSON.stringify(titreProv)},
+        column_values: ${JSON.stringify(JSON.stringify(colVals))}
+      ) { id }
+    }`);
+
+    const itemId = createData?.data?.create_item?.id;
+    if (!itemId) throw new Error('create_item failed: ' + JSON.stringify(createData?.errors || createData));
+
+    // Répondre au front TOUT DE SUITE (avant le scrape lent)
+    res.status(200).json({ success: true, itemId, itemName: titreProv });
+
+    // ── ÉTAPE 2 : SCRAPE + CLAUDE EN ARRIÈRE-PLAN ────────────────────────────
     let postTexte = null, villeDetectee = null, adresse = null, typeBien = null;
-    let scrapeError = null;
+    let debugLog = [];
 
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 25000);
-
+      debugLog.push('Scrape start: ' + url);
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 20000);
       const pageRes = await fetch(url, {
-        signal: controller.signal,
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Accept-Language': 'fr-BE,fr;q=0.9',
-        }
+        signal: ctrl.signal,
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
       });
-      clearTimeout(timeout);
-
+      clearTimeout(timer);
       const html = await pageRes.text();
-      console.log('[monday-post] scrape OK, html length:', html.length);
-
-      if (html.length < 500) throw new Error('Page trop courte — probablement bloquée');
+      debugLog.push('HTML length: ' + html.length);
 
       const matterport = html.match(/https:\/\/my\.matterport\.com\/show\/\?m=[a-zA-Z0-9]+/);
       const virtualVisit = matterport ? matterport[0] : null;
 
-      const prixAPartir = html.match(/à\s+partir\s+de\s+([\d\s.,]+)\s*€/i);
-      const prixAuPrix  = html.match(/au\s+prix\s+de\s+([\d\s.,]+)\s*€/i);
-      const prixSeul    = html.match(/([\d]{2,3}[\s.][\d]{3})\s*€/);
+      const prixAP = html.match(/à\s+partir\s+de\s+([\d\s.,]+)\s*€/i);
+      const prixAU = html.match(/au\s+prix\s+de\s+([\d\s.,]+)\s*€/i);
+      const prixSe = html.match(/([\d]{2,3}[\s.][\d]{3})\s*€/);
       let prixDetecte = null, prixType = null;
-      if (prixAPartir)     { prixDetecte = prixAPartir[1].trim().replace(/\s/g,''); prixType = 'a_partir_de'; }
-      else if (prixAuPrix) { prixDetecte = prixAuPrix[1].trim().replace(/\s/g,'');  prixType = 'au_prix_de'; }
-      else if (prixSeul)   { prixDetecte = prixSeul[1].trim().replace(/\s/g,'');    prixType = 'prix_fixe'; }
+      if (prixAP)      { prixDetecte = prixAP[1].trim().replace(/\s/g,''); prixType = 'a_partir_de'; }
+      else if (prixAU) { prixDetecte = prixAU[1].trim().replace(/\s/g,''); prixType = 'au_prix_de'; }
+      else if (prixSe) { prixDetecte = prixSe[1].trim().replace(/\s/g,''); prixType = 'prix_fixe'; }
+      const prixLabel = prixType==='a_partir_de' ? `à partir de ${prixDetecte} €` : prixType==='au_prix_de' ? `au prix de ${prixDetecte} €` : prixDetecte ? `${prixDetecte} €` : '[prix non détecté]';
+      debugLog.push('Prix: ' + prixLabel);
 
-      const prixLabel =
-        prixType === 'a_partir_de' ? `à partir de ${prixDetecte} €` :
-        prixType === 'au_prix_de'  ? `au prix de ${prixDetecte} €` :
-        prixDetecte ? `${prixDetecte} €` : '[prix non détecté]';
+      const text = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<style[^>]*>[\s\S]*?<\/style>/gi,'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().substring(0,10000);
+      debugLog.push('Text length: ' + text.length);
 
-      const text = html
-        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-        .replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 10000);
-
-      // ── 2. CLAUDE ───────────────────────────────────────────────────────────
       const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': process.env.ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01'
-        },
+        headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
         body: JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
           max_tokens: 2500,
           system: `Tu es expert en communication immobilière pour TREVI Rasquain.
 Génère DEUX choses séparées par ---JSON--- :
 
-1. Un post Facebook professionnel basé uniquement sur les données fournies. N'invente rien.
-Format EXACT :
-A VENDRE – [Type de bien] à 𝗩𝗜𝗟𝗟𝗘 🏡
+1. Post Facebook professionnel uniquement avec les données fournies.
+Format :
+A VENDRE – [Type] à 𝗩𝗜𝗟𝗟𝗘 🏡
 ${virtualVisit ? `\nVISITE VIRTUELLE DISPONIBLE 🎥 : ${virtualVisit}\n` : ''}
 [Description 2-3 lignes]
 
 𝗖𝗼𝗺𝗽𝗼𝘀𝗶𝘁𝗶𝗼𝗻 𝗱𝘂 𝗯𝗶𝗲𝗻 🏠 :
 - [pièces]
 
-𝗔𝘁𝗼𝘂𝘁𝘀 𝘀𝘂𝗽𝗽𝗹𝗲́𝗺𝗲𝗻𝘁𝗮𝗶𝗿𝗲𝘀 ✨ :
-– [garage, jardin, etc.]
+𝗔𝘁𝗼𝘂𝘁𝘀 ✨ :
+– [atouts]
 
 𝗜𝗻𝗳𝗼𝘀 𝘁𝗲𝗰𝗵𝗻𝗶𝗾𝘂𝗲𝘀 ⚙️ :
 – PEB : [valeur]
@@ -108,112 +135,87 @@ ${virtualVisit ? `\nVISITE VIRTUELLE DISPONIBLE 🎥 : ${virtualVisit}\n` : ''}
 💰 Prix : ${prixLabel}
 (sous réserve d'acceptation des propriétaires)
 
-𝗣𝗼𝘂𝗿 𝗽𝗹𝘂𝘀 𝗱𝗲 𝗿𝗲𝗻𝘀𝗲𝗶𝗴𝗻𝗲𝗺𝗲𝗻𝘁𝘀 𝗼𝘂 𝗽𝗹𝗮𝗻𝗶𝗳𝗶𝗲𝗿 𝘂𝗻𝗲 𝘃𝗶𝘀𝗶𝘁𝗲 👇
+𝗣𝗼𝘂𝗿 𝗽𝗹𝘂𝘀 𝗱𝗲 𝗿𝗲𝗻𝘀𝗲𝗶𝗴𝗻𝗲𝗺𝗲𝗻𝘁𝘀 👇
 📧 info@trevirasquain.be
 📞 085 25 39 03
 🔗 ${url}
 
 ---JSON---
-2. JSON uniquement (rien d'autre après, pas de markdown) :
-{"ville":"[commune]","adresse_complete":"[adresse complète visible, ex: Rue de la Paix 12, 4000 Liège — sinon null]","type_bien":"[Maison/Appartement/Villa/Terrain/etc]","surface":"[m² ou null]","nb_chambres":"[nb ou null]"}`,
-          messages: [{ role: 'user', content: `URL : ${url}\nContenu :\n${text}` }]
+2. JSON uniquement sans markdown :
+{"ville":"[commune]","adresse_complete":"[adresse complète ou null]","type_bien":"[Maison/Appartement/etc]"}`,
+          messages: [{ role: 'user', content: `URL: ${url}\n${text}` }]
         })
       });
 
       const aiData = await aiRes.json();
-      console.log('[monday-post] Claude status:', aiRes.status, 'type:', aiData?.type);
+      debugLog.push('Claude status: ' + aiRes.status + ' type: ' + aiData?.type);
       const full = aiData?.content?.[0]?.text || '';
+      debugLog.push('Claude response length: ' + full.length);
+
       const parts = full.split('---JSON---');
       postTexte = parts[0]?.trim() || null;
+      debugLog.push('PostTexte length: ' + (postTexte?.length || 0));
 
       try {
-        const jsonRaw = parts[1]?.trim().replace(/^```json?\s*/,'').replace(/```$/,'') || '{}';
-        const parsed = JSON.parse(jsonRaw);
+        const jsonRaw = (parts[1]||'').trim().replace(/^```json?\s*/,'').replace(/```$/,'');
+        const parsed = JSON.parse(jsonRaw || '{}');
         villeDetectee = parsed.ville || null;
         adresse = parsed.adresse_complete && parsed.adresse_complete !== 'null' ? parsed.adresse_complete : null;
         typeBien = parsed.type_bien || null;
-      } catch (jsonErr) {
-        console.warn('[monday-post] JSON parse error:', jsonErr.message);
+        debugLog.push('Ville: ' + villeDetectee + ' | Adresse: ' + adresse + ' | Type: ' + typeBien);
+      } catch(je) {
+        debugLog.push('JSON parse error: ' + je.message + ' | raw: ' + (parts[1]||'').substring(0,100));
       }
 
-      console.log('[monday-post] ville:', villeDetectee, '| adresse:', adresse, '| type:', typeBien);
-      console.log('[monday-post] postTexte length:', postTexte?.length || 0);
-
-    } catch (scrapeErr) {
-      scrapeError = scrapeErr.message;
-      console.error('[monday-post] Scrape/Claude error:', scrapeErr.message);
+    } catch(scrapeErr) {
+      debugLog.push('ERROR: ' + scrapeErr.message);
     }
 
-    // ── 3. TITRE ──────────────────────────────────────────────────────────────
-    const titreAdresse = adresse || villeDetectee || url.split('/').filter(Boolean).pop()?.replace(/-/g,' ') || 'Bien';
-    const titrePack = pack === 'Pack du pauvre' ? 'Post FB' : 'Post FB ⭐';
-    const titreType = typeBien ? `${capitalise(typeBien)} – ` : '';
-    const itemName = `${titrePack} – ${titreType}${capitalise(titreAdresse)}`;
+    // ── ÉTAPE 3 : RENOMMER L'ITEM + AGENCE SI ON A LES INFOS ─────────────────
+    if (villeDetectee || adresse || typeBien) {
+      const newAdresse = adresse || villeDetectee || urlSlug;
+      const newType = typeBien ? `${cap(typeBien)} – ` : '';
+      const newName = `Post FB – ${newType}${cap(newAdresse)}`;
 
-    // ── 4. AGENCE (par index, plus fiable que le label) ───────────────────────
-    const searchText = `${url} ${villeDetectee || ''} ${adresse || ''}`.toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // supprimer accents pour la recherche
-    let agenceIndex = null;
-    if (MOTS_HUY.some(k => searchText.includes(k.normalize('NFD').replace(/[\u0300-\u036f]/g, '')))) {
-      agenceIndex = 2; // HUY
-    } else if (MOTS_LIEGE.some(k => searchText.includes(k.normalize('NFD').replace(/[\u0300-\u036f]/g, '')))) {
-      agenceIndex = 1; // LIÈGE
+      // Mise à jour agence si on peut mieux détecter
+      const searchAll = `${url} ${villeDetectee||''} ${adresse||''}`.toLowerCase().replace(/[éèêë]/g,'e').replace(/[àâ]/g,'a').replace(/[îï]/g,'i').replace(/[ôö]/g,'o').replace(/[ùûü]/g,'u');
+      let newAgenceIndex = agenceIndex;
+      if (newAgenceIndex === null) {
+        if (MOTS_HUY.some(k => searchAll.includes(k))) newAgenceIndex = 2;
+        else if (MOTS_LIEGE.some(k => searchAll.includes(k))) newAgenceIndex = 1;
+      }
+
+      const updateCols = {};
+      if (newAgenceIndex !== null && newAgenceIndex !== agenceIndex) updateCols.color_mkv6tmwp = { index: newAgenceIndex };
+
+      try {
+        await mondayQuery(`mutation { change_item_value(board_id: ${BOARD_ID}, item_id: ${itemId}, column_id: "name", value: ${JSON.stringify(JSON.stringify(newName))}) { id } }`);
+        if (Object.keys(updateCols).length > 0) {
+          await mondayQuery(`mutation { change_multiple_column_values(board_id: ${BOARD_ID}, item_id: ${itemId}, column_values: ${JSON.stringify(JSON.stringify(updateCols))}) { id } }`);
+        }
+      } catch(renameErr) {
+        debugLog.push('Rename error: ' + renameErr.message);
+      }
     }
 
-    // ── 5. COLONNES ───────────────────────────────────────────────────────────
-    const delegueId = DELEGUE_MAP[delegue];
-    const columnValues = {
-      dropdown_mkv6q0jr: { ids: [1] },
-      dropdown_mkxvvrvk: { ids: [1] },
-      project_status:    { label: 'A faire' },
-      project_owner:     { personsAndTeams: [{ id: TREVI_USER_ID, kind: 'person' }] }
-    };
-    if (delegueId) columnValues.dropdown_mkxvwsdj = { ids: [delegueId] };
-    if (agenceIndex !== null) columnValues.color_mkv6tmwp = { index: agenceIndex };
-
-    console.log('[monday-post] columnValues:', JSON.stringify(columnValues));
-
-    // ── 6. CRÉER L'ITEM ───────────────────────────────────────────────────────
-    const mondayRes = await fetch('https://api.monday.com/v2', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': MONDAY_TOKEN, 'API-Version': '2024-01' },
-      body: JSON.stringify({ query: `mutation {
-        create_item(
-          board_id: ${BOARD_ID},
-          group_id: "${GROUP_ID}",
-          item_name: ${JSON.stringify(itemName)},
-          column_values: ${JSON.stringify(JSON.stringify(columnValues))}
-        ) { id }
-      }` })
-    });
-    const mondayData = await mondayRes.json();
-    console.log('[monday-post] create_item response:', JSON.stringify(mondayData));
-    const itemId = mondayData?.data?.create_item?.id;
-    if (!itemId) throw new Error('Monday create_item: ' + JSON.stringify(mondayData?.errors || mondayData));
-
-    // ── 7. UPDATE AVEC LE TEXTE ───────────────────────────────────────────────
+    // ── ÉTAPE 4 : UPDATE AVEC TEXTE + DEBUG ──────────────────────────────────
     const updateBody = [
       `<p><strong>📋 Demande de ${delegue}</strong></p>`,
       `<p>📦 Pack : ${pack}</p>`,
-      `<p>🔗 Lien : <a href="${url}">${url}</a></p>`,
+      `<p>🔗 <a href="${url}">${url}</a></p>`,
       remarques ? `<p>💬 Remarques : ${remarques}</p>` : '',
       '<p>─────────────────────────</p>',
       postTexte
         ? `<p><strong>✍️ TEXTE DU POST — PRÊT À PUBLIER</strong></p><pre>${postTexte}</pre>`
-        : `<p><em>⚠️ Texte non généré${scrapeError ? ` (erreur: ${scrapeError})` : ''} — à rédiger manuellement.</em></p>`
+        : `<p><em>⚠️ Texte non généré — voir debug ci-dessous.</em></p>`,
+      '<p><small>' + debugLog.join(' | ') + '</small></p>'
     ].filter(Boolean).join('');
 
-    await fetch('https://api.monday.com/v2', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': MONDAY_TOKEN, 'API-Version': '2024-01' },
-      body: JSON.stringify({ query: `mutation { create_update(item_id: ${itemId}, body: ${JSON.stringify(updateBody)}) { id } }` })
-    });
-
-    return res.status(200).json({ success: true, itemId, itemName, textGenerated: !!postTexte, scrapeError });
+    await mondayQuery(`mutation { create_update(item_id: ${itemId}, body: ${JSON.stringify(updateBody)}) { id } }`);
 
   } catch (err) {
-    console.error('[monday-post] Fatal error:', err.message);
-    return res.status(500).json({ error: err.message });
+    // L'item n'a pas pu être créé → renvoyer l'erreur (mais res déjà envoyé potentiellement)
+    console.error('[monday-post] Fatal:', err.message);
   }
 }
 
