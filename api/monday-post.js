@@ -21,14 +21,42 @@ export default async function handler(req, res) {
     'Joëlle De Lattin': 15, 'Axel Bourgeois': 16, 'Julia Kongo': null
   };
 
-  const MOTS_HUY   = ['huy', 'amay', 'wanze', 'ben-ahin', 'tihange', 'engis'];
-  const MOTS_LIEGE = ['liege', 'seraing', 'grace', 'hollogne', 'flemalle', 'herstal', 'saint-nicolas', 'ougree', 'jupille', 'grivegnee'];
+  // Villes connues de la région HUY (agence index=2)
+  const HUY_VILLES = [
+    'huy','amay','wanze','andenne','ben-ahin','tihange','engis',
+    'villers-le-bouillet','burdinne','braives','hannut','wasseiges',
+    'tinlot','modave','marchin','clavier','nandrin','verlaine',
+    'hesbaye','remicourt','berloz','crisnee','oreye'
+  ];
+  // Villes connues de la région LIÈGE (agence index=1)
+  const LIEGE_VILLES = [
+    'liege','seraing','ans','grace-hollogne','flemalle','herstal',
+    'saint-nicolas','oupeye','juprelle','awans','fexhe','soumagne',
+    'beyne-heusay','chenee','grivegnee','wandre','bressoux','jupille',
+    'fleron','trooz','chaudfontaine','angleur','esneux','sprimont',
+    'neupre','tinlot-ougree','vise','blegny'
+  ];
 
   function cap(s) {
-    return String(s||'').split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join(' ');
+    return String(s||'').replace(/-/g,' ').split(' ')
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
   }
 
-  async function mondayQuery(query) {
+  // ── EXTRACTION DEPUIS L'URL (fiable, sans scrape) ──────────────────────────
+  // Format trevi.be: /fr/bien/[ref]/[type-transaction]/[ville]/[id]
+  const urlParts = url.replace(/\/$/, '').split('/');
+  const villeSlug  = urlParts[urlParts.length - 2] || '';
+  const typeSlug   = urlParts[urlParts.length - 3] || '';
+  const ville      = cap(villeSlug);
+  const typeBienUrl = cap(typeSlug.split('-')[0]);
+  const transactionUrl = typeSlug.includes('louer') ? 'À LOUER' : 'À VENDRE';
+
+  // Agence depuis l'URL — SANS scrape, toujours fiable
+  let agenceIndex = null;
+  if (HUY_VILLES.some(v => villeSlug.includes(v)))   agenceIndex = 2; // HUY
+  else if (LIEGE_VILLES.some(v => villeSlug.includes(v))) agenceIndex = 1; // LIÈGE
+
+  async function mondayQ(query) {
     const r = await fetch('https://api.monday.com/v2', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': MONDAY_TOKEN, 'API-Version': '2024-01' },
@@ -38,62 +66,49 @@ export default async function handler(req, res) {
   }
 
   try {
-    // ── ÉTAPE 1 : CRÉER L'ITEM MONDAY IMMÉDIATEMENT ──────────────────────────
-    // On crée l'item tout de suite pour ne pas bloquer si le scrape est long
+    // ── TITRE depuis l'URL immédiatement ──────────────────────────────────────
+    const titrePack = pack === 'Pack du pauvre' ? 'Post FB' : 'Post FB ⭐';
+    const itemName = `${titrePack} – ${typeBienUrl} – ${ville}`;
 
-    // Titre provisoire depuis l'URL
-    const urlSlug = url.split('/').filter(Boolean).pop()?.replace(/-/g,' ') || 'Bien';
-    const titreProv = `Post FB – ${cap(urlSlug)}`;
-
+    // ── COLONNES ──────────────────────────────────────────────────────────────
     const delegueId = DELEGUE_MAP[delegue];
-    const searchNorm = url.toLowerCase().replace(/[éèêë]/g,'e').replace(/[àâ]/g,'a').replace(/[îï]/g,'i').replace(/[ôö]/g,'o').replace(/[ùûü]/g,'u');
-    let agenceIndex = null;
-    if (MOTS_HUY.some(k => searchNorm.includes(k)))   agenceIndex = 2;
-    else if (MOTS_LIEGE.some(k => searchNorm.includes(k))) agenceIndex = 1;
-
     const colVals = {
-      dropdown_mkv6q0jr: { ids: [1] },
-      dropdown_mkxvvrvk: { ids: [1] },
+      dropdown_mkv6q0jr: { ids: [1] },          // Post classique
+      dropdown_mkxvvrvk: { ids: [1] },          // Canal Fb
       project_status:    { label: 'A faire' },
       project_owner:     { personsAndTeams: [{ id: TREVI_USER_ID, kind: 'person' }] }
     };
-    if (delegueId) colVals.dropdown_mkxvwsdj = { ids: [delegueId] };
-    if (agenceIndex !== null) colVals.color_mkv6tmwp = { index: agenceIndex };
+    if (delegueId)           colVals.dropdown_mkxvwsdj = { ids: [delegueId] };
+    if (agenceIndex !== null) colVals.color_mkv6tmwp   = { index: agenceIndex };
 
-    const createData = await mondayQuery(`mutation {
+    // ── CRÉER L'ITEM ──────────────────────────────────────────────────────────
+    const createData = await mondayQ(`mutation {
       create_item(
         board_id: ${BOARD_ID},
         group_id: "${GROUP_ID}",
-        item_name: ${JSON.stringify(titreProv)},
+        item_name: ${JSON.stringify(itemName)},
         column_values: ${JSON.stringify(JSON.stringify(colVals))}
       ) { id }
     }`);
-
     const itemId = createData?.data?.create_item?.id;
-    if (!itemId) throw new Error('create_item failed: ' + JSON.stringify(createData?.errors || createData));
+    if (!itemId) throw new Error('Monday create_item: ' + JSON.stringify(createData?.errors || createData));
 
-    // Répondre au front TOUT DE SUITE (avant le scrape lent)
-    res.status(200).json({ success: true, itemId, itemName: titreProv });
+    // Répondre au front immédiatement
+    res.status(200).json({ success: true, itemId, itemName });
 
-    // ── ÉTAPE 2 : SCRAPE + CLAUDE EN ARRIÈRE-PLAN ────────────────────────────
-    let postTexte = null, villeDetectee = null, adresse = null, typeBien = null;
-    let debugLog = [];
+    // ── SCRAPE VIA ALLORIGINS (proxy qui contourne le blocage) ────────────────
+    let postTexte = null;
+    let scrapeErrMsg = null;
 
     try {
-      debugLog.push('Scrape start: ' + url);
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 20000);
-      const pageRes = await fetch(url, {
-        signal: ctrl.signal,
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
-      });
-      clearTimeout(timer);
-      const html = await pageRes.text();
-      debugLog.push('HTML length: ' + html.length);
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+      const proxyRes = await fetch(proxyUrl, { signal: AbortSignal.timeout(20000) });
+      const proxyData = await proxyRes.json();
+      const html = proxyData?.contents || '';
 
-      const matterport = html.match(/https:\/\/my\.matterport\.com\/show\/\?m=[a-zA-Z0-9]+/);
-      const virtualVisit = matterport ? matterport[0] : null;
+      if (html.length < 500) throw new Error(`HTML trop court (${html.length} chars) — allorigins a bloqué`);
 
+      // Prix
       const prixAP = html.match(/à\s+partir\s+de\s+([\d\s.,]+)\s*€/i);
       const prixAU = html.match(/au\s+prix\s+de\s+([\d\s.,]+)\s*€/i);
       const prixSe = html.match(/([\d]{2,3}[\s.][\d]{3})\s*€/);
@@ -102,103 +117,64 @@ export default async function handler(req, res) {
       else if (prixAU) { prixDetecte = prixAU[1].trim().replace(/\s/g,''); prixType = 'au_prix_de'; }
       else if (prixSe) { prixDetecte = prixSe[1].trim().replace(/\s/g,''); prixType = 'prix_fixe'; }
       const prixLabel = prixType==='a_partir_de' ? `à partir de ${prixDetecte} €` : prixType==='au_prix_de' ? `au prix de ${prixDetecte} €` : prixDetecte ? `${prixDetecte} €` : '[prix non détecté]';
-      debugLog.push('Prix: ' + prixLabel);
 
-      const text = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<style[^>]*>[\s\S]*?<\/style>/gi,'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().substring(0,10000);
-      debugLog.push('Text length: ' + text.length);
+      // Visite virtuelle
+      const matterport = html.match(/https:\/\/my\.matterport\.com\/show\/\?m=[a-zA-Z0-9]+/);
+      const virtualVisit = matterport ? matterport[0] : null;
 
+      // Texte nettoyé
+      const text = html
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+        .replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 10000);
+
+      // Claude
       const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01'
+        },
         body: JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
-          max_tokens: 2500,
+          max_tokens: 2000,
           system: `Tu es expert en communication immobilière pour TREVI Rasquain.
-Génère DEUX choses séparées par ---JSON--- :
+Rédige un post Facebook professionnel basé uniquement sur les données fournies. N'invente rien.
 
-1. Post Facebook professionnel uniquement avec les données fournies.
-Format :
-A VENDRE – [Type] à 𝗩𝗜𝗟𝗟𝗘 🏡
-${virtualVisit ? `\nVISITE VIRTUELLE DISPONIBLE 🎥 : ${virtualVisit}\n` : ''}
-[Description 2-3 lignes]
+Format EXACT (respecte les caractères gras Unicode) :
+${transactionUrl} – ${typeBienUrl} à 𝗩𝗜𝗟𝗟𝗘 🏡
+${virtualVisit ? `\nVISITE VIRTUELLE 🎥 : ${virtualVisit}\n` : ''}
+[Description 2-3 lignes accrocheuses]
 
 𝗖𝗼𝗺𝗽𝗼𝘀𝗶𝘁𝗶𝗼𝗻 𝗱𝘂 𝗯𝗶𝗲𝗻 🏠 :
-- [pièces]
+- [liste des pièces]
 
 𝗔𝘁𝗼𝘂𝘁𝘀 ✨ :
-– [atouts]
+– [garage, jardin, cave, etc.]
 
 𝗜𝗻𝗳𝗼𝘀 𝘁𝗲𝗰𝗵𝗻𝗶𝗾𝘂𝗲𝘀 ⚙️ :
-– PEB : [valeur]
+– PEB : [classe et valeur]
 – [chauffage]
 
 💰 Prix : ${prixLabel}
 (sous réserve d'acceptation des propriétaires)
 
-𝗣𝗼𝘂𝗿 𝗽𝗹𝘂𝘀 𝗱𝗲 𝗿𝗲𝗻𝘀𝗲𝗶𝗴𝗻𝗲𝗺𝗲𝗻𝘁𝘀 👇
+𝗣𝗼𝘂𝗿 𝗽𝗹𝘂𝘀 𝗱𝗲 𝗿𝗲𝗻𝘀𝗲𝗶𝗴𝗻𝗲𝗺𝗲𝗻𝘁𝘀 𝗼𝘂 𝗽𝗹𝗮𝗻𝗶𝗳𝗶𝗲𝗿 𝘂𝗻𝗲 𝘃𝗶𝘀𝗶𝘁𝗲 👇
 📧 info@trevirasquain.be
 📞 085 25 39 03
-🔗 ${url}
-
----JSON---
-2. JSON uniquement sans markdown :
-{"ville":"[commune]","adresse_complete":"[adresse complète ou null]","type_bien":"[Maison/Appartement/etc]"}`,
-          messages: [{ role: 'user', content: `URL: ${url}\n${text}` }]
+🔗 ${url}`,
+          messages: [{ role: 'user', content: `Ville : ${ville}\nContenu de l'annonce :\n${text}` }]
         })
       });
-
       const aiData = await aiRes.json();
-      debugLog.push('Claude status: ' + aiRes.status + ' type: ' + aiData?.type);
-      const full = aiData?.content?.[0]?.text || '';
-      debugLog.push('Claude response length: ' + full.length);
+      postTexte = aiData?.content?.[0]?.text?.trim() || null;
 
-      const parts = full.split('---JSON---');
-      postTexte = parts[0]?.trim() || null;
-      debugLog.push('PostTexte length: ' + (postTexte?.length || 0));
-
-      try {
-        const jsonRaw = (parts[1]||'').trim().replace(/^```json?\s*/,'').replace(/```$/,'');
-        const parsed = JSON.parse(jsonRaw || '{}');
-        villeDetectee = parsed.ville || null;
-        adresse = parsed.adresse_complete && parsed.adresse_complete !== 'null' ? parsed.adresse_complete : null;
-        typeBien = parsed.type_bien || null;
-        debugLog.push('Ville: ' + villeDetectee + ' | Adresse: ' + adresse + ' | Type: ' + typeBien);
-      } catch(je) {
-        debugLog.push('JSON parse error: ' + je.message + ' | raw: ' + (parts[1]||'').substring(0,100));
-      }
-
-    } catch(scrapeErr) {
-      debugLog.push('ERROR: ' + scrapeErr.message);
+    } catch(e) {
+      scrapeErrMsg = e.message;
     }
 
-    // ── ÉTAPE 3 : RENOMMER L'ITEM + AGENCE SI ON A LES INFOS ─────────────────
-    if (villeDetectee || adresse || typeBien) {
-      const newAdresse = adresse || villeDetectee || urlSlug;
-      const newType = typeBien ? `${cap(typeBien)} – ` : '';
-      const newName = `Post FB – ${newType}${cap(newAdresse)}`;
-
-      // Mise à jour agence si on peut mieux détecter
-      const searchAll = `${url} ${villeDetectee||''} ${adresse||''}`.toLowerCase().replace(/[éèêë]/g,'e').replace(/[àâ]/g,'a').replace(/[îï]/g,'i').replace(/[ôö]/g,'o').replace(/[ùûü]/g,'u');
-      let newAgenceIndex = agenceIndex;
-      if (newAgenceIndex === null) {
-        if (MOTS_HUY.some(k => searchAll.includes(k))) newAgenceIndex = 2;
-        else if (MOTS_LIEGE.some(k => searchAll.includes(k))) newAgenceIndex = 1;
-      }
-
-      const updateCols = {};
-      if (newAgenceIndex !== null && newAgenceIndex !== agenceIndex) updateCols.color_mkv6tmwp = { index: newAgenceIndex };
-
-      try {
-        await mondayQuery(`mutation { change_item_value(board_id: ${BOARD_ID}, item_id: ${itemId}, column_id: "name", value: ${JSON.stringify(JSON.stringify(newName))}) { id } }`);
-        if (Object.keys(updateCols).length > 0) {
-          await mondayQuery(`mutation { change_multiple_column_values(board_id: ${BOARD_ID}, item_id: ${itemId}, column_values: ${JSON.stringify(JSON.stringify(updateCols))}) { id } }`);
-        }
-      } catch(renameErr) {
-        debugLog.push('Rename error: ' + renameErr.message);
-      }
-    }
-
-    // ── ÉTAPE 4 : UPDATE AVEC TEXTE + DEBUG ──────────────────────────────────
+    // ── UPDATE MONDAY AVEC LE TEXTE ───────────────────────────────────────────
     const updateBody = [
       `<p><strong>📋 Demande de ${delegue}</strong></p>`,
       `<p>📦 Pack : ${pack}</p>`,
@@ -207,14 +183,12 @@ ${virtualVisit ? `\nVISITE VIRTUELLE DISPONIBLE 🎥 : ${virtualVisit}\n` : ''}
       '<p>─────────────────────────</p>',
       postTexte
         ? `<p><strong>✍️ TEXTE DU POST — PRÊT À PUBLIER</strong></p><pre>${postTexte}</pre>`
-        : `<p><em>⚠️ Texte non généré — voir debug ci-dessous.</em></p>`,
-      '<p><small>' + debugLog.join(' | ') + '</small></p>'
+        : `<p><em>⚠️ Texte non généré${scrapeErrMsg ? ` — erreur : ${scrapeErrMsg}` : ''}. À rédiger manuellement.</em></p>`
     ].filter(Boolean).join('');
 
-    await mondayQuery(`mutation { create_update(item_id: ${itemId}, body: ${JSON.stringify(updateBody)}) { id } }`);
+    await mondayQ(`mutation { create_update(item_id: ${itemId}, body: ${JSON.stringify(updateBody)}) { id } }`);
 
   } catch (err) {
-    // L'item n'a pas pu être créé → renvoyer l'erreur (mais res déjà envoyé potentiellement)
     console.error('[monday-post] Fatal:', err.message);
   }
 }
