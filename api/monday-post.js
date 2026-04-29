@@ -57,8 +57,12 @@ export default async function handler(req, res) {
     // ── EXTRACTION DEPUIS L'URL ───────────────────────────────────────────────
     // Format trevi.be: /fr/bien/[ref]/[type-transaction]/[ville]/[id]
     const urlParts = url.replace(/\/$/, '').split('/');
-    const villeSlug = urlParts[urlParts.length - 2] || '';
-    const typeSlug  = urlParts[urlParts.length - 3] || '';
+    const lastSeg = urlParts[urlParts.length - 1] || '';
+    const isNumeric = /^\d+$/.test(lastSeg);
+    // Format A: .../type-transaction/ville/ID  → isNumeric=true
+    // Format B: .../ref/num/type/Ville         → isNumeric=false
+    const villeSlug = isNumeric ? urlParts[urlParts.length - 2] : lastSeg;
+    const typeSlug  = isNumeric ? urlParts[urlParts.length - 3] : urlParts[urlParts.length - 2];
     const ville     = cap(villeSlug);
     const typeBien  = cap(typeSlug.split('-')[0]);
     const transaction = typeSlug.includes('louer') ? 'À LOUER' : 'À VENDRE';
@@ -149,7 +153,14 @@ ${virtualVisit ? `\nVISITE VIRTUELLE 🎥 : ${virtualVisit}\n` : ''}
       });
       const aiData = await aiRes.json();
       postTexte = aiData?.content?.[0]?.text?.trim() || null;
-      if (!postTexte) throw new Error('Claude réponse vide — type: ' + aiData?.type + ' error: ' + JSON.stringify(aiData?.error));
+      if (!postTexte) {
+        const errType = aiData?.error?.type || aiData?.type || 'unknown';
+        const errMsg = aiData?.error?.message || 'réponse vide';
+        if (errType === 'authentication_error') {
+          throw new Error('CLE_API_INVALIDE — Vérifier ANTHROPIC_API_KEY dans Vercel');
+        }
+        throw new Error(`Claude: ${errType} — ${errMsg}`);
+      }
 
     } catch(e) {
       scrapeErr = e.message;
