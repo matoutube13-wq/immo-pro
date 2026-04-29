@@ -328,6 +328,12 @@
     .tc-icon svg { width:22px; height:22px; }
     /* ── TOOL TOPBAR ── */
     .tool-topbar { height:56px; background:#fff; border-bottom:1px solid #e8eaed; display:flex; align-items:center; gap:14px; padding:0 28px; position:sticky; top:64px; z-index:90; }
+
+    /* Réduire l'espace sous la toolbar des outils */
+    #social-tool .content, #compromis-tool .content, #mention-tool .content,
+    #demandepost-tool .content, #postfb-tool .content, #candidatures-tool .content {
+      padding-top: 20px;
+    }
     /* ── PACK CARDS ── */
     .pack-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:4px; }
     .pack-card { border:2px solid #e8eaed; border-radius:12px; padding:16px 18px; cursor:pointer; transition:all 0.2s; position:relative; background:#fff; }
@@ -1144,7 +1150,9 @@
 // ════════════════════════════════════════════════════════════
 document.getElementById('app').style.display = 'block';
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-window.scrollTo(0, 0);
+document.documentElement.scrollTop = 0;
+document.body.scrollTop = 0;
+window.scrollTo({ top: 0, behavior: 'instant' });
 setSidebarActive('dashboard');
 
 async function login() {
@@ -1189,7 +1197,9 @@ function showTool(id) {
   document.getElementById('dashboard').style.display = 'none';
   const target = document.getElementById(id);
   if (target) target.style.display = 'block';
-  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+  window.scrollTo({ top: 0, behavior: 'instant' });
   setSidebarActive(id);
   const pn = document.getElementById('tb-page-name');
   if (pn) pn.textContent = PAGE_NAMES[id] || id;
@@ -1210,7 +1220,9 @@ function showDashboard() {
   document.getElementById('annonce-url').value = '';
   document.getElementById('result-card').style.display = 'none';
   document.getElementById('error-box').style.display = 'none';
-  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+  window.scrollTo({ top: 0, behavior: 'instant' });
   setSidebarActive('dashboard');
   const pnd = document.getElementById('tb-page-name');
   if (pnd) pnd.textContent = 'Dashboard';
