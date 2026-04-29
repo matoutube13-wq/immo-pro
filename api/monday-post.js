@@ -21,40 +21,28 @@ export default async function handler(req, res) {
     'Joëlle De Lattin': 15, 'Axel Bourgeois': 16, 'Julia Kongo': null
   };
 
-  // Villes connues de la région HUY (agence index=2)
+  // Communes autour de HUY (agence index=2)
   const HUY_VILLES = [
     'huy','amay','wanze','andenne','ben-ahin','tihange','engis',
     'villers-le-bouillet','burdinne','braives','hannut','wasseiges',
     'tinlot','modave','marchin','clavier','nandrin','verlaine',
-    'hesbaye','remicourt','berloz','crisnee','oreye'
+    'oreye','remicourt','berloz','crisnee','bassenge','oupeye',
+    'waremme','borgworm','lincent','geer','donceel','faimes','graces'
   ];
-  // Villes connues de la région LIÈGE (agence index=1)
+  // Communes autour de LIÈGE (agence index=1)
   const LIEGE_VILLES = [
     'liege','seraing','ans','grace-hollogne','flemalle','herstal',
-    'saint-nicolas','oupeye','juprelle','awans','fexhe','soumagne',
+    'saint-nicolas','juprelle','awans','fexhe','soumagne',
     'beyne-heusay','chenee','grivegnee','wandre','bressoux','jupille',
     'fleron','trooz','chaudfontaine','angleur','esneux','sprimont',
-    'neupre','tinlot-ougree','vise','blegny'
+    'neupre','vise','blegny','olne','pepinster','theux','spa',
+    'aywaille','lierneux','stoumont'
   ];
 
   function cap(s) {
     return String(s||'').replace(/-/g,' ').split(' ')
       .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
   }
-
-  // ── EXTRACTION DEPUIS L'URL (fiable, sans scrape) ──────────────────────────
-  // Format trevi.be: /fr/bien/[ref]/[type-transaction]/[ville]/[id]
-  const urlParts = url.replace(/\/$/, '').split('/');
-  const villeSlug  = urlParts[urlParts.length - 2] || '';
-  const typeSlug   = urlParts[urlParts.length - 3] || '';
-  const ville      = cap(villeSlug);
-  const typeBienUrl = cap(typeSlug.split('-')[0]);
-  const transactionUrl = typeSlug.includes('louer') ? 'À LOUER' : 'À VENDRE';
-
-  // Agence depuis l'URL — SANS scrape, toujours fiable
-  let agenceIndex = null;
-  if (HUY_VILLES.some(v => villeSlug.includes(v)))   agenceIndex = 2; // HUY
-  else if (LIEGE_VILLES.some(v => villeSlug.includes(v))) agenceIndex = 1; // LIÈGE
 
   async function mondayQ(query) {
     const r = await fetch('https://api.monday.com/v2', {
@@ -66,47 +54,36 @@ export default async function handler(req, res) {
   }
 
   try {
-    // ── TITRE depuis l'URL immédiatement ──────────────────────────────────────
-    const titrePack = pack === 'Pack du pauvre' ? 'Post FB' : 'Post FB ⭐';
-    const itemName = `${titrePack} – ${typeBienUrl} – ${ville}`;
+    // ── EXTRACTION DEPUIS L'URL ───────────────────────────────────────────────
+    // Format trevi.be: /fr/bien/[ref]/[type-transaction]/[ville]/[id]
+    const urlParts = url.replace(/\/$/, '').split('/');
+    const villeSlug = urlParts[urlParts.length - 2] || '';
+    const typeSlug  = urlParts[urlParts.length - 3] || '';
+    const ville     = cap(villeSlug);
+    const typeBien  = cap(typeSlug.split('-')[0]);
+    const transaction = typeSlug.includes('louer') ? 'À LOUER' : 'À VENDRE';
 
-    // ── COLONNES ──────────────────────────────────────────────────────────────
-    const delegueId = DELEGUE_MAP[delegue];
-    const colVals = {
-      dropdown_mkv6q0jr: { ids: [1] },          // Post classique
-      dropdown_mkxvvrvk: { ids: [1] },          // Canal Fb
-      project_status:    { label: 'A faire' },
-      project_owner:     { personsAndTeams: [{ id: TREVI_USER_ID, kind: 'person' }] }
-    };
-    if (delegueId)           colVals.dropdown_mkxvwsdj = { ids: [delegueId] };
-    if (agenceIndex !== null) colVals.color_mkv6tmwp   = { index: agenceIndex };
+    // Agence depuis l'URL (sans scrape, toujours fiable)
+    let agenceIndex = null;
+    if (HUY_VILLES.some(v => villeSlug === v || villeSlug.startsWith(v + '-')))
+      agenceIndex = 2; // HUY
+    else if (LIEGE_VILLES.some(v => villeSlug === v || villeSlug.startsWith(v + '-')))
+      agenceIndex = 1; // LIÈGE
 
-    // ── CRÉER L'ITEM ──────────────────────────────────────────────────────────
-    const createData = await mondayQ(`mutation {
-      create_item(
-        board_id: ${BOARD_ID},
-        group_id: "${GROUP_ID}",
-        item_name: ${JSON.stringify(itemName)},
-        column_values: ${JSON.stringify(JSON.stringify(colVals))}
-      ) { id }
-    }`);
-    const itemId = createData?.data?.create_item?.id;
-    if (!itemId) throw new Error('Monday create_item: ' + JSON.stringify(createData?.errors || createData));
-
-    // Répondre au front immédiatement
-    res.status(200).json({ success: true, itemId, itemName });
-
-    // ── SCRAPE VIA ALLORIGINS (proxy qui contourne le blocage) ────────────────
+    // ── SCRAPE VIA ALLORIGINS ─────────────────────────────────────────────────
     let postTexte = null;
-    let scrapeErrMsg = null;
+    let scrapeErr = null;
 
     try {
       const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-      const proxyRes = await fetch(proxyUrl, { signal: AbortSignal.timeout(20000) });
+      const proxyRes = await fetch(proxyUrl, {
+        headers: { 'User-Agent': 'Mozilla/5.0' },
+        signal: AbortSignal.timeout(25000)
+      });
       const proxyData = await proxyRes.json();
       const html = proxyData?.contents || '';
 
-      if (html.length < 500) throw new Error(`HTML trop court (${html.length} chars) — allorigins a bloqué`);
+      if (html.length < 200) throw new Error(`allorigins retourné ${html.length} chars`);
 
       // Prix
       const prixAP = html.match(/à\s+partir\s+de\s+([\d\s.,]+)\s*€/i);
@@ -116,9 +93,12 @@ export default async function handler(req, res) {
       if (prixAP)      { prixDetecte = prixAP[1].trim().replace(/\s/g,''); prixType = 'a_partir_de'; }
       else if (prixAU) { prixDetecte = prixAU[1].trim().replace(/\s/g,''); prixType = 'au_prix_de'; }
       else if (prixSe) { prixDetecte = prixSe[1].trim().replace(/\s/g,''); prixType = 'prix_fixe'; }
-      const prixLabel = prixType==='a_partir_de' ? `à partir de ${prixDetecte} €` : prixType==='au_prix_de' ? `au prix de ${prixDetecte} €` : prixDetecte ? `${prixDetecte} €` : '[prix non détecté]';
+      const prixLabel =
+        prixType==='a_partir_de' ? `à partir de ${prixDetecte} €` :
+        prixType==='au_prix_de'  ? `au prix de ${prixDetecte} €` :
+        prixDetecte ? `${prixDetecte} €` : '[prix non détecté]';
 
-      // Visite virtuelle
+      // Matterport
       const matterport = html.match(/https:\/\/my\.matterport\.com\/show\/\?m=[a-zA-Z0-9]+/);
       const virtualVisit = matterport ? matterport[0] : null;
 
@@ -142,8 +122,8 @@ export default async function handler(req, res) {
           system: `Tu es expert en communication immobilière pour TREVI Rasquain.
 Rédige un post Facebook professionnel basé uniquement sur les données fournies. N'invente rien.
 
-Format EXACT (respecte les caractères gras Unicode) :
-${transactionUrl} – ${typeBienUrl} à 𝗩𝗜𝗟𝗟𝗘 🏡
+Format EXACT :
+${transaction} – ${typeBien} à 𝗩𝗜𝗟𝗟𝗘 🏡
 ${virtualVisit ? `\nVISITE VIRTUELLE 🎥 : ${virtualVisit}\n` : ''}
 [Description 2-3 lignes accrocheuses]
 
@@ -160,21 +140,51 @@ ${virtualVisit ? `\nVISITE VIRTUELLE 🎥 : ${virtualVisit}\n` : ''}
 💰 Prix : ${prixLabel}
 (sous réserve d'acceptation des propriétaires)
 
-𝗣𝗼𝘂𝗿 𝗽𝗹𝘂𝘀 𝗱𝗲 𝗿𝗲𝗻𝘀𝗲𝗶𝗴𝗻𝗲𝗺𝗲𝗻𝘁𝘀 𝗼𝘂 𝗽𝗹𝗮𝗻𝗶𝗳𝗶𝗲𝗿 𝘂𝗻𝗲 𝘃𝗶𝘀𝗶𝘁𝗲 👇
+𝗣𝗼𝘂𝗿 𝗽𝗹𝘂𝘀 𝗱𝗲 𝗿𝗲𝗻𝘀𝗲𝗶𝗴𝗻𝗲𝗺𝗲𝗻𝘁𝘀 👇
 📧 info@trevirasquain.be
 📞 085 25 39 03
 🔗 ${url}`,
-          messages: [{ role: 'user', content: `Ville : ${ville}\nContenu de l'annonce :\n${text}` }]
+          messages: [{ role: 'user', content: `Ville : ${ville}\nContenu :\n${text}` }]
         })
       });
       const aiData = await aiRes.json();
       postTexte = aiData?.content?.[0]?.text?.trim() || null;
+      if (!postTexte) throw new Error('Claude réponse vide — type: ' + aiData?.type + ' error: ' + JSON.stringify(aiData?.error));
 
     } catch(e) {
-      scrapeErrMsg = e.message;
+      scrapeErr = e.message;
     }
 
-    // ── UPDATE MONDAY AVEC LE TEXTE ───────────────────────────────────────────
+    // ── TITRE ─────────────────────────────────────────────────────────────────
+    const titrePack = pack === 'Pack du pauvre' ? 'Post FB' : 'Post FB ⭐';
+    const itemName = `${titrePack} – ${typeBien} – ${ville}`;
+
+    // ── COLONNES ──────────────────────────────────────────────────────────────
+    const delegueId = DELEGUE_MAP[delegue];
+    const colVals = {
+      dropdown_mkv6q0jr: { ids: [1] },
+      dropdown_mkxvvrvk: { ids: [1] },
+      project_status:    { label: 'A faire' },
+      project_owner:     { personsAndTeams: [{ id: TREVI_USER_ID, kind: 'person' }] }
+    };
+    if (delegueId !== undefined && delegueId !== null)
+      colVals.dropdown_mkxvwsdj = { ids: [delegueId] };
+    if (agenceIndex !== null)
+      colVals.color_mkv6tmwp = { index: agenceIndex };
+
+    // ── CRÉER L'ITEM ──────────────────────────────────────────────────────────
+    const createData = await mondayQ(`mutation {
+      create_item(
+        board_id: ${BOARD_ID},
+        group_id: "${GROUP_ID}",
+        item_name: ${JSON.stringify(itemName)},
+        column_values: ${JSON.stringify(JSON.stringify(colVals))}
+      ) { id }
+    }`);
+    const itemId = createData?.data?.create_item?.id;
+    if (!itemId) throw new Error('create_item: ' + JSON.stringify(createData?.errors || createData));
+
+    // ── UPDATE AVEC TEXTE ─────────────────────────────────────────────────────
     const updateBody = [
       `<p><strong>📋 Demande de ${delegue}</strong></p>`,
       `<p>📦 Pack : ${pack}</p>`,
@@ -183,13 +193,26 @@ ${virtualVisit ? `\nVISITE VIRTUELLE 🎥 : ${virtualVisit}\n` : ''}
       '<p>─────────────────────────</p>',
       postTexte
         ? `<p><strong>✍️ TEXTE DU POST — PRÊT À PUBLIER</strong></p><pre>${postTexte}</pre>`
-        : `<p><em>⚠️ Texte non généré${scrapeErrMsg ? ` — erreur : ${scrapeErrMsg}` : ''}. À rédiger manuellement.</em></p>`
+        : `<p><em>⚠️ Texte non généré (${scrapeErr || 'erreur inconnue'}).</em></p>`
     ].filter(Boolean).join('');
 
-    await mondayQ(`mutation { create_update(item_id: ${itemId}, body: ${JSON.stringify(updateBody)}) { id } }`);
+    await mondayQ(`mutation {
+      create_update(item_id: ${itemId}, body: ${JSON.stringify(updateBody)}) { id }
+    }`);
+
+    // ── RÉPONSE AU FRONT (APRÈS tout le travail) ──────────────────────────────
+    return res.status(200).json({
+      success: true,
+      itemId,
+      itemName,
+      textGenerated: !!postTexte,
+      agence: agenceIndex === 2 ? 'HUY' : agenceIndex === 1 ? 'LIÈGE' : null,
+      scrapeErr
+    });
 
   } catch (err) {
-    console.error('[monday-post] Fatal:', err.message);
+    console.error('[monday-post]', err.message);
+    return res.status(500).json({ error: err.message });
   }
 }
 
