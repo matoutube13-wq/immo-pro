@@ -2554,34 +2554,100 @@ async function submitDemandePost() {
 
   submitBtn.disabled = true;
   loadEl.style.display = 'flex';
-  loadEl.querySelector('span').textContent = 'Analyse du bien en cours...';
 
-  // Alterner les messages pendant l'attente
-  var msgs = ['Lecture de l\'annonce...', 'Generation du post IA...', 'Creation dans Monday...'];
-  var msgIdx = 0;
-  var msgTimer = setInterval(function() {
-    msgIdx = (msgIdx + 1) % msgs.length;
-    var s = loadEl.querySelector('span');
-    if (s) s.textContent = msgs[msgIdx];
-  }, 6000);
+  var setMsg = function(m) { var s = loadEl.querySelector('span'); if(s) s.textContent = m; };
 
   try {
-    var res = await fetch('/api/monday-post', {
+    // ── 1. Scrape côté navigateur via /api/scrape (qui passe par le navigateur)
+    setMsg('Lecture de l\'annonce...');
+    var postTexte = '';
+    var ville = '';
+
+    try {
+      var scrapeRes = await fetch('/api/scrape?url=' + encodeURIComponent(url));
+      if (scrapeRes.ok) {
+        var scrapeData = await scrapeRes.json();
+        postTexte = scrapeData.post || '';
+        ville = scrapeData.ville || '';
+      }
+    } catch(se) { console.warn('scrape error:', se.message); }
+
+    // ── 2. Si pas de texte via scrape, générer via claude-proxy avec le texte brut
+    if (!postTexte) {
+      setMsg('Génération du post...');
+      try {
+        // Récupérer le HTML via allorigins (côté navigateur = pas bloqué)
+        var proxyRes = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url));
+        var proxyData = await proxyRes.json();
+        var pageHtml = proxyData.contents || '';
+
+        if (pageHtml.length > 500) {
+          var isLoc = /louer|location/i.test(pageHtml);
+          var urlParts = url.split('/').filter(Boolean);
+          ville = urlParts[urlParts.length-1]?.replace(/-/g,' ') || '';
+
+          var prixAP = pageHtml.match(/partir\s+de\s+([\d\s.,]+)\s*€/i);
+          var loyM   = pageHtml.match(/([\d]{3,4})\s*€\s*\/\s*mois/i);
+          var prixS  = pageHtml.match(/([\d]{2,3}[\s.][\d]{3})\s*€/);
+          var viager = /viager/i.test(pageHtml);
+
+          var pType = null, pVal = '';
+          if(prixAP)     { pVal=prixAP[1].trim().replace(/\s/g,''); pType='a_partir_de'; }
+          else if(loyM)  { pVal=loyM[1].trim(); pType='loyer'; }
+          else if(prixS) { pVal=prixS[1].trim().replace(/\s/g,''); pType='prix'; }
+
+          var pLabel = pType==='a_partir_de' ? 'a partir de '+pVal+' EUR' :
+                       pType==='loyer'        ? pVal+' EUR/mois' :
+                       pVal ? pVal+' EUR' : 'non detecte';
+
+          var texteNet = pageHtml
+            .replace(/<script[\s\S]*?<\/script>/gi,'')
+            .replace(/<style[\s\S]*?<\/style>/gi,'')
+            .replace(/<[^>]+>/g,' ')
+            .replace(/\s+/g,' ').trim().substring(0, 8000);
+
+          var sysMsg = 'Tu es expert immobilier TREVI Rasquain Belgique. '
+            + 'Type: ' + (isLoc ? 'A LOUER' : 'A VENDRE') + '. '
+            + 'Prix detecte: ' + pLabel + '. '
+            + 'Genere un post Facebook avec caracteres Unicode gras (format exact avec emojis, composition par niveaux, infos techniques, prix, contact info@trevirasquain.be 085 25 39 03, lien ' + url + '). '
+            + 'Utilise UNIQUEMENT les infos presentes.';
+
+          var claudeRes = await fetch('/api/claude-proxy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: 'claude-haiku-4-5-20251001',
+              max_tokens: 2000,
+              system: sysMsg,
+              messages: [{ role: 'user', content: texteNet }]
+            })
+          });
+          var claudeData = await claudeRes.json();
+          if (claudeData && claudeData.content && claudeData.content[0]) {
+            postTexte = claudeData.content[0].text.trim();
+          }
+        }
+      } catch(ce) { console.warn('claude error:', ce.message); }
+    }
+
+    // ── 3. Créer dans Monday via API
+    setMsg('Création dans Monday...');
+    var mondayRes = await fetch('/api/monday-post', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        delegue:  delegue,
-        url:      url,
-        pack:     packEl.value,
-        remarques: remarques || ''
+        delegue:   delegue,
+        url:       url,
+        pack:      packEl.value,
+        remarques: remarques,
+        postTexte: postTexte,
+        ville:     ville
       })
     });
 
-    clearInterval(msgTimer);
-    var data = await res.json();
-
-    if (!res.ok || !data.success) {
-      throw new Error(data.error || 'Erreur serveur');
+    var mondayData = await mondayRes.json();
+    if (!mondayRes.ok || !mondayData.success) {
+      throw new Error(mondayData.error || 'Erreur Monday');
     }
 
     loadEl.style.display = 'none';
@@ -2589,7 +2655,6 @@ async function submitDemandePost() {
     showDpModal(delegue, packEl.value, url);
 
   } catch(e) {
-    clearInterval(msgTimer);
     loadEl.style.display = 'none';
     submitBtn.disabled = false;
     errEl.textContent = 'Erreur : ' + (e.text || e.message || JSON.stringify(e));
@@ -2649,151 +2714,4 @@ function closeDpModal() {
   setTimeout(function() { overlay.style.display = 'none'; resetDemandePost(); }, 300);
 }
 
-async function submitDemandePost() {
-  var delegue   = document.getElementById('dp-delegue').value.trim();
-  var url       = document.getElementById('dp-url').value.trim();
-  var packEl    = document.querySelector('[name="dp-pack"]:checked');
-  var remarques = document.getElementById('dp-remarques').value.trim();
-  var errEl     = document.getElementById('dp-error');
-  var loadEl    = document.getElementById('dp-loading');
-  var submitBtn = document.getElementById('dp-submit-btn');
-
-  errEl.style.display = 'none';
-  if (!delegue || !url || !packEl) {
-    errEl.textContent = 'Merci de remplir ton nom, le lien et le type de publication.';
-    errEl.style.display = 'block';
-    return;
-  }
-
-  submitBtn.disabled = true;
-  loadEl.style.display = 'flex';
-
-  var now = new Date().toLocaleString('fr-BE', {
-    timeZone: 'Europe/Brussels',
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit'
-  });
-
-  try {
-    var postTexte = '';
-
-    // 1. Scrape via allorigins (cote navigateur)
-    loadEl.querySelector('span').textContent = 'Analyse du bien...';
-    try {
-      var proxyRes = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url));
-      var proxyData = await proxyRes.json();
-      var pageHtml = proxyData.contents || '';
-
-      if (pageHtml.length > 500) {
-        var matterport = pageHtml.match(/https:\/\/my\.matterport\.com\/show\/\?m=[a-zA-Z0-9]+/);
-        var virtualVisit = matterport ? matterport[0] : null;
-        var isLocation = /louer|location/i.test(pageHtml);
-
-        var prixAPartir = pageHtml.match(/partir\s+de\s+([\d\s.,]+)\s*€/i);
-        var loyerM      = pageHtml.match(/([\d]{3,4})\s*€\s*\/\s*mois/i);
-        var prixSeul    = pageHtml.match(/([\d]{2,3}[\s.][\d]{3})\s*€/);
-
-        var prixType = null, prixVal = '';
-        if (prixAPartir)  { prixVal = prixAPartir[1].trim().replace(/\s/g,''); prixType = 'a_partir_de'; }
-        else if (loyerM)  { prixVal = loyerM[1].trim(); prixType = 'loyer'; }
-        else if (prixSeul){ prixVal = prixSeul[1].trim().replace(/\s/g,''); prixType = 'prix'; }
-
-        var prixLabel = prixType === 'a_partir_de' ? 'a partir de ' + prixVal + ' EUR' :
-                        prixType === 'loyer'        ? prixVal + ' EUR/mois' :
-                        prixVal ? prixVal + ' EUR' : 'non detecte';
-
-        var texteNet = pageHtml
-          .replace(/<script[\s\S]*?<\/script>/gi, '')
-          .replace(/<style[\s\S]*?<\/style>/gi, '')
-          .replace(/<[^>]+>/g, ' ')
-          .replace(/\s+/g, ' ').trim().substring(0, 8000);
-
-        // 2. Appel Claude via proxy
-        loadEl.querySelector('span').textContent = 'Generation du post...';
-
-        var typePost = isLocation ? 'A LOUER' : 'A VENDRE';
-        var systemMsg = 'Tu es expert en communication immobiliere pour TREVI Rasquain. '
-          + 'Genere un post Facebook avec les caracteres Unicode gras. '
-          + 'Type: ' + typePost + '. '
-          + (virtualVisit ? 'Visite virtuelle: ' + virtualVisit + '. ' : '')
-          + 'Prix detecte: ' + prixLabel + '. '
-          + 'Format: titre avec emoji, accroche, composition par niveaux si dispo, infos techniques (PEB/chauffage/chassis), prix en gras Unicode, contact info@trevirasquain.be 085 25 39 03, lien ' + url + '. '
-          + 'Utilise UNIQUEMENT les infos presentes. Omets sections sans info.';
-
-        var claudeRes = await fetch('/api/claude-proxy', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'claude-haiku-4-5-20251001',
-            max_tokens: 2000,
-            system: systemMsg,
-            messages: [{ role: 'user', content: texteNet }]
-          })
-        });
-
-        var claudeData = await claudeRes.json();
-        if (claudeData && claudeData.content && claudeData.content[0]) {
-          postTexte = claudeData.content[0].text.trim();
-        }
-      }
-    } catch(scrapeErr) {
-      console.warn('Scrape/Claude erreur:', scrapeErr.message);
-    }
-
-    // 3. Construire le mail
-    loadEl.querySelector('span').textContent = 'Envoi du mail...';
-    var lines = [
-      '📋 NOUVELLE DEMANDE DE POST FACEBOOK',
-      '─────────────────────────────────────',
-      '',
-      '👤 Delegue    : ' + delegue,
-      '📦 Pack       : ' + packEl.value,
-      '🔗 Annonce    : ' + url,
-      '🕐 Date       : ' + now
-    ];
-    if (remarques) lines.push('💬 Remarques  : ' + remarques);
-    if (postTexte) {
-      lines.push('');
-      lines.push('─────────────────────────────────────');
-      lines.push('TEXTE DU POST - PRET A PUBLIER');
-      lines.push('─────────────────────────────────────');
-      lines.push('');
-      lines.push(postTexte);
-    }
-
-    await emailjs.send('service_0l08dg4', 'template_r0ucl4i', {
-      name: 'Immo Pro',
-      delegue: delegue,
-      pack: packEl.value,
-      url_annonce: url,
-      remarques: remarques || 'Aucune',
-      date: now,
-      message: lines.join('\n')
-    });
-
-    loadEl.style.display = 'none';
-    submitBtn.disabled = false;
-    showDpModal(delegue, packEl.value, url);
-
-  } catch(e) {
-    loadEl.style.display = 'none';
-    submitBtn.disabled = false;
-    errEl.textContent = 'Erreur : ' + (e.text || e.message || JSON.stringify(e));
-    errEl.style.display = 'block';
-  }
-}
-
-</script>
-
-<!-- ── MODAL SUCCÈS DEMANDE POST ── -->
-<div class="dp-modal-overlay" id="dp-modal-overlay">
-  <div class="dp-modal" id="dp-modal">
-    <img id="dp-modal-img" class="dp-modal-gif" src="" alt="">
-    <div id="dp-modal-badge" class="dp-modal-pack-badge"></div>
-    <div class="dp-modal-title" id="dp-modal-title">Demande envoyée !</div>
-    <div class="dp-modal-sub" id="dp-modal-sub"></div>
-    <button class="dp-modal-close" onclick="closeDpModal()">Parfait, merci !</button>
-  </div>
-</div>
-</body>
-</html>
+>
