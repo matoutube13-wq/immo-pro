@@ -21,15 +21,13 @@ export default async function handler(req, res) {
     'Joëlle De Lattin': 15, 'Axel Bourgeois': 16, 'Julia Kongo': null
   };
 
-  // Communes autour de HUY (agence index=2)
   const HUY_VILLES = [
     'huy','amay','wanze','andenne','ben-ahin','tihange','engis',
     'villers-le-bouillet','burdinne','braives','hannut','wasseiges',
     'tinlot','modave','marchin','clavier','nandrin','verlaine',
-    'oreye','remicourt','berloz','crisnee','bassenge','oupeye',
-    'waremme','borgworm','lincent','geer','donceel','faimes','graces'
+    'oreye','remicourt','berloz','crisnee','bassenge','waremme',
+    'borgworm','lincent','geer','donceel','faimes'
   ];
-  // Communes autour de LIÈGE (agence index=1)
   const LIEGE_VILLES = [
     'liege','seraing','ans','grace-hollogne','flemalle','herstal',
     'saint-nicolas','juprelle','awans','fexhe','soumagne',
@@ -53,43 +51,72 @@ export default async function handler(req, res) {
     return r.json();
   }
 
+  // ── EXTRACTION DEPUIS L'URL ─────────────────────────────────────────────────
+  const urlParts = url.replace(/\/$/, '').split('/');
+  const lastSeg  = urlParts[urlParts.length - 1] || '';
+  const isNumeric = /^\d+$/.test(lastSeg);
+  const villeSlug = isNumeric ? urlParts[urlParts.length - 2] : lastSeg;
+  const typeSlug  = isNumeric ? urlParts[urlParts.length - 3] : urlParts[urlParts.length - 2];
+  const ville     = cap(villeSlug);
+  const typeBien  = cap(typeSlug.split('-')[0]);
+  const transaction = typeSlug.includes('louer') ? 'À LOUER' : 'À VENDRE';
+
+  let agenceIndex = null;
+  if (HUY_VILLES.some(v => villeSlug.toLowerCase() === v || villeSlug.toLowerCase().startsWith(v + '-')))
+    agenceIndex = 2;
+  else if (LIEGE_VILLES.some(v => villeSlug.toLowerCase() === v || villeSlug.toLowerCase().startsWith(v + '-')))
+    agenceIndex = 1;
+
+  // ── SCRAPE DIRECT DEPUIS VERCEL ─────────────────────────────────────────────
+  // On essaie d'abord directement, puis via cors.sh comme fallback
+  let html = '';
+  let scrapeMethod = '';
+
   try {
-    // ── EXTRACTION DEPUIS L'URL ───────────────────────────────────────────────
-    // Format trevi.be: /fr/bien/[ref]/[type-transaction]/[ville]/[id]
-    const urlParts = url.replace(/\/$/, '').split('/');
-    const lastSeg = urlParts[urlParts.length - 1] || '';
-    const isNumeric = /^\d+$/.test(lastSeg);
-    // Format A: .../type-transaction/ville/ID  → isNumeric=true
-    // Format B: .../ref/num/type/Ville         → isNumeric=false
-    const villeSlug = isNumeric ? urlParts[urlParts.length - 2] : lastSeg;
-    const typeSlug  = isNumeric ? urlParts[urlParts.length - 3] : urlParts[urlParts.length - 2];
-    const ville     = cap(villeSlug);
-    const typeBien  = cap(typeSlug.split('-')[0]);
-    const transaction = typeSlug.includes('louer') ? 'À LOUER' : 'À VENDRE';
+    // Tentative 1 : direct
+    const r1 = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+        'Accept': 'text/html,application/xhtml+xml',
+        'Accept-Language': 'fr-BE,fr;q=0.9',
+      },
+      signal: AbortSignal.timeout(12000)
+    });
+    const h1 = await r1.text();
+    if (h1.length > 2000 && h1.includes('trevi')) {
+      html = h1;
+      scrapeMethod = 'direct';
+    }
+  } catch(e1) { /* essai 2 */ }
 
-    // Agence depuis l'URL (sans scrape, toujours fiable)
-    let agenceIndex = null;
-    if (HUY_VILLES.some(v => villeSlug === v || villeSlug.startsWith(v + '-')))
-      agenceIndex = 2; // HUY
-    else if (LIEGE_VILLES.some(v => villeSlug === v || villeSlug.startsWith(v + '-')))
-      agenceIndex = 1; // LIÈGE
-
-    // ── SCRAPE VIA ALLORIGINS ─────────────────────────────────────────────────
-    let postTexte = null;
-    let scrapeErr = null;
-
+  if (!html) {
     try {
-      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-      const proxyRes = await fetch(proxyUrl, {
-        headers: { 'User-Agent': 'Mozilla/5.0' },
-        signal: AbortSignal.timeout(25000)
+      // Tentative 2 : corsproxy.io
+      const r2 = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, {
+        signal: AbortSignal.timeout(12000)
       });
-      const proxyData = await proxyRes.json();
-      const html = proxyData?.contents || '';
+      const h2 = await r2.text();
+      if (h2.length > 2000) { html = h2; scrapeMethod = 'corsproxy'; }
+    } catch(e2) { /* essai 3 */ }
+  }
 
-      if (html.length < 200) throw new Error(`allorigins retourné ${html.length} chars`);
+  if (!html) {
+    try {
+      // Tentative 3 : allorigins
+      const r3 = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, {
+        signal: AbortSignal.timeout(12000)
+      });
+      const j3 = await r3.json();
+      if (j3?.contents?.length > 2000) { html = j3.contents; scrapeMethod = 'allorigins'; }
+    } catch(e3) { /* tous échoués */ }
+  }
 
-      // Prix
+  // ── GÉNÉRATION CLAUDE ───────────────────────────────────────────────────────
+  let postTexte = null;
+  let genErr = null;
+
+  if (html) {
+    try {
       const prixAP = html.match(/à\s+partir\s+de\s+([\d\s.,]+)\s*€/i);
       const prixAU = html.match(/au\s+prix\s+de\s+([\d\s.,]+)\s*€/i);
       const prixSe = html.match(/([\d]{2,3}[\s.][\d]{3})\s*€/);
@@ -98,21 +125,18 @@ export default async function handler(req, res) {
       else if (prixAU) { prixDetecte = prixAU[1].trim().replace(/\s/g,''); prixType = 'au_prix_de'; }
       else if (prixSe) { prixDetecte = prixSe[1].trim().replace(/\s/g,''); prixType = 'prix_fixe'; }
       const prixLabel =
-        prixType==='a_partir_de' ? `à partir de ${prixDetecte} €` :
-        prixType==='au_prix_de'  ? `au prix de ${prixDetecte} €` :
+        prixType === 'a_partir_de' ? `à partir de ${prixDetecte} €` :
+        prixType === 'au_prix_de'  ? `au prix de ${prixDetecte} €` :
         prixDetecte ? `${prixDetecte} €` : '[prix non détecté]';
 
-      // Matterport
       const matterport = html.match(/https:\/\/my\.matterport\.com\/show\/\?m=[a-zA-Z0-9]+/);
       const virtualVisit = matterport ? matterport[0] : null;
 
-      // Texte nettoyé
       const text = html
         .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
         .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
         .replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 10000);
 
-      // Claude
       const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
@@ -135,7 +159,7 @@ ${virtualVisit ? `\nVISITE VIRTUELLE 🎥 : ${virtualVisit}\n` : ''}
 - [liste des pièces]
 
 𝗔𝘁𝗼𝘂𝘁𝘀 ✨ :
-– [garage, jardin, cave, etc.]
+– [garage, jardin, cave, etc. si disponibles]
 
 𝗜𝗻𝗳𝗼𝘀 𝘁𝗲𝗰𝗵𝗻𝗶𝗾𝘂𝗲𝘀 ⚙️ :
 – PEB : [classe et valeur]
@@ -148,29 +172,26 @@ ${virtualVisit ? `\nVISITE VIRTUELLE 🎥 : ${virtualVisit}\n` : ''}
 📧 info@trevirasquain.be
 📞 085 25 39 03
 🔗 ${url}`,
-          messages: [{ role: 'user', content: `Ville : ${ville}\nContenu :\n${text}` }]
+          messages: [{ role: 'user', content: `Ville : ${ville}\nContenu de l'annonce :\n${text}` }]
         })
       });
+
       const aiData = await aiRes.json();
+      if (aiData?.error) throw new Error(aiData.error.type + ': ' + aiData.error.message);
       postTexte = aiData?.content?.[0]?.text?.trim() || null;
-      if (!postTexte) {
-        const errType = aiData?.error?.type || aiData?.type || 'unknown';
-        const errMsg = aiData?.error?.message || 'réponse vide';
-        if (errType === 'authentication_error') {
-          throw new Error('CLE_API_INVALIDE — Vérifier ANTHROPIC_API_KEY dans Vercel');
-        }
-        throw new Error(`Claude: ${errType} — ${errMsg}`);
-      }
+      if (!postTexte) throw new Error('Réponse Claude vide');
 
     } catch(e) {
-      scrapeErr = e.message;
+      genErr = e.message;
     }
+  }
 
-    // ── TITRE ─────────────────────────────────────────────────────────────────
+  try {
+    // ── TITRE ────────────────────────────────────────────────────────────────
     const titrePack = pack === 'Pack du pauvre' ? 'Post FB' : 'Post FB ⭐';
     const itemName = `${titrePack} – ${typeBien} – ${ville}`;
 
-    // ── COLONNES ──────────────────────────────────────────────────────────────
+    // ── COLONNES ─────────────────────────────────────────────────────────────
     const delegueId = DELEGUE_MAP[delegue];
     const colVals = {
       dropdown_mkv6q0jr: { ids: [1] },
@@ -178,12 +199,12 @@ ${virtualVisit ? `\nVISITE VIRTUELLE 🎥 : ${virtualVisit}\n` : ''}
       project_status:    { label: 'A faire' },
       project_owner:     { personsAndTeams: [{ id: TREVI_USER_ID, kind: 'person' }] }
     };
-    if (delegueId !== undefined && delegueId !== null)
+    if (delegueId !== null && delegueId !== undefined)
       colVals.dropdown_mkxvwsdj = { ids: [delegueId] };
     if (agenceIndex !== null)
       colVals.color_mkv6tmwp = { index: agenceIndex };
 
-    // ── CRÉER L'ITEM ──────────────────────────────────────────────────────────
+    // ── CRÉER L'ITEM ─────────────────────────────────────────────────────────
     const createData = await mondayQ(`mutation {
       create_item(
         board_id: ${BOARD_ID},
@@ -195,7 +216,11 @@ ${virtualVisit ? `\nVISITE VIRTUELLE 🎥 : ${virtualVisit}\n` : ''}
     const itemId = createData?.data?.create_item?.id;
     if (!itemId) throw new Error('create_item: ' + JSON.stringify(createData?.errors || createData));
 
-    // ── UPDATE AVEC TEXTE ─────────────────────────────────────────────────────
+    // ── UPDATE ───────────────────────────────────────────────────────────────
+    const debugInfo = html
+      ? `Scrape: ${scrapeMethod} (${html.length} chars)${genErr ? ' | Erreur Claude: ' + genErr : ''}`
+      : `Scrape échoué sur les 3 méthodes (direct, corsproxy, allorigins)`;
+
     const updateBody = [
       `<p><strong>📋 Demande de ${delegue}</strong></p>`,
       `<p>📦 Pack : ${pack}</p>`,
@@ -204,25 +229,20 @@ ${virtualVisit ? `\nVISITE VIRTUELLE 🎥 : ${virtualVisit}\n` : ''}
       '<p>─────────────────────────</p>',
       postTexte
         ? `<p><strong>✍️ TEXTE DU POST — PRÊT À PUBLIER</strong></p><pre>${postTexte}</pre>`
-        : `<p><em>⚠️ Texte non généré (${scrapeErr || 'erreur inconnue'}).</em></p>`
+        : `<p><em>⚠️ Texte non généré — ${debugInfo}</em></p>`
     ].filter(Boolean).join('');
 
     await mondayQ(`mutation {
       create_update(item_id: ${itemId}, body: ${JSON.stringify(updateBody)}) { id }
     }`);
 
-    // ── RÉPONSE AU FRONT (APRÈS tout le travail) ──────────────────────────────
     return res.status(200).json({
-      success: true,
-      itemId,
-      itemName,
+      success: true, itemId, itemName,
       textGenerated: !!postTexte,
-      agence: agenceIndex === 2 ? 'HUY' : agenceIndex === 1 ? 'LIÈGE' : null,
-      scrapeErr
+      agence: agenceIndex === 2 ? 'HUY' : agenceIndex === 1 ? 'LIÈGE' : null
     });
 
   } catch (err) {
-    console.error('[monday-post]', err.message);
     return res.status(500).json({ error: err.message });
   }
 }
