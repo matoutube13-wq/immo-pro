@@ -943,7 +943,7 @@
       <div class="tool-icon-sm">📱</div>
       <div>
         <div class="tool-header-text">Demande Post Facebook</div>
-        <div class="tool-header-sub">DEMANDE · MATHIAS</div>
+        <div class="tool-header-sub">POST FACEBOOK · MONDAY</div>
       </div>
     </div>
     <div class="content" style="max-width:700px">
@@ -995,7 +995,7 @@
       <div class="error-box" id="dp-error">Merci de remplir tous les champs obligatoires.</div>
 
       <button class="btn-primary" id="dp-submit-btn" onclick="submitDemandePost()" style="margin-top:0">
-        📨 Envoyer la demande à Mathias
+        🚀 Générer et créer dans Monday
       </button>
 
       <div class="loading" id="dp-loading" style="margin-top:14px">
@@ -2484,6 +2484,119 @@ function selectPack(radio) {
   document.querySelectorAll('.pack-card').forEach(function(c) { c.classList.remove('selected'); });
   radio.closest('.pack-card').classList.add('selected');
 }
+
+function resetDemandePost() {
+  document.getElementById('dp-delegue').value = '';
+  document.getElementById('dp-url').value = '';
+  document.getElementById('dp-remarques').value = '';
+  var defaultPack = document.querySelector('[name="dp-pack"]');
+  if (defaultPack) { defaultPack.checked = true; }
+  document.querySelectorAll('.pack-card').forEach(function(c) { c.classList.remove('selected'); });
+  var defaultCard = document.getElementById('pack-pauvre-card');
+  if (defaultCard) defaultCard.classList.add('selected');
+  document.getElementById('dp-error').style.display = 'none';
+  document.getElementById('dp-loading').style.display = 'none';
+  document.getElementById('dp-submit-btn').disabled = false;
+}
+
+var DP_MEDIA = {
+  pauvre: {
+    url: 'https://media.giphy.com/media/xT5LMzIK1AdZJ4cYW4/giphy.gif',
+    fallback: 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'
+  },
+  coeur: {
+    url: 'https://media.giphy.com/media/xT5LMzIK1AdZJ4cYW4/giphy.gif',
+    fallback: 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'
+  }
+};
+
+function showDpModal(delegue, pack, url) {
+  var isPauvre = pack === 'Pack du pauvre';
+  var key = isPauvre ? 'pauvre' : 'coeur';
+  var media = DP_MEDIA[key];
+  var img = document.getElementById('dp-modal-img');
+  img.src = media.url;
+  img.onerror = function() { this.src = media.fallback; };
+  var badge = document.getElementById('dp-modal-badge');
+  badge.textContent = pack;
+  badge.className = 'dp-modal-pack-badge ' + key;
+  document.getElementById('dp-modal-title').textContent = isPauvre ? '🪙 Budget serré assumé !' : '❤️ Coup de cœur lancé !';
+  var sub = isPauvre
+    ? '<strong>' + delegue + '</strong>, ta demande est bien transmise à Mathias 📨<br>Il va faire des miracles avec les moyens du bord ! 😄'
+    : '<strong>' + delegue + '</strong>, ta demande est bien transmise à Mathias 📨<br>Prépare-toi, ça va être beau ! ✨';
+  document.getElementById('dp-modal-sub').innerHTML = sub;
+  var overlay = document.getElementById('dp-modal-overlay');
+  overlay.style.display = 'flex';
+  setTimeout(function() { overlay.classList.add('visible'); }, 10);
+}
+
+function closeDpModal() {
+  var overlay = document.getElementById('dp-modal-overlay');
+  overlay.classList.remove('visible');
+  setTimeout(function() { overlay.style.display = 'none'; resetDemandePost(); }, 300);
+}
+
+async function submitDemandePost() {
+  var delegue   = document.getElementById('dp-delegue').value.trim();
+  var url       = document.getElementById('dp-url').value.trim();
+  var packEl    = document.querySelector('[name="dp-pack"]:checked');
+  var remarques = document.getElementById('dp-remarques').value.trim();
+  var errEl     = document.getElementById('dp-error');
+  var loadEl    = document.getElementById('dp-loading');
+  var submitBtn = document.getElementById('dp-submit-btn');
+
+  errEl.style.display = 'none';
+  if (!delegue || !url || !packEl) {
+    errEl.textContent = 'Merci de remplir ton nom et le lien.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  submitBtn.disabled = true;
+  loadEl.style.display = 'flex';
+  loadEl.querySelector('span').textContent = 'Analyse du bien en cours...';
+
+  // Alterner les messages pendant l'attente
+  var msgs = ['Lecture de l\'annonce...', 'Generation du post IA...', 'Creation dans Monday...'];
+  var msgIdx = 0;
+  var msgTimer = setInterval(function() {
+    msgIdx = (msgIdx + 1) % msgs.length;
+    var s = loadEl.querySelector('span');
+    if (s) s.textContent = msgs[msgIdx];
+  }, 6000);
+
+  try {
+    var res = await fetch('/api/monday-post', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        delegue:  delegue,
+        url:      url,
+        pack:     packEl.value,
+        remarques: remarques || ''
+      })
+    });
+
+    clearInterval(msgTimer);
+    var data = await res.json();
+
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Erreur serveur');
+    }
+
+    loadEl.style.display = 'none';
+    submitBtn.disabled = false;
+    showDpModal(delegue, packEl.value, url);
+
+  } catch(e) {
+    clearInterval(msgTimer);
+    loadEl.style.display = 'none';
+    submitBtn.disabled = false;
+    errEl.textContent = 'Erreur : ' + (e.text || e.message || JSON.stringify(e));
+    errEl.style.display = 'block';
+  }
+}
+
 
 function resetDemandePost() {
   document.getElementById('dp-delegue').value = '';
