@@ -63,7 +63,7 @@
 
     /* ── TOOL SHELLS ───────────────────────────────────────── */
     #social-tool, #compromis-tool, #mention-tool, #postfb-tool, #demandepost-tool, #candidatures-tool { display: none; }
-    .tool-header { background: #1a1a2e; padding: 18px 40px; display: flex; align-items: center; gap: 14px; }
+    .tool-header { background: #1a1a2e; padding: 18px 40px; display: flex; align-items: center; gap: 14px; position:sticky; top:64px; z-index:90; }
     .back-btn { background: none; border: none; color: #c9a84c; cursor: pointer; font-size: 20px; padding: 0; line-height: 1; }
     .tool-icon-sm { width: 34px; height: 34px; background: #c9a84c; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
     .tool-header-text { color: #fff; font-weight: 700; font-size: 16px; }
@@ -327,7 +327,7 @@
     .tc-icon { width:42px; height:42px; border-radius:11px; display:flex; align-items:center; justify-content:center; margin-bottom:14px; }
     .tc-icon svg { width:22px; height:22px; }
     /* ── TOOL TOPBAR ── */
-    .tool-topbar { height:56px; background:#fff; border-bottom:1px solid #e8eaed; display:flex; align-items:center; gap:14px; padding:0 28px; margin-bottom:28px; }
+    .tool-topbar { height:56px; background:#fff; border-bottom:1px solid #e8eaed; display:flex; align-items:center; gap:14px; padding:0 28px; position:sticky; top:64px; z-index:90; }
     /* ── PACK CARDS ── */
     .pack-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:4px; }
     .pack-card { border:2px solid #e8eaed; border-radius:12px; padding:16px 18px; cursor:pointer; transition:all 0.2s; position:relative; background:#fff; }
@@ -1143,6 +1143,9 @@
 // AUTH
 // ════════════════════════════════════════════════════════════
 document.getElementById('app').style.display = 'block';
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+window.scrollTo(0, 0);
+setSidebarActive('dashboard');
 
 async function login() {
   const pwd = document.getElementById('password-input').value;
@@ -1187,13 +1190,17 @@ function showTool(id) {
   const target = document.getElementById(id);
   if (target) target.style.display = 'block';
   window.scrollTo(0, 0);
+  setSidebarActive(id);
+  const pn = document.getElementById('tb-page-name');
+  if (pn) pn.textContent = PAGE_NAMES[id] || id;
   // Init candidatures
   if (id === 'candidatures-tool') { switchTab('biens'); loadBiens(); }
+  if (id === 'compromis-tool') { initCompromisIfNeeded(); }
 }
 
 function showDashboard() {
   if(typeof mentionToolReset==='function') mentionToolReset();
-  postfbReset();
+  if(typeof postfbReset==='function') postfbReset();
   ['social-tool','compromis-tool','candidatures-tool','mention-tool','postfb-tool','demandepost-tool'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
@@ -1204,6 +1211,9 @@ function showDashboard() {
   document.getElementById('result-card').style.display = 'none';
   document.getElementById('error-box').style.display = 'none';
   window.scrollTo(0, 0);
+  setSidebarActive('dashboard');
+  const pnd = document.getElementById('tb-page-name');
+  if (pnd) pnd.textContent = 'Dashboard';
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1255,17 +1265,28 @@ let vendeurCount = 0;
 let acquereurCount = 0;
 
 // Init blocs personne
-(function init() {
-  addPersonBlock('vendeurs-container', 'vendeur');
-  addPersonBlock('acquereurs-container', 'acquereur');
-})();
-
-// ── Drag & Drop ───────────────────────────────────────────
-const dropZone = document.getElementById('drop-zone');
-document.getElementById('file-input').addEventListener('change', e => addFiles(e.target.files));
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('dragover'); addFiles(e.dataTransfer.files); });
+// ── Init compromis (appelé seulement quand le tool s'ouvre) ──
+function initCompromisIfNeeded() {
+  var vc = document.getElementById('vendeurs-container');
+  var ac = document.getElementById('acquereurs-container');
+  if (vc && !vc._initialized) {
+    vc._initialized = true;
+    addPersonBlock('vendeurs-container', 'vendeur');
+  }
+  if (ac && !ac._initialized) {
+    ac._initialized = true;
+    addPersonBlock('acquereurs-container', 'acquereur');
+  }
+  var dropZone = document.getElementById('drop-zone');
+  var fileInput = document.getElementById('file-input');
+  if (dropZone && fileInput && !dropZone._initialized) {
+    dropZone._initialized = true;
+    fileInput.addEventListener('change', function(e){ addFiles(e.target.files); });
+    dropZone.addEventListener('dragover', function(e){ e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', function(){ dropZone.classList.remove('dragover'); });
+    dropZone.addEventListener('drop', function(e){ e.preventDefault(); dropZone.classList.remove('dragover'); addFiles(e.dataTransfer.files); });
+  }
+}
 
 function addFiles(files) {
   for (const f of files) {
