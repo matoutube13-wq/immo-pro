@@ -155,16 +155,40 @@ export default async function handler(req, res) {
     }
     if (adresseComplete) adresseComplete = adresseComplete.replace(/\s+/g, ' ').trim();
 
-    // Image og:image
+    // Extraction de TOUTES les photos du bien
+    let allPhotos = [];
+    
+    // 1. Chercher dans les balises og:image (souvent la photo principale)
     const ogImg = html.match(/<meta[^>]+property="og:image"[^>]+content="([^"]+)"/i) ||
                   html.match(/<meta[^>]+content="([^"]+)"[^>]+property="og:image"/i);
-    if (ogImg) {
-      imageUrl = ogImg[1];
-    } else {
-      const imgs = [...html.matchAll(/https?:\/\/[^"'\s]+\.(?:jpg|jpeg|webp|png)(?:\?[^"'\s]*)?/gi)]
-        .map(m => m[0]).filter(u => { const l = u.toLowerCase(); return !l.includes('logo') && !l.includes('icon') && !l.includes('avatar') && !l.includes('sprite') && (l.includes('photo') || l.includes('image') || l.includes('img') || l.includes('media') || l.includes('upload') || u.length > 80); });
-      if (imgs.length) imageUrl = imgs[0];
+    if (ogImg && ogImg[1]) allPhotos.push(ogImg[1]);
+
+    // 2. Chercher toutes les URLs d'images dans le HTML (photos du bien)
+    const allImgUrls = [...html.matchAll(/https?:\/\/[^"'\s<>]+\.(?:jpg|jpeg|webp|png)(?:\?[^"'\s<>]*)?/gi)]
+      .map(m => m[0])
+      .filter(u => {
+        const l = u.toLowerCase();
+        // Exclure logos, icônes, sprites, avatars, flags, etc.
+        return !l.includes('logo') && !l.includes('icon') && !l.includes('avatar') &&
+               !l.includes('sprite') && !l.includes('flag') && !l.includes('bullet') &&
+               !l.includes('arrow') && !l.includes('btn') && !l.includes('button') &&
+               !l.includes('background') && !l.includes('bg-') && !l.includes('pixel') &&
+               !l.includes('tracking') && !l.includes('analytics') && !l.includes('badge') &&
+               // Garder uniquement les images qui ressemblent à des photos de biens
+               (l.includes('photo') || l.includes('image') || l.includes('img') ||
+                l.includes('media') || l.includes('upload') || l.includes('property') ||
+                l.includes('bien') || l.includes('trevi') || l.includes('annonce') ||
+                u.length > 90);
+      });
+    
+    // Dédupliquer et ajouter toutes les photos trouvées
+    for (const imgUrl of allImgUrls) {
+      if (!allPhotos.includes(imgUrl)) allPhotos.push(imgUrl);
     }
+    
+    // Limiter à 20 photos max, garder la première comme photo principale
+    allPhotos = allPhotos.slice(0, 20);
+    imageUrl = allPhotos[0] || null;
 
     // Prix
     const prixAP = html.match(/à\s+partir\s+de\s+([\d\s.,]+)\s*€/i);
@@ -570,13 +594,13 @@ RÈGLES ABSOLUES :
     const itemId = createData?.data?.create_item?.id;
     if (!itemId) throw new Error('create_item: ' + JSON.stringify(createData?.errors || createData));
 
-    // ── UPDATE 1 : INFOS + PHOTO ───────────────────────────────────────────────
+    // ── UPDATE 1 : INFOS DE LA DEMANDE ──────────────────────────────────────────
     const update1 = [
       `<p><strong>📋 Demande de ${delegue}</strong></p>`,
       `<p>📦 Pack : ${pack}</p>`,
       `<p>🔗 <a href="${url}">${url}</a></p>`,
       remarques ? `<p>💬 Remarques : ${remarques}</p>` : '',
-      imageUrl ? `<p><img src="${imageUrl}" style="max-width:100%;border-radius:8px;margin-top:8px;" /></p>` : '',
+      imageUrl ? `<p>📸 Photo principale :<br/><img src="${imageUrl}" style="max-width:100%;border-radius:8px;margin-top:8px;" /></p>` : '',
     ].filter(Boolean).join('');
     await mondayQ(`mutation { create_update(item_id: ${itemId}, body: ${JSON.stringify(update1)}) { id } }`);
 
@@ -585,6 +609,15 @@ RÈGLES ABSOLUES :
       ? `<p><strong>✍️ TEXTE DU POST — PRÊT À PUBLIER</strong></p><pre>${postTexte}</pre>`
       : `<p><em>⚠️ Texte non généré${genErr ? ' — ' + genErr : ''}${!html ? ' — scrape échoué' : ''}.</em></p>`;
     await mondayQ(`mutation { create_update(item_id: ${itemId}, body: ${JSON.stringify(update2)}) { id } }`);
+
+    // ── UPDATE 3 : GALERIE PHOTOS DU BIEN ─────────────────────────────────────
+    if (allPhotos.length > 1) {
+      const photosHtml = allPhotos.map((photoUrl, i) =>
+        `<p><strong>Photo ${i + 1}</strong><br/><img src="${photoUrl}" style="max-width:100%;border-radius:8px;margin-bottom:8px;" /></p>`
+      ).join('');
+      const update3 = `<p><strong>📸 Photos du bien (${allPhotos.length} photos)</strong></p>${photosHtml}`;
+      await mondayQ(`mutation { create_update(item_id: ${itemId}, body: ${JSON.stringify(update3)}) { id } }`);
+    }
 
     return res.status(200).json({ success: true, itemId, itemName, textGenerated: !!postTexte, agence: agenceIndex === 2 ? 'HUY' : agenceIndex === 1 ? 'LIÈGE' : null, scrapeMethod });
 
