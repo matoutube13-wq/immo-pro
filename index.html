@@ -2565,7 +2565,7 @@ function resetDemandePost() {
   document.querySelectorAll('[name="dp-pack"]').forEach(function(r){ r.checked = r.value === 'Pack du pauvre'; });
   document.querySelectorAll('.pack-card').forEach(function(c){ c.classList.remove('selected'); });
   var def = document.getElementById('pack-pauvre-card'); if (def) def.classList.add('selected');
-  ['dp-error','dp-loading','dp-patience-banner'].forEach(function(id){
+  ['dp-error','dp-patience-banner'].forEach(function(id){
     var el = document.getElementById(id); if (el) el.style.display = 'none';
   });
   var btn = document.getElementById('dp-submit-btn');
@@ -2605,26 +2605,19 @@ async function submitDemandePost() {
   var packEl    = document.querySelector('[name="dp-pack"]:checked');
   var remarques = document.getElementById('dp-remarques').value.trim();
   var errEl     = document.getElementById('dp-error');
-  var loadEl    = document.getElementById('dp-loading');
   var submitBtn = document.getElementById('dp-submit-btn');
-
-  console.log('[DP] submit clicked — delegue:', delegue, 'url:', url, 'pack:', packEl && packEl.value);
+  var patienceBanner = document.getElementById('dp-patience-banner');
 
   errEl.style.display = 'none';
   if (!delegue || !url || !packEl) {
     errEl.textContent = 'Merci de remplir ton nom et le lien.';
     errEl.style.display = 'block';
-    console.log('[DP] validation failed — missing fields');
     return;
   }
 
   submitBtn.disabled = true;
   submitBtn.style.opacity = '0.6';
-  var patienceBanner = document.getElementById('dp-patience-banner');
   if (patienceBanner) patienceBanner.style.display = 'flex';
-  loadEl.style.display = 'none';
-
-  console.log('[DP] calling /api/monday-post...');
 
   try {
     var mr = await fetch('/api/monday-post', {
@@ -2632,21 +2625,17 @@ async function submitDemandePost() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ delegue: delegue, url: url, pack: packEl.value, remarques: remarques })
     });
-    console.log('[DP] response status:', mr.status, mr.ok);
     var rawText = await mr.text();
-    console.log('[DP] response text (first 200):', rawText.substring(0, 200));
     var md;
     try { md = JSON.parse(rawText); } catch(jsonErr) {
-      throw new Error('Reponse non-JSON (status ' + mr.status + '): ' + rawText.substring(0, 100));
+      throw new Error('Reponse serveur invalide (status ' + mr.status + '): ' + rawText.substring(0, 150));
     }
-    if (!mr.ok || !md.success) throw new Error(md.error || 'Erreur Monday (status ' + mr.status + ')');
+    if (!mr.ok || !md.success) throw new Error(md.error || 'Erreur serveur (status ' + mr.status + ')');
     if (patienceBanner) patienceBanner.style.display = 'none';
     submitBtn.disabled = false;
     submitBtn.style.opacity = '1';
-    console.log('[DP] SUCCESS — itemId:', md.itemId);
     showDpModal(delegue, packEl.value, url);
   } catch(e) {
-    console.error('[DP] ERROR:', e);
     if (patienceBanner) patienceBanner.style.display = 'none';
     submitBtn.disabled = false;
     submitBtn.style.opacity = '1';
