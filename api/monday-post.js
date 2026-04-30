@@ -10,7 +10,7 @@ export default async function handler(req, res) {
 
   const MONDAY_TOKEN = process.env.MONDAY_API_TOKEN;
   const BOARD_ID = '2115483966';
-  const GROUP_ID = 'group_mkxsjfgg';
+  const GROUP_ID = 'group_mm2xjesk';
   const TREVI_USER_ID = '80840427';
   const isCDC = pack.includes('coeur') || pack.includes('oeur');
 
@@ -198,7 +198,7 @@ export default async function handler(req, res) {
       '"Pour plus de renseignements ou pour planifier une visite" emoji cle\n' +
       'emoji lettre ' + contactEmail + '\n' +
       'emoji telephone ' + contactTel + '\n' +
-      url + '\n' +
+      '[Lien complet de l annonce en premier commentaire]' + '\n' +
       igBlock + '\n\n' +
       'IMPORTANT TECHNIQUE :\n' +
       '- Pour les titres, villes, chiffres importants : utilise les vrais caracteres gras Unicode mathematiques (Mathematical Bold)\n' +
@@ -264,7 +264,7 @@ export default async function handler(req, res) {
     const u1Parts = ['<p><strong>Demande de ' + delegue + '</strong></p>', '<p>Pack : ' + pack + '</p>', '<p><a href="' + url + '">' + url + '</a></p>'];
     if (adresseComplete) u1Parts.push('<p>' + adresseComplete + '</p>');
     if (remarques) u1Parts.push('<p>Remarques : ' + remarques + '</p>');
-    if (allPhotos[0]) u1Parts.push('<p><img src="' + allPhotos[0] + '" style="max-width:100%;border-radius:8px;" /></p>');
+    // Photo omise de l'update 1 — déjà présente dans la galerie photos
     await mondayQ('mutation { create_update(item_id: ' + itemId + ', body: ' + JSON.stringify(u1Parts.join('')) + ') { id } }');
 
     // Update 2 : post Facebook
@@ -289,6 +289,10 @@ export default async function handler(req, res) {
       }
       await mondayQ('mutation { create_update(item_id: ' + itemId + ', body: ' + JSON.stringify(photosHtml) + ') { id } }');
     }
+
+    // Update commentaire lien (toujours)
+    const commentText = "<p><strong>Texte pour le commentaire de la publication :</strong></p><p>Retrouvez l'annonce complète avec toutes les photos ici<br/><a href=\"" + url + "\">" + url + "</a></p>";
+    await mondayQ('mutation { create_update(item_id: ' + itemId + ', body: ' + JSON.stringify(commentText) + ') { id } }');
 
     return res.status(200).json({
       success: true, itemId: itemId, itemName: itemName,
