@@ -2608,21 +2608,23 @@ async function submitDemandePost() {
   var loadEl    = document.getElementById('dp-loading');
   var submitBtn = document.getElementById('dp-submit-btn');
 
+  console.log('[DP] submit clicked — delegue:', delegue, 'url:', url, 'pack:', packEl && packEl.value);
+
   errEl.style.display = 'none';
   if (!delegue || !url || !packEl) {
     errEl.textContent = 'Merci de remplir ton nom et le lien.';
     errEl.style.display = 'block';
+    console.log('[DP] validation failed — missing fields');
     return;
   }
 
   submitBtn.disabled = true;
   submitBtn.style.opacity = '0.6';
-  // Afficher le bandeau de patience
   var patienceBanner = document.getElementById('dp-patience-banner');
   if (patienceBanner) patienceBanner.style.display = 'flex';
-  loadEl.style.display = 'none'; // On utilise le bandeau, pas le loading inline
-  var setMsg = function(m){ var msgEl = document.getElementById('dp-loading-msg'); if(msgEl) msgEl.textContent = m; };
-  setMsg('Lecture de l\'annonce...');
+  loadEl.style.display = 'none';
+
+  console.log('[DP] calling /api/monday-post...');
 
   try {
     var mr = await fetch('/api/monday-post', {
@@ -2630,19 +2632,25 @@ async function submitDemandePost() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ delegue: delegue, url: url, pack: packEl.value, remarques: remarques })
     });
-    var md = await mr.json();
-    if (!mr.ok || !md.success) throw new Error(md.error || 'Erreur Monday');
-    loadEl.style.display = 'none';
+    console.log('[DP] response status:', mr.status, mr.ok);
+    var rawText = await mr.text();
+    console.log('[DP] response text (first 200):', rawText.substring(0, 200));
+    var md;
+    try { md = JSON.parse(rawText); } catch(jsonErr) {
+      throw new Error('Reponse non-JSON (status ' + mr.status + '): ' + rawText.substring(0, 100));
+    }
+    if (!mr.ok || !md.success) throw new Error(md.error || 'Erreur Monday (status ' + mr.status + ')');
     if (patienceBanner) patienceBanner.style.display = 'none';
     submitBtn.disabled = false;
     submitBtn.style.opacity = '1';
+    console.log('[DP] SUCCESS — itemId:', md.itemId);
     showDpModal(delegue, packEl.value, url);
   } catch(e) {
-    loadEl.style.display = 'none';
+    console.error('[DP] ERROR:', e);
     if (patienceBanner) patienceBanner.style.display = 'none';
     submitBtn.disabled = false;
     submitBtn.style.opacity = '1';
-    errEl.textContent = 'Erreur: ' + (e.text || e.message || JSON.stringify(e));
+    errEl.textContent = 'Erreur: ' + (e.message || JSON.stringify(e));
     errEl.style.display = 'block';
   }
 }
